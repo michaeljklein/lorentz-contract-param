@@ -26,6 +26,8 @@ module Michelson.Types
   , CT (..)
   ) where
 
+import Prelude
+
 import qualified Data.ByteString as B
 import Data.Data (Data(..))
 import qualified Data.Text as T
