@@ -49,15 +49,15 @@ pragma =
 contract :: Parser (M.Contract ParsedOp)
 contract = do
   mSpace
-  (p,s,c) <- runPermutation $
+  (p,s,c) <- intercalateEffect semicolon $
               (,,) <$> toPermutation parameter
                    <*> toPermutation storage
                    <*> toPermutation code
   return $ M.Contract p s c
 
-parameter = do symbol "parameter"; type_ <* semicolon
-storage   = do symbol "storage"; type_ <* semicolon
-code      = do symbol "code"; ops <* optional semicolon
+parameter = do symbol "parameter"; type_
+storage   = do symbol "storage"; type_
+code      = do symbol "code"; ops
 
 {- Value Parsers -}
 data_ :: Parser (M.Value ParsedOp)
