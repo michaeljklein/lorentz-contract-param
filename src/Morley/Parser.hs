@@ -20,7 +20,7 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import Morley.Lexer
 import qualified Morley.Macro as Macro
 import Morley.Parser.Annotations
-import Morley.Types (ParsedOp(..), Parser, ParserException(..))
+import Morley.Types (CustomParserException (..), ParsedOp(..), Parser, ParserException(..))
 import qualified Morley.Types as M
 
 -------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ field = lexeme (fi <|> parens fi)
 
 
 type_ :: Parser M.Type
-type_ = (ti <|> parens ti)
+type_ = (ti <|> parens ti) <|> (customFailure $ CustomParserException "expecting type parameter")
   where
     ti = snd <$> (lexeme $ typeInner (pure Nothing))
 
