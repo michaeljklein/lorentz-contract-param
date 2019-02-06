@@ -3,6 +3,7 @@
 
 module Morley.Parser
   ( contract
+  , ops
   , ParserException (..)
   , stringLiteral
   ) where
@@ -262,17 +263,17 @@ t_big_map fp = (do symbol "big_map"; (f, t) <- fieldType fp; a <- comparable; b 
 
 {- Operations Parsers -}
 ops :: Parser [M.ParsedOp]
-ops = braces $ sepEndBy (prim' <|> mac' <|> seq') semicolon
+ops = braces $ sepEndBy (prim' <|> mac' <|> primOrMac <|> seq') semicolon
   where
-    prim' = M.PRIM <$> try prim
-    mac'  = M.MAC <$> try macro
-    seq'  = M.SEQ <$> try ops
+    prim' = M.PRIM <$> prim
+    mac'  = M.MAC <$> macro
+    seq'  = M.SEQ <$> ops
 
 prim :: Parser M.ParsedInstr
 prim = choice
-  [ dropOp, dupOp, swapOp, pushOp, someOp, noneOp, unitOp, ifNoneOp, pairOp
+  [ dropOp, dupOp, swapOp, pushOp, someOp, noneOp, unitOp, ifNoneOp {-pairOp-}
   , carOp, cdrOp, leftOp, rightOp, ifLeftOp, ifRightOp, nilOp, consOp, ifConsOp
-  , sizeOp, emptySetOp, emptyMapOp, mapOp, iterOp, memOp, getOp, updateOp, ifOp
+  , sizeOp, emptySetOp, emptyMapOp {-mapOp-}, iterOp, memOp, getOp, updateOp {-ifOp-}
   , loopLOp, loopOp, lambdaOp, execOp, dipOp, failWithOp, castOp, renameOp
   , concatOp, packOp, unpackOp, sliceOp, isNatOp, addressOp, addOp, subOp
   , mulOp, edivOp, absOp, negOp, modOp, lslOp, lsrOp, orOp, andOp, xorOp, notOp
@@ -281,6 +282,7 @@ prim = choice
   , createContractOp, implicitAccountOp, nowOp, amountOp, balanceOp, checkSigOp
   , sha256Op, sha512Op, blake2BOp, hashKeyOp, stepsToQuotaOp, sourceOp, senderOp
   ]
+
 -------------------------------------------------------------------------------
 -- Core instructions
 -------------------------------------------------------------------------------
@@ -415,10 +417,10 @@ cmpOp = eqOp <|> neqOp <|> ltOp <|> gtOp <|> leOp <|> gtOp <|> geOp
 
 macro :: Parser M.Macro
 macro = do symbol' "CMP"; a <- cmpOp; M.CMP a <$> noteVDef
-  <|> do symbol' "IFCMP"; a <- cmpOp; v <- noteVDef; b <- ops;
-         M.IFCMP a v b <$> ops
+  -- <|> do symbol "IFCMP"; a <- cmpOp; v <- noteVDef; b <- ops;
+         -- M.IFCMP a v b <$> ops
   <|> do symbol' "IF_SOME"; a <- ops; M.IF_SOME a <$> ops
-  <|> do symbol' "IF"; a <- cmpOp; bt <- ops; M.IFX a bt <$> ops
+  -- <|> do symbol "IF"; a <- cmpOp; bt <- ops; M.IFX a bt <$> ops
   <|> do symbol' "FAIL"; return M.FAIL
   <|> do symbol' "ASSERT_CMP"; M.ASSERT_CMP <$> cmpOp
   <|> do symbol' "ASSERT_NONE"; return M.ASSERT_NONE
@@ -429,11 +431,11 @@ macro = do symbol' "CMP"; a <- cmpOp; M.CMP a <$> noteVDef
   <|> do symbol' "ASSERT"; return M.ASSERT
   <|> do string' "DI"; n <- num "I"; symbol' "P"; M.DIIP (n + 1) <$> ops
   <|> do string' "DU"; n <- num "U"; symbol' "P"; M.DUUP (n + 1) <$> noteVDef
-  <|> pairMac
+  -- <|> pairMac
   <|> unpairMac
   <|> cadrMac
   <|> setCadrMac
-  <|> mapCadrMac
+  -- <|> mapCadrMac
   where
    num str = fromIntegral . length <$> some (string' str)
 
@@ -487,3 +489,22 @@ mapCadrMac = do
   symbol' "R"
   (v, f) <- notesVF
   M.MAP_CADR a v f <$> ops
+
+-- ifXMac :: Parser M.Macro
+-- ifXMac = symbol "IF" >> M.IFX <$> cmpOp <*> ops <*> ops
+
+ifCmpMac :: Parser M.Macro
+ifCmpMac = symbol' "IFCMP" >> M.IFCMP <$> cmpOp <*> noteVDef <*> ops <*> ops
+
+ifOrIfX :: Parser M.ParsedOp
+ifOrIfX = do
+  symbol' "IF"
+  a <- eitherP cmpOp ops
+  case a of
+    Left cmp -> M.MAC <$> (M.IFX cmp <$> ops <*> ops)
+    Right op -> M.PRIM <$> (M.IF op <$> ops)
+
+primOrMac :: Parser M.ParsedOp
+primOrMac = ((M.MAC <$> ifCmpMac) <|> ifOrIfX)
+  <|> ((M.MAC <$> mapCadrMac) <|> (M.PRIM <$> mapOp))
+  <|> (try (M.PRIM <$> pairOp) <|> M.MAC <$> pairMac)
