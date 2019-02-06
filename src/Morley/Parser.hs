@@ -116,7 +116,7 @@ field = lexeme (fi <|> parens fi)
 
 
 type_ :: Parser M.Type
-type_ = (ti <|> parens ti) <|> (customFailure $ UnknownTypeException)
+type_ = (ti <|> parens ti) <|> (customFailure UnknownTypeException)
   where
     ti = snd <$> (lexeme $ typeInner (pure Nothing))
 
