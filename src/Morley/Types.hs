@@ -49,12 +49,12 @@ import qualified Text.Show
 -- Types for the parser
 -------------------------------------
 
-data CustomParserException = CustomParserException String
+data CustomParserException = UnknownTypeException | OddNumberBytesException
   deriving (Eq, Data, Ord, Show)
 
 instance ShowErrorComponent CustomParserException where
-  showErrorComponent (CustomParserException msg) =
-    "parser error: " ++ msg
+  showErrorComponent UnknownTypeException = "unknown type"
+  showErrorComponent OddNumberBytesException = "odd number bytes"
 
 type Parser = Parsec CustomParserException T.Text
 instance Default a => Default (Parser a)         where def = pure def

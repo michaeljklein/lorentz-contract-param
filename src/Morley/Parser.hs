@@ -59,7 +59,7 @@ bytesLiteral = try $ do
   let (bytes, remain) = B16.decode $ encodeUtf8 hexdigits
   if remain == ""
   then return $ M.ValueBytes bytes
-  else error "odd number bytes" -- TODO: better errors
+  else customFailure OddNumberBytesException
 
 -- this parses more escape sequences than are in the michelson spec
 -- should investigate which sequences this matters for, e.g. \xa == \n
@@ -116,7 +116,7 @@ field = lexeme (fi <|> parens fi)
 
 
 type_ :: Parser M.Type
-type_ = (ti <|> parens ti) <|> (customFailure $ CustomParserException "expecting type parameter")
+type_ = (ti <|> parens ti) <|> (customFailure $ UnknownTypeException)
   where
     ti = snd <$> (lexeme $ typeInner (pure Nothing))
 
