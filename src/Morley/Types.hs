@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 module Morley.Types
   (
@@ -20,13 +21,6 @@ module Morley.Types
 
   -- Parser types
   , Parser
-{-
-  , Program (..)
-  , Pragma (..)
-  , PragmaState
-  , allPragmas
-  , mkPragmaState
--}
   , ParserException(..)
 
   -- * Typechecker types
@@ -42,8 +36,6 @@ module Morley.Types
   ) where
 
 import Data.Data (Data(..))
-import Data.Map.Lazy (Map)
-import qualified Data.Map.Lazy as Map
 import qualified Data.Text as T
 import Michelson.Types
   (CT(..), Comparable(..), Contract(..), Elt(..), FieldNote, Instr, InstrAbstract(..), Op(..),
@@ -64,19 +56,6 @@ data ParserException = ParserException (ParseErrorBundle T.Text Void)
 instance Exception ParserException where
   displayException (ParserException bundle) = errorBundlePretty bundle
 
-{-
-data Pragma = NULL | XTupleSyntax | XADTs deriving (Show, Read, Ord, Eq, Enum, Bounded)
-
-allPragmas :: [Pragma]
-allPragmas = [minBound :: Pragma ..]
-
-mkPragmaState :: [Pragma] -> PragmaState
-mkPragmaState ps = Map.fromList $ (,Prelude.False) <$> ps
-
-type PragmaState = Map Pragma Bool
-
-data Program = Program { cont :: Contract ParsedOp, pragmaState :: PragmaState}
--}
 -------------------------------------
 -- Types produced by parser
 -------------------------------------

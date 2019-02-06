@@ -17,12 +17,8 @@ import Text.Megaparsec
 import Text.Megaparsec.Char hiding (string')
 import qualified Text.Megaparsec.Char.Lexer as L
 
-import qualified Morley.Macro as Macro
---import Morley.Types
---  (ParsedOp(..), Parser, ParserException(..), Pragma(..), PragmaState, Program(..))
---import Data.Map.Lazy (Map)
---import qualified Data.Map.Lazy as Map
 import Morley.Lexer
+import qualified Morley.Macro as Macro
 import Morley.Parser.Annotations
 import Morley.Types (ParsedOp(..), Parser, ParserException(..))
 import qualified Morley.Types as M
@@ -30,21 +26,6 @@ import qualified Morley.Types as M
 -------------------------------------------------------------------------------
 -- Top Level Parsers
 -------------------------------------------------------------------------------
-
-{-
-program :: Parser M.Program
-program = do
-  ps <- many pragma
-  c <- contract ps
-  return $ M.Program c (M.mkPragmaState ps)
-
-pragma :: Parser M.Pragma
-pragma =
-  string "#pragma " >>
-  choice $ mkParser <$> M.allPragmas
-  where
-    mkParser p = try $ symbol (show p :: T.Text) >> return p
--}
 
 contract :: Parser (M.Contract ParsedOp)
 contract = do
@@ -411,7 +392,7 @@ sha512Op   = do symbol' "SHA512"; M.SHA512 <$> noteVDef
 hashKeyOp  = do symbol' "HASH_KEY"; M.HASH_KEY <$> noteVDef
 
 {- Type operations -}
-castOp = do symbol' "CAST"; t <- noteTDef; M.CAST t <$> noteVDef
+castOp = do symbol' "CAST"; t <- type_; M.CAST t <$> noteVDef
 renameOp = do symbol' "RENAME"; M.RENAME <$> noteVDef
 isNatOp = do symbol' "ISNAT"; return M.ISNAT
 intOp = do symbol' "INT"; M.INT <$> noteVDef

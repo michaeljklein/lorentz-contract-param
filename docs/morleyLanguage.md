@@ -67,7 +67,7 @@ When bars are nested, parenthesis may be omitted:
 Annotations follow the same pattern as Tuples:
 
 ```
-(a, b, c) :t %f ~ (a, (b, c)) :t %f
+(a | b | c) :t %f ~ (a | (b | c)) :t %f
 (a :ta %fa | b :tb %fb | c :tc %fc) ~ (a :ta %fa | (b :tb %fb | c :tc %fc))
 ```
 
@@ -104,7 +104,7 @@ The `list` and `set` types may be written:
 
 ## Instruction syntax:
 
-Instructions may be written in lower case:
+Instructions and macros may be written in lower case:
 
 ```
 DROP ~ drop

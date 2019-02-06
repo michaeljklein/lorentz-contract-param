@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
 module Morley.Lexer (
     lexeme
   , mSpace
@@ -26,7 +27,6 @@ mSpace = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "/*" "*/")
 
 symbol = L.symbol mSpace
 symbol' str = symbol str <|> symbol (T.map toLower str)
-
 string' str = string str <|> string (T.map toLower str)
 
 parens :: Parser a -> Parser a

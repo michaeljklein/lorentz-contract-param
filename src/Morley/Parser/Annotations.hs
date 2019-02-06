@@ -1,5 +1,6 @@
-module Morley.Parser.Annotations (
-  note
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+module Morley.Parser.Annotations
+  ( note
   , noteT
   , noteV
   , noteF

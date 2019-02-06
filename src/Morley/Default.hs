@@ -1,6 +1,6 @@
-module Morley.Default (
-    permute2Def
-  , permute3Def
+{-# OPTIONS_GHC -Wno-orphans #-}
+module Morley.Default
+  ( permute2Def , permute3Def
   , Default (..)
   ) where
 
