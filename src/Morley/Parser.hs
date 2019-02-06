@@ -64,39 +64,26 @@ data_ :: Parser (M.Value ParsedOp)
 data_ = lexeme $ dataInner <|> parens dataInner
   where
     dataInner :: Parser (M.Value M.ParsedOp)
-    dataInner = try (M.Int <$> intLiteral)
-          <|> try (M.String <$> stringLiteral)
-          <|> try (M.Bytes <$> bytesLiteral)
-          <|> do symbol "Unit"; return M.Unit
-          <|> do symbol "True"; return M.True
-          <|> do symbol "False"; return M.False
-          <|> do symbol "Pair"; a <- data_; M.Pair a <$> data_
-          <|> do symbol "Left"; M.Left <$> data_
-          <|> do symbol "Right"; M.Right <$> data_
-          <|> do symbol "Some"; M.Some <$> data_
-          <|> do symbol "None"; return M.None
-          <|> try (M.Seq <$> listValue)
-          <|> try (M.Map <$> mapValue)
-          <|> M.DataOps <$> ops
+    dataInner = choice $
+      [ intLiteral, stringLiteral, bytesLiteral, unitValue
+      , trueValue, falseValue, pairValue, leftValue, rightValue
+      , someValue, noneValue, seqValue, mapValue, dataOps
+      ]
 
-listValue = braces $ sepEndBy data_ semicolon
-eltValue = do symbol "Elt"; M.Elt <$> data_ <*> data_
-mapValue = braces $ sepEndBy eltValue semicolon
-
-intLiteral = L.signed (return ()) L.decimal
-
-bytesLiteral = do
+-- Literals
+intLiteral = try $ M.Int <$> (L.signed (return ()) L.decimal)
+bytesLiteral = try $ do
   symbol "0x"
   hexdigits <- takeWhile1P Nothing Char.isHexDigit
   let (bytes, remain) = B16.decode $ encodeUtf8 hexdigits
   if remain == ""
-  then return bytes
+  then return $ M.Bytes bytes
   else error "odd number bytes" -- TODO: better errors
 
 -- this parses more escape sequences than are in the michelson spec
 -- should investigate which sequences this matters for, e.g. \xa == \n
-stringLiteral :: Parser T.Text
-stringLiteral = T.pack <$> (char '"' >> manyTill L.charLiteral (char '"'))
+stringLiteral = try $ M.String <$>
+  (T.pack <$> (char '"' >> manyTill L.charLiteral (char '"')))
 
 {-
 -- could do something explicit based on this
@@ -109,6 +96,33 @@ strEscape = char '\\' >> esc
       <|> (char '\\' >> return "\\")
       <|> (char '"' >> return "\"")
 -}
+unitValue = do symbol "Unit"; return M.Unit
+trueValue = do symbol "True"; return M.True
+falseValue = do symbol "False"; return M.False
+pairValue = core <|> tuple
+  where
+    core = try $ do symbol "Pair"; a <- data_; M.Pair a <$> data_
+    tuple = try $ do
+      symbol "("
+      a <- data_
+      comma
+      b <- tupleInner <|> data_
+      symbol ")"
+      return $ M.Pair a b
+    tupleInner = try $ do
+      a <- data_
+      comma
+      b <- tupleInner <|> data_
+      return $ M.Pair a b
+
+leftValue = do symbol "Left"; M.Left <$> data_
+rightValue = do symbol "Right"; M.Right <$> data_
+someValue = do symbol "Some"; M.Some <$> data_
+noneValue = do symbol "None"; return M.None
+dataOps = M.DataOps <$> ops
+seqValue = M.Seq <$> (braces $ sepEndBy data_ semicolon)
+eltValue = do symbol "Elt"; M.Elt <$> data_ <*> data_
+mapValue = M.Map <$> (braces $ sepEndBy eltValue semicolon)
 
 -------------------------------------------------------------------------------
 -- Types
@@ -172,10 +186,15 @@ t_pair fp = core <|> tuple
       symbol "("
       (l, a) <- field
       comma
-      (r, b) <- field
+      (r, b) <- tupleInner <|> field
       symbol ")"
       (f, t) <- fieldType fp
       return (f, M.Type (M.T_pair l r a b) t)
+    tupleInner = try $ do
+      (l, a) <- field
+      comma
+      (r, b) <- tupleInner <|> field
+      return (Nothing, M.Type (M.T_pair l r a b) Nothing)
 
 t_or fp = core <|> bar
   where
@@ -189,14 +208,23 @@ t_or fp = core <|> bar
       symbol "("
       (l, a) <- field
       symbol "|"
-      (f, t) <- fieldType fp
-      (r, b) <- field
+      (r, b) <- barInner <|> field
       symbol ")"
+      (f, t) <- fieldType fp
       return (f, M.Type (M.T_or l r a b) t)
+    barInner = try $ do
+      (l, a) <- field
+      symbol "|"
+      (r, b) <- barInner <|> field
+      return (Nothing, M.Type (M.T_or l r a b) Nothing)
 
-t_option fp = (do symbol "option"; (f, t) <- fieldType fp; (fa, a) <- field; return (f, M.Type (M.T_option fa a) t))
+t_option fp = do
+  symbol "option"
+  (f, t) <- fieldType fp
+  (fa, a) <- field
+  return (f, M.Type (M.T_option fa a) t)
 
-t_lambda fp = core <|> slash
+t_lambda fp = core <|> slashLambda
   where
     core = try $ do
       symbol "lambda"
@@ -204,7 +232,7 @@ t_lambda fp = core <|> slash
       a <- type_
       b <- type_
       return (f, M.Type (M.T_lambda a b) t)
-    slash = try $ do
+    slashLambda = try $ do
       symbol "\\"
       (f, t) <- fieldType fp
       a <- type_
@@ -213,11 +241,32 @@ t_lambda fp = core <|> slash
       return (f, M.Type (M.T_lambda a b) t)
 
 -- Container types
-t_list fp = (do symbol "list"; (f, t) <- fieldType fp; a <- type_; return (f, M.Type (M.T_list a) t))
-t_set fp = (do symbol "set"; (f, t) <- fieldType fp; a <- comparable; return (f, M.Type (M.T_set a) t))
+t_list fp = core <|> bracketList
+  where
+    core = try $ do
+      symbol "list"
+      (f, t) <- fieldType fp
+      a <- type_
+      return (f, M.Type (M.T_list a) t)
+    bracketList = try $ do
+      a <- brackets type_
+      (f, t) <- fieldType fp
+      return (f, M.Type (M.T_list a) t)
+
+t_set fp = core <|> braceSet
+  where
+    core = try $ do
+      symbol "set"
+      (f, t) <- fieldType fp
+      a <- comparable
+      return (f, M.Type (M.T_set a) t)
+    braceSet = try $ do
+      a <- braces comparable
+      (f, t) <- fieldType fp
+      return (f, M.Type (M.T_set a) t)
+
 t_map fp = (do symbol "map"; (f, t) <- fieldType fp; a <- comparable; b <- type_; return (f, M.Type (M.T_map a b) t))
 t_big_map fp = (do symbol "big_map"; (f, t) <- fieldType fp; a <- comparable; b <- type_; return (f, M.Type (M.T_big_map a b) t))
-
 
 {- Operations Parsers -}
 ops :: Parser [M.ParsedOp]

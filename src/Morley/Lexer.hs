@@ -6,6 +6,7 @@ module Morley.Lexer (
   , string'
   , parens
   , braces
+  , brackets
   , semicolon
   , comma
   ) where
@@ -33,6 +34,9 @@ parens = between (symbol "(") (symbol ")")
 
 braces :: Parser a -> Parser a
 braces = between (symbol "{") (symbol "}")
+
+brackets :: Parser a -> Parser a
+brackets = between (symbol "[") (symbol "]")
 
 semicolon = symbol ";"
 comma = symbol ","
