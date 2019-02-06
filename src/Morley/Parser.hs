@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 
 module Morley.Parser
   ( contract
@@ -13,13 +12,11 @@ import Prelude hiding (many, note, some, try)
 import Control.Applicative.Permutations
 import qualified Data.ByteString.Base16 as B16
 import Data.Char as Char
-import Data.Data
 import qualified Data.Text as T
 
 import Text.Megaparsec
 import Text.Megaparsec.Char hiding (string')
 import qualified Text.Megaparsec.Char.Lexer as L
-import qualified Text.Show
 
 import Morley.Lexer
 import qualified Morley.Macro as Macro
