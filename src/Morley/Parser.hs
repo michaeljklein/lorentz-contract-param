@@ -3,7 +3,8 @@
 
 module Morley.Parser
   ( contract
-  , ParserException(..)
+  , ParserException (..)
+  , stringLiteral
   ) where
 
 import Prelude hiding (many, note, some, try)
@@ -61,22 +62,31 @@ bytesLiteral = try $ do
   then return $ M.ValueBytes bytes
   else customFailure OddNumberBytesException
 
--- this parses more escape sequences than are in the michelson spec
--- should investigate which sequences this matters for, e.g. \xa == \n
+stringLiteral :: Parser (M.Value ParsedOp)
 stringLiteral = try $ M.ValueString <$>
-  (T.pack <$> (char '"' >> manyTill L.charLiteral (char '"')))
+  (T.pack <$>
+    ((++) <$>
+      (concat <$> (string "\"" >> Text.Megaparsec.many validChar)) <*>
+      (concat <$> (manyTill (strLineBreak <|> customFailure UnexpectedLineBreak) (symbol "\"")))
+    )
+  )
+  where
+    validChar :: Parser String
+    validChar =
+      try strEscape <|> ((:[]) <$> satisfy (\x -> x /= '"' && x /= '\\'))
 
-{-
--- could do something explicit based on this
-strEscape :: Parser T.Text
+strEscape :: Parser String
 strEscape = char '\\' >> esc
   where
-    esc = (char 'n' >> return "\n")
-      <|> (char 't' >> return "\t")
+    esc = (char 't' >> return "\t")
       <|> (char 'b' >> return "\b")
       <|> (char '\\' >> return "\\")
       <|> (char '"' >> return "\"")
--}
+
+strLineBreak :: Parser String
+strLineBreak =
+  char '\\' >> (char 'n' >> return "\n") <|> (char 'r' >> return "\r")
+
 unitValue = do symbol "Unit"; return M.ValueUnit
 trueValue = do symbol "True"; return M.ValueTrue
 falseValue = do symbol "False"; return M.ValueFalse
