@@ -115,6 +115,7 @@ seqValue = M.ValueSeq <$> (braces $ sepEndBy value semicolon)
 eltValue = do symbol "Elt"; M.Elt <$> value <*> value
 mapValue = M.ValueMap <$> (braces $ sepEndBy eltValue semicolon)
 
+
 -------------------------------------------------------------------------------
 -- Types
 -------------------------------------------------------------------------------
