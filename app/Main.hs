@@ -3,7 +3,7 @@ module Main
   ) where
 
 import Data.Text.IO (getContents)
-import Morley.Macro (expandContractMacros)
+import Morley.Macro (expandProgramMacros)
 import qualified Morley.Parser as P
 
 import System.Console.ArgParser
@@ -37,10 +37,10 @@ main = do
         code <- case filename of
           "stdin" -> getContents
           _ -> readFile filename
-        case parse P.contract filename code of
-          Right contract
-            | hasExpandMacros -> pPrint $ expandContractMacros contract
-            | otherwise -> pPrint contract
+        case parse (P.noEnv P.program) filename code of
+          Right program
+            | hasExpandMacros -> pPrint $ expandProgramMacros program
+            | otherwise -> pPrint program
           Left e -> throwM $ P.ParserException e
       TypeCheck _filename _hasVerboseFlag -> error "Not implemented yet:("
       Run _filename _storage _input _hasVerboseFlag -> error "Not implemented yet:("

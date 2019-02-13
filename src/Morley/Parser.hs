@@ -2,8 +2,10 @@
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
 
 module Morley.Parser
-  ( contract
+  ( program
+  , noEnv
   , ParserException(..)
+  , Program (..)
   ) where
 
 import Prelude hiding (many, note, some, try)
@@ -20,12 +22,28 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import Morley.Lexer
 import qualified Morley.Macro as Macro
 import Morley.Parser.Annotations
-import Morley.Types (ParsedOp(..), Parser, ParserException(..))
+import Morley.Types (ParsedOp(..), Parser, ParserException(..), Program(..))
 import qualified Morley.Types as M
 
 -------------------------------------------------------------------------------
 -- Top Level Parsers
 -------------------------------------------------------------------------------
+
+program :: Parser Program
+program = do
+  ps <- many (try pragma)
+  ls <- many (try customMacro)
+  let env = (M.mkEnv ps ls)
+  c <- local (const env) contract
+  return $ Program c env
+
+noEnv :: Parser a -> Parsec Void Text a
+noEnv p = runReaderT p (M.mkEnv [] [])
+
+pragma :: Parser M.Pragma
+pragma = lexeme $ string "#pragma " >> (choice $ mkParser <$> M.allPragmas)
+  where
+    mkParser p = try $ symbol (show p :: T.Text) >> return p
 
 contract :: Parser (M.Contract ParsedOp)
 contract = do
@@ -249,13 +267,57 @@ t_set fp = core <|> braceSet
 t_map fp = (do symbol "map"; (f, t) <- fieldType fp; a <- comparable; b <- type_; return (f, M.Type (M.T_map a b) t))
 t_big_map fp = (do symbol "big_map"; (f, t) <- fieldType fp; a <- comparable; b <- type_; return (f, M.Type (M.T_big_map a b) t))
 
-{- Operations Parsers -}
+-------------------------------------------------------------------------------
+-- Stack Type Signature (Morley syntax)
+-------------------------------------------------------------------------------
+
+typeOrVar :: Parser M.Type_
+typeOrVar = (M.TyCon <$> type_) <|> (M.TyVar <$> tyVar)
+
+tyVar :: Parser M.Var
+tyVar = lexeme $ do
+  string "'"
+  v <- some (satisfy (\x -> Char.isAlphaNum x && Char.isLower x))
+  return $ T.pack v
+
+stack_ :: Parser M.StackType
+stack_ = M.StackType <$> (string "'" >> (brackets $ sepBy typeOrVar comma))
+
+stackFun :: Parser M.StackFun
+stackFun = do
+  symbol "forall"
+  vs <- some tyVar
+  symbol "."
+  a <- stack_
+  symbol "->"
+  b <- stack_
+  return $ M.StackFun vs a b
+
+customMacro :: Parser M.CustomMacro
+customMacro = lexeme $ do
+  n <- lexeme $ T.pack <$> (some alphaNumChar)
+  symbol "::"
+  s <- stackFun
+  symbol n
+  symbol "="
+  o <- ops
+  return $ M.CustomMacro n s o
+
+ {- Operations Parsers -}
 ops :: Parser [M.ParsedOp]
-ops = braces $ sepEndBy (prim' <|> mac' <|> seq') semicolon
+ops = do
+  cms <- asks M.cmacros
+  let cmac = M.CMAC <$> (mkCMac cms)
+  braces (sepEndBy (cmac <|> prim' <|> mac' <|> seq') semicolon)
   where
     prim' = M.PRIM <$> try prim
     mac'  = M.MAC <$> try macro
     seq'  = M.SEQ <$> try ops
+
+mkCMac :: [M.CustomMacro] -> Parser M.CustomMacro
+mkCMac cms = choice $ mkParser <$> cms
+  where
+    mkParser cm = (try $ symbol (M.cm_name cm)) >> return cm
 
 prim :: Parser M.ParsedInstr
 prim = choice

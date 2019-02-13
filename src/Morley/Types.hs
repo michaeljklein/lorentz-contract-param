@@ -22,6 +22,11 @@ module Morley.Types
   -- Parser types
   , Parser
   , ParserException(..)
+  , Program (..)
+  , Pragma (..)
+  , allPragmas
+  , mkEnv
+  , Env (..)
 
   -- * Typechecker types
   , ExpandedInstr
@@ -33,28 +38,58 @@ module Morley.Types
   , CadrStruct (..)
   , Macro (..)
   , ParsedInstr
+
+  -- * Stack
+  , StackType(..)
+  , StackFun(..)
+  , Var
+  , Type_(..)
+  , CustomMacro (..)
   ) where
 
+import Control.Monad.Reader
 import Data.Data (Data(..))
+import qualified Data.Map.Lazy as Map
 import qualified Data.Text as T
 import Michelson.Types
   (CT(..), Comparable(..), Contract(..), Elt(..), FieldNote, Instr, InstrAbstract(..), Op(..),
   Parameter, Storage, T(..), Type(..), TypeNote, Value(..), VarNote)
 import Morley.Default (Default(..))
 import Text.Megaparsec
-
 -------------------------------------
 -- Types for the parser
 -------------------------------------
 
-type Parser = Parsec Void T.Text
-instance Default a => Default (Parser a)         where def = pure def
+type PragmaState = Map Pragma Bool
+type CMacroState = [CustomMacro]
+data Env = Env { pragmas :: PragmaState, cmacros :: CMacroState }
+  deriving (Show, Eq)
+
+type Parser = ReaderT Env (Parsec Void T.Text)
+
+instance Default a => Default (Parser a) where
+  def = pure def
 
 data ParserException = ParserException (ParseErrorBundle T.Text Void)
   deriving (Show)
 
 instance Exception ParserException where
   displayException (ParserException bundle) = errorBundlePretty bundle
+
+data Program = Program (Contract ParsedOp) Env
+  deriving (Show, Eq)
+
+data Pragma = XContractMain
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
+
+allPragmas :: [Pragma]
+allPragmas = [minBound :: Pragma ..]
+
+mkPragmaState :: [Pragma] -> PragmaState
+mkPragmaState ps = Map.fromList $ (,Prelude.False) <$> ps
+
+mkEnv :: [Pragma] -> [CustomMacro] -> Env
+mkEnv ps cs = Env (Map.fromList $ (,Prelude.False) <$> ps) cs
 
 -------------------------------------
 -- Types produced by parser
@@ -63,6 +98,7 @@ type ParsedInstr = InstrAbstract ParsedOp
 data ParsedOp =
     PRIM ParsedInstr
   | MAC Macro
+  | CMAC CustomMacro
   | SEQ [ParsedOp]
   deriving (Eq, Show)
 
@@ -100,3 +136,16 @@ data Macro =
   | ASSERT_RIGHT
   | IF_SOME [ParsedOp] [ParsedOp]
   deriving (Eq, Show)
+
+-- Stack Type
+type Var = T.Text
+data Type_ = TyVar Var | TyCon Type deriving (Eq, Show)
+data StackType = StackType [Type_] deriving (Eq, Show)
+data StackFun = StackFun [Var] StackType StackType deriving (Eq, Show)
+
+data CustomMacro = CustomMacro
+  { cm_name :: T.Text
+  , cm_sig :: StackFun
+  , cm_expr :: [ParsedOp]
+  } deriving (Eq, Show)
+

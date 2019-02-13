@@ -3,7 +3,7 @@ module Test.Parser
   ) where
 
 import Data.List (isSuffixOf)
-import Morley.Parser (contract)
+import Morley.Parser (noEnv, program)
 import System.Directory (listDirectory)
 import Test.Hspec (Expectation, Spec, describe, it, shouldSatisfy)
 import Text.Megaparsec (parse)
@@ -23,4 +23,4 @@ parseContractsTest = do
 checkFile :: FilePath -> Expectation
 checkFile file = do
   code <- readFile file
-  parse contract file code `shouldSatisfy` isRight
+  parse (noEnv program) file code `shouldSatisfy` isRight
