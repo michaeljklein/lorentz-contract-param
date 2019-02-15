@@ -38,8 +38,8 @@ note c = lexeme $ string c >> (note' <|> emptyNote)
     emptyNote = pure ""
     note' = do
       a <- string "@"
-           <|> string "%"
            <|> string "%%"
+           <|> string "%"
            <|> T.singleton <$> satisfy (\ x -> isAlpha x && isAscii x)
       let validChar x =
             isAscii x && (isAlphaNum x || x == '\\' || x == '.' || x == '_')
@@ -77,6 +77,7 @@ notesTV = permute2Def noteT noteV
 notesVF :: Parser (M.VarNote, M.FieldNote)
 notesVF  = permute2Def noteV noteF
 
-fieldType fp = runPermutation $
+fieldType :: Parser M.FieldNote -> Parser (M.FieldNote, M.TypeNote)
+fieldType fp = try $ runPermutation $
   (,) <$> toPermutationWithDefault  def     fp
       <*> toPermutationWithDefault Nothing noteT

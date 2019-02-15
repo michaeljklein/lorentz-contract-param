@@ -132,7 +132,6 @@ field = lexeme (fi <|> parens fi)
   where
     fi = typeInner noteF
 
-
 type_ :: Parser M.Type
 type_ = (ti <|> parens ti)
   where
@@ -271,31 +270,48 @@ t_big_map fp = (do symbol "big_map"; (f, t) <- fieldType fp; a <- comparable; b 
 -- Stack Type Signature (Morley syntax)
 -------------------------------------------------------------------------------
 
-typeOrVar :: Parser M.Type_
-typeOrVar = (M.TyCon <$> type_) <|> (M.TyVar <$> tyVar)
+tyVar :: Parser M.TyVar
+tyVar = (M.TyCon <$> type_) <|> (M.VarID <$> varID)
 
-tyVar :: Parser M.Var
-tyVar = lexeme $ do
-  string "'"
-  v <- some (satisfy (\x -> Char.isAlphaNum x && Char.isLower x))
-  return $ T.pack v
+lowerAlphaNumChar :: Parser Char
+lowerAlphaNumChar = satisfy (\x -> Char.isLower x || Char.isDigit x)
 
-stack_ :: Parser M.StackType
-stack_ = M.StackType <$> (string "'" >> (brackets $ sepBy typeOrVar comma))
+varID :: Parser M.Var
+varID = lexeme $ do
+  v <- lowerChar
+  vs <- many lowerAlphaNumChar
+  return $ T.pack (v:vs)
+
+stack_ :: Parser a -> Parser (M.Stack a)
+stack_ p = symbol "[" >> (emptyStk <|> stkCons <|> stkRest)
+  where
+    emptyStk = try $ symbol "]" >> return M.StkEmpty
+    stkRest = try $ symbol "..." >> symbol "]" >> return M.StkRest
+    stkCons = try $ do
+      t <- p
+      s <- (symbol "," >> stkCons <|> stkRest) <|> emptyStk
+      return $ M.StkCons t s
 
 stackFun :: Parser M.StackFun
 stackFun = do
   symbol "forall"
-  vs <- some tyVar
+  vs <- some varID
   symbol "."
-  a <- stack_
+  a <- (stack_ tyVar)
   symbol "->"
-  b <- stack_
+  b <- (stack_ tyVar)
   return $ M.StackFun vs a b
+
+customMacroName :: Parser T.Text
+customMacroName = lexeme $ do
+  v <- lowerChar
+  let validChar x = isAscii x && (isAlphaNum x || x == '\'' || x == '_')
+  vs <- many (satisfy validChar)
+  return $ T.pack (v:vs)
 
 customMacro :: Parser M.CustomMacro
 customMacro = lexeme $ do
-  n <- lexeme $ T.pack <$> (some alphaNumChar)
+  n <- customMacroName
   symbol "::"
   s <- stackFun
   symbol n

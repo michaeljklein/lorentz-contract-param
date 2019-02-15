@@ -40,10 +40,10 @@ module Morley.Types
   , ParsedInstr
 
   -- * Stack
-  , StackType(..)
+  , Stack(..)
   , StackFun(..)
   , Var
-  , Type_(..)
+  , TyVar(..)
   , CustomMacro (..)
   ) where
 
@@ -139,9 +139,11 @@ data Macro =
 
 -- Stack Type
 type Var = T.Text
-data Type_ = TyVar Var | TyCon Type deriving (Eq, Show)
-data StackType = StackType [Type_] deriving (Eq, Show)
-data StackFun = StackFun [Var] StackType StackType deriving (Eq, Show)
+data TyVar = VarID Var | TyCon Type deriving (Eq, Show)
+
+data Stack a = StkEmpty | StkRest | StkCons a (Stack a) deriving (Eq, Show)
+
+data StackFun = StackFun [Var] (Stack TyVar) (Stack TyVar) deriving (Eq, Show)
 
 data CustomMacro = CustomMacro
   { cm_name :: T.Text
