@@ -31,7 +31,7 @@ import qualified Morley.Types as M
 
 program :: Parser Program
 program = do
-  ps <- many (try pragma)
+  ps <- many pragma
   ls <- many (try customMacro)
   let env = (M.mkEnv ps ls)
   c <- local (const env) contract
@@ -267,6 +267,35 @@ t_map fp = (do symbol "map"; (f, t) <- fieldType fp; a <- comparable; b <- type_
 t_big_map fp = (do symbol "big_map"; (f, t) <- fieldType fp; a <- comparable; b <- type_; return (f, M.Type (M.T_big_map a b) t))
 
 -------------------------------------------------------------------------------
+-- Assertions (Morley syntax)
+-------------------------------------------------------------------------------
+
+assertion :: Parser M.Assertion
+assertion = do
+  symbol "#-"
+  n <- lexeme (T.pack <$> some alphaNumChar)
+  c <- assertionComment
+  o <- ops
+  symbol "-#"
+  return $ M.Assertion n c o
+
+assertionComment :: Parser M.AssertionComment
+assertionComment = do
+  symbol "\""
+  let validChar = T.pack <$> some (satisfy (\x -> x /= '%' && x /= '"'))
+  c <- many (Right <$> stackRef <|> Left <$> validChar)
+  symbol "\""
+  return $ M.AssertionComment c
+
+
+stackRef :: Parser M.StackRef
+stackRef = do
+  symbol "%"
+  n <- brackets L.decimal
+  return $ M.StackRef n
+
+
+-------------------------------------------------------------------------------
 -- Stack Type Signature (Morley syntax)
 -------------------------------------------------------------------------------
 
@@ -283,7 +312,7 @@ varID = lexeme $ do
   return $ T.pack (v:vs)
 
 stack_ :: Parser a -> Parser (M.Stack a)
-stack_ p = symbol "[" >> (emptyStk <|> stkCons <|> stkRest)
+stack_ p = symbol "'[" >> (emptyStk <|> stkCons <|> stkRest)
   where
     emptyStk = try $ symbol "]" >> return M.StkEmpty
     stkRest = try $ symbol "..." >> symbol "]" >> return M.StkRest
@@ -294,9 +323,7 @@ stack_ p = symbol "[" >> (emptyStk <|> stkCons <|> stkRest)
 
 stackFun :: Parser M.StackFun
 stackFun = do
-  symbol "forall"
-  vs <- some varID
-  symbol "."
+  vs <- fromMaybe [] <$> (optional (symbol "forall" >> some varID <* symbol "."))
   a <- (stack_ tyVar)
   symbol "->"
   b <- (stack_ tyVar)
@@ -324,11 +351,12 @@ ops :: Parser [M.ParsedOp]
 ops = do
   cms <- asks M.cmacros
   let cmac = M.CMAC <$> (mkCMac cms)
-  braces (sepEndBy (cmac <|> prim' <|> mac' <|> seq') semicolon)
+  braces (sepEndBy (cmac <|> asrt <|> prim' <|> mac' <|> seq') semicolon)
   where
     prim' = M.PRIM <$> try prim
     mac'  = M.MAC <$> try macro
     seq'  = M.SEQ <$> try ops
+    asrt  = M.ASRT <$> try assertion
 
 mkCMac :: [M.CustomMacro] -> Parser M.CustomMacro
 mkCMac cms = choice $ mkParser <$> cms

@@ -30,16 +30,16 @@ A stack signature can be either an empty stack, a list of types, or a pattern
 match on the head of the stack:
 
 ```
-Empty stack: []
-stack of three int: [int, int, int]
-A pattern match on a stack with two int at the top: [int, int, ...]
+Empty stack: '[]
+stack of three int: '[int, int, int]
+A pattern match on a stack with two int at the top: '[int, int, ...]
 ```
 
 More formally, a stack signature is like a `cons` list with two distinct
 `nil`-like terminators:
 
 ```
-<stack-sig> := "[" <empty-stack> | <rest-of-stack> | <stack-cons> 
+<stack-sig> := "'[" <empty-stack> | <rest-of-stack> | <stack-cons> 
 <empty-stack> := "]"
 <rest-of-stack> := "...]"
 <stack-cons> := <type> (("," (<stack-cons> | <stack-rest)) | <empty-stack>)
@@ -63,7 +63,7 @@ A macros may be defined by including the following syntax outside of the `code`,
 As a concrete example:
 
 ```
-add3 :: [int, ...] -> [int, ...]
+add3 :: '[int, ...] -> '[int, ...]
 add3 = {push int 3; add;}
 ```
 
@@ -77,7 +77,7 @@ pattern matches must be identical.
 For example, the type signature of 
 
 ```
-add3 :: [int, ...] -> [int, ...]
+add3 :: '[int, ...] -> [int, ...]
 add3 = {push int 3; add;}
 ```
 
@@ -104,10 +104,9 @@ swap :: forall a b. [a, b, ...] -> [b, a, ...]
 Morley supports the following interpreter directives:
 
 ```
-<directive> := <check> | <assert> | <import> | <pragma>
+<directive> := <check> | <import> | <pragma>
 <import> := "#import" <filepath>
 <check> := "#check" <property>
-<assert> := "#assert" <assertion>
 <pragma> := "#pragma" <pragma>
 ```
 
@@ -177,8 +176,42 @@ Properties can also be split across multiple lines:
 # == {push int 2; push int ?A; add;} [2]
 ```
 
-### Assertions
-TBD
+### Assertions/Predicates
+
+An inline assertion is a labeled sequence of instructions that runs in parallel
+to the main sequence for testing purposes. That is, an assertion has no actual
+effect on the program, but can run tests on intermediate stack states.
+
+For example, suppose we want to verify that the sum of two numbers is greater
+than 10:
+
+```
+sumIsGreaterThan10 :: '[int, int] -> '[bool]
+sumIsGreaterThan10 = {add; push int 10; compare}
+
+parameter unit;
+storage unit;
+code { DROP;
+       PUSH int 2; 
+       PUSH int 10;
+       #- Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;} -#;
+       DROP; UNIT; NIL operation; PAIR; };
+
+```
+
+The syntax:
+
+```
+#- Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;} -#;
+```
+
+is identical in effect to  a `NOOP`, but runs the macro `sumIsGreaterThan10` on
+the stack state at its location.
+
+In the above, `Test1` is the assertion name, `"%[0] + %[1] > 10"` is a
+comment to be printed during execution. The syntax `%[0]` is a reference into
+the stack and prints the `n`-th stack element from the head.
+
 ### Pragmas
 TBD
 

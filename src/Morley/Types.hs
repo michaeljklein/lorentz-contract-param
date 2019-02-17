@@ -45,6 +45,10 @@ module Morley.Types
   , Var
   , TyVar(..)
   , CustomMacro (..)
+  -- * Assertion
+  , Assertion (..)
+  , AssertionComment (..)
+  , StackRef (..)
   ) where
 
 import Control.Monad.Reader
@@ -60,10 +64,6 @@ import Text.Megaparsec
 -- Types for the parser
 -------------------------------------
 
-type PragmaState = Map Pragma Bool
-type CMacroState = [CustomMacro]
-data Env = Env { pragmas :: PragmaState, cmacros :: CMacroState }
-  deriving (Show, Eq)
 
 type Parser = ReaderT Env (Parsec Void T.Text)
 
@@ -76,6 +76,13 @@ data ParserException = ParserException (ParseErrorBundle T.Text Void)
 instance Exception ParserException where
   displayException (ParserException bundle) = errorBundlePretty bundle
 
+-- Parser Environment
+--
+type PragmaState = Map Pragma Bool
+type CMacroState = [CustomMacro]
+data Env = Env { pragmas :: PragmaState, cmacros :: CMacroState }
+  deriving (Show, Eq)
+--
 data Program = Program (Contract ParsedOp) Env
   deriving (Show, Eq)
 
@@ -99,8 +106,32 @@ data ParsedOp =
     PRIM ParsedInstr
   | MAC Macro
   | CMAC CustomMacro
+  | ASRT Assertion
   | SEQ [ParsedOp]
   deriving (Eq, Show)
+
+-- Stack Type
+type Var = T.Text
+data TyVar = VarID Var | TyCon Type deriving (Eq, Show)
+data Stack a = StkEmpty | StkRest | StkCons a (Stack a) deriving (Eq, Show)
+data StackFun = StackFun [Var] (Stack TyVar) (Stack TyVar) deriving (Eq, Show)
+
+-- CustomMacro
+data CustomMacro = CustomMacro
+  { cm_name :: T.Text
+  , cm_sig :: StackFun
+  , cm_expr :: [ParsedOp]
+  } deriving (Eq, Show)
+
+-- Assertion
+data Assertion = Assertion
+  { asrt_name :: T.Text
+  , asrt_comment :: AssertionComment
+  , assertionInstrs :: [ParsedOp]
+  } deriving (Eq, Show)
+
+newtype AssertionComment = AssertionComment [Either T.Text StackRef] deriving (Eq, Show)
+newtype StackRef = StackRef Integer deriving (Eq, Show)
 
 -------------------------------------
 -- Types after macroexpander
@@ -136,18 +167,4 @@ data Macro =
   | ASSERT_RIGHT
   | IF_SOME [ParsedOp] [ParsedOp]
   deriving (Eq, Show)
-
--- Stack Type
-type Var = T.Text
-data TyVar = VarID Var | TyCon Type deriving (Eq, Show)
-
-data Stack a = StkEmpty | StkRest | StkCons a (Stack a) deriving (Eq, Show)
-
-data StackFun = StackFun [Var] (Stack TyVar) (Stack TyVar) deriving (Eq, Show)
-
-data CustomMacro = CustomMacro
-  { cm_name :: T.Text
-  , cm_sig :: StackFun
-  , cm_expr :: [ParsedOp]
-  } deriving (Eq, Show)
 

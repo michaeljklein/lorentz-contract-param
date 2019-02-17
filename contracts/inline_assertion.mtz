@@ -1,0 +1,12 @@
+#pragma XContractMain
+
+sumis :: '[int, int] -> '[bool]
+sumis = {add; push int 10; compare}
+
+parameter unit;
+storage unit;
+code { DROP;
+       PUSH int 2; 
+       PUSH int 10;
+       #- Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;} -#;
+       DROP; UNIT; NIL operation; PAIR; };
