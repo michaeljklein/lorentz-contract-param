@@ -47,24 +47,34 @@ More formally, a stack signature is like a `cons` list with two distinct
 
 Stack signatures are used in custom macro definitions and inline assertions
 
-## Macros/Expressions
+## Let blocks
 
 In addition to the built-in macros defined in the Michelson specification,
-Morley allows the programmer to define their own custom macros.
-
-A macros may be defined by including the following syntax outside of the `code`,
-`parameter` and `storage` blocks:
+Morley allows the programmer to define their own custom macros, as well as value
+and type synonyms.
 
 ```
-<macro> := <macro-name> "::" <stack-sig> "->" <stack-sig> \n
-           <macro-name> "=" <instructions>
+let {<let>};
+
+<let> := type <string> = type;
+    | <string> :: <type> = <value>;
+    | <string> :: <type-sig> = {op};
 ```
 
 As a concrete example:
 
 ```
-add3 :: '[int, ...] -> '[int, ...]
-add3 = {push int 3; add;}
+let {
+  type num = int;
+  Three :: int = 3;
+  add3 :: '[int] -> '[int] = {push int 3; add;};
+};
+```
+
+Regarding the macro definition in the above:
+
+```
+add3 :: '[int] -> '[int] = {push int 3; add;};
 ```
 
 The first line of the macro declaration is the type signature, which denotes the
@@ -77,8 +87,7 @@ pattern matches must be identical.
 For example, the type signature of 
 
 ```
-add3 :: '[int, ...] -> [int, ...]
-add3 = {push int 3; add;}
+add3 :: '[int, ...] -> '[int, ...] = {push int 3; add;}
 ```
 
 would be written using the type notation from the Michelson specification as:
@@ -104,13 +113,12 @@ swap :: forall a b. [a, b, ...] -> [b, a, ...]
 Morley supports the following interpreter directives:
 
 ```
-<directive> := <check> | <import> | <pragma>
+<directive> := <import> | <pragma>
 <import> := "#import" <filepath>
-<check> := "#check" <property>
 <pragma> := "#pragma" <pragma>
 ```
 
-Directives must appear at the beginning of a line.
+Directives must appear at the beginning of a `.mtz`
 
 ### Definition importing
 
@@ -118,7 +126,7 @@ Directives must appear at the beginning of a line.
 <import> := "#import" <filepath>
 ```
 
-`#import` allows for macro definitions in other files to be brought into scope.
+`#import` allows for let definitions in other files to be brought into scope.
 
 ### Property Testing
 
@@ -129,8 +137,6 @@ Directives must appear at the beginning of a line.
 add3 :: [int, ...] -> [int, ...]
 add3 = push int 3; add;
 ```
-
-### Property syntax:
 
 The syntax for `<property>` is as follows, where `<op>` is an instruction, macro
 or sequence, `<value>` is a Michelson value, `<type>` is a Michelson type. One 
@@ -176,39 +182,35 @@ Properties can also be split across multiple lines:
 # == {push int 2; push int ?A; add;} [2]
 ```
 
-### Assertions/Predicates
+### Test assertion
 
-An inline assertion is a labeled sequence of instructions that runs in parallel
-to the main sequence for testing purposes. That is, an assertion has no actual
-effect on the program, but can run tests on intermediate stack states.
+An inline test assertion is a labeled sequence of instructions that runs in
+parallel to the main sequence for testing purposes. That is, an assertion has no
+actual effect on the program, but can run tests on intermediate stack states.
 
 For example, suppose we want to verify that the sum of two numbers is greater
 than 10:
 
 ```
-sumIsGreaterThan10 :: '[int, int] -> '[bool]
-sumIsGreaterThan10 = {add; push int 10; compare}
+sumIsGreaterThan10 :: '[int, int] -> '[bool] = {add; push int 10; compare}
 
 parameter unit;
 storage unit;
 code { DROP;
        PUSH int 2; 
        PUSH int 10;
-       #- Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;} -#;
+       TEST Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;} -#;
        DROP; UNIT; NIL operation; PAIR; };
 
 ```
 
-The syntax:
+The instruction `Test` is identical in effect to  a `NOOP`, but instructs the
+macro `sumIsGreaterThan10` on the stack state at its location. 
 
 ```
-#- Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;} -#;
+TEST Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;};
 ```
-
-is identical in effect to  a `NOOP`, but runs the macro `sumIsGreaterThan10` on
-the stack state at its location.
-
-In the above, `Test1` is the assertion name, `"%[0] + %[1] > 10"` is a
+In the above, `Test1` is the test-name, `"%[0] + %[1] > 10"` is a
 comment to be printed during execution. The syntax `%[0]` is a reference into
 the stack and prints the `n`-th stack element from the head.
 
@@ -216,15 +218,17 @@ the stack and prints the `n`-th stack element from the head.
 TBD
 
 ## Breaking language extensions
-By enabling `#pragma -XContractMain`, the `code`, `parameter` and `storage` blocks
-can be replaced with:
+By enabling `#pragma -XContractMain`, the `code`, `parameter` and `storage`, and
+`let` blocks are removed. The syntax of the file now becomes identical to a let
+block. The contract `parameter`, `storage` and `code` blocks are now defined via
+the reserved the type synonyms `parameter`, `storage` and the reserved macro
+`main`:
 
 ```
-main :: ('parameter, 'storage):'[] -> ('[operation], 'storage)
-main = .. #code goes here
+type parameter = 'parameter
+type storage = 'storage
+
+main :: '[('parameter, storage)] -> ('[operation], 'storage)
+   = .. #code goes here
 ```
-
-## Inline Testing
-
-TBD
 

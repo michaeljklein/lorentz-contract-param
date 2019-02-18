@@ -1,0 +1,13 @@
+let {
+  type num = int;
+  Three :: int = 3;
+  add3 :: '[int] -> '[int] = {push int 3; add;};
+};
+
+parameter unit;
+storage unit;
+code { DROP;
+       PUSH num Three;
+       add3;
+       DROP;
+       UNIT; NIL operation; PAIR; };

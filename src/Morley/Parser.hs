@@ -31,19 +31,22 @@ import qualified Morley.Types as M
 
 program :: Parser Program
 program = do
-  ps <- many pragma
-  ls <- many (try customMacro)
-  let env = (M.mkEnv ps ls)
+  mSpace
+  --(ps, is) <- directives
+  (lms,lvs,lts) <- fromMaybe ([], [], []) <$> (optional letBlock)
+  --cs <- checkBlock
+  let env = (M.mkEnv [] lms lvs lts)
   c <- local (const env) contract
-  return $ Program c env
+  return $ Program c env []
 
 noEnv :: Parser a -> Parsec Void Text a
-noEnv p = runReaderT p (M.mkEnv [] [])
+noEnv p = runReaderT p (M.mkEnv [] [] [] [])
 
 pragma :: Parser M.Pragma
-pragma = lexeme $ string "#pragma " >> (choice $ mkParser <$> M.allPragmas)
-  where
-    mkParser p = try $ symbol (show p :: T.Text) >> return p
+pragma = lexeme $ string "#pragma " >> (choice $ (mkParser show <$> M.allPragmas))
+
+mkParser :: (a -> T.Text) -> a -> Parser a
+mkParser f a = (try $ symbol (f a)) >> return a
 
 contract :: Parser (M.Contract ParsedOp)
 contract = do
@@ -58,7 +61,93 @@ parameter = do symbol "parameter"; type_
 storage   = do symbol "storage"; type_
 code      = do symbol "code"; ops
 
-{- Value Parsers -}
+
+-------------------------------------------------------------------------------
+-- Let block
+-------------------------------------------------------------------------------
+
+letBlock :: Parser ([M.LetMacro], [M.LetValue], [M.LetType])
+letBlock = do
+  symbol "let"
+  ls <- braces $ sepEndBy lets semicolon
+  semicolon
+  return $ splitLets ls
+
+data Lets = LetM M.LetMacro | LetV M.LetValue | LetT M.LetType
+
+splitLets :: [Lets] -> ([M.LetMacro], [M.LetValue], [M.LetType])
+splitLets ls = go ls ([], [], [])
+  where
+    go (l:ls) (lms, lvs, lts) = case l of
+      LetM lm -> go (ls) (lm:lms, lvs, lts)
+      LetV lv -> go (ls) (lms, lv:lvs, lts)
+      LetT lt -> go (ls) (lms, lvs, lt:lts)
+    go [] ls' = ls'
+
+lets :: Parser Lets
+lets = choice [ (LetM <$> (try letMacro))
+              , (LetV <$> (try letValue))
+              , (LetT <$> (try letType))
+              ]
+letName :: Parser Char -> Parser T.Text
+letName p = lexeme $ do
+  v <- p
+  let validChar x = isAscii x && (isAlphaNum x || x == '\'' || x == '_')
+  vs <- many (satisfy validChar)
+  return $ T.pack (v:vs)
+
+letMacro :: Parser M.LetMacro
+letMacro = lexeme $ do
+  n <- letName lowerChar
+  symbol "::"
+  s <- stackFun
+  symbol "="
+  o <- ops
+  return $ M.LetMacro n s o
+
+letType :: Parser M.LetType
+letType = lexeme $ do
+  symbol "type"
+  n <- letName lowerChar
+  symbol "="
+  t <- type_
+  case t of
+    (M.Type t' Nothing) -> return $ M.LetType n (M.Type t' (Just n))
+    _ -> return $ M.LetType n t
+
+letValue :: Parser M.LetValue
+letValue = lexeme $ do
+  n <- letName upperChar
+  symbol "::"
+  t <- type_
+  symbol "="
+  v <- data_
+  return $ M.LetValue n t v
+
+mkLetMac :: [M.LetMacro] -> Parser M.LetMacro
+mkLetMac lms = choice $ mkParser M.lm_name <$> lms
+
+mkLetVal :: [M.LetValue] -> Parser M.LetValue
+mkLetVal lvs = choice $ mkParser M.lv_name <$> lvs
+
+mkLetType :: [M.LetType] -> Parser M.LetType
+mkLetType lts = choice $ mkParser M.lt_name <$> lts
+
+stackFun :: Parser M.StackFun
+stackFun = do
+  vs <- fromMaybe [] <$> (optional (symbol "forall" >> some varID <* symbol "."))
+  a <- (stack_ tyVar)
+  symbol "->"
+  b <- (stack_ tyVar)
+  return $ M.StackFun vs a b
+
+-------------------------------------------------------------------------------
+-- Check block
+-------------------------------------------------------------------------------
+-- TODO
+--------------------------------------------------------------------------------
+-- Value Parsers
+--------------------------------------------------------------------------------
 data_ :: Parser (M.Value ParsedOp)
 data_ = lexeme $ dataInner <|> parens dataInner
   where
@@ -66,8 +155,13 @@ data_ = lexeme $ dataInner <|> parens dataInner
     dataInner = choice $
       [ intLiteral, stringLiteral, bytesLiteral, unitValue
       , trueValue, falseValue, pairValue, leftValue, rightValue
-      , someValue, noneValue, seqValue, mapValue, dataOps
+      , someValue, noneValue, seqValue, mapValue, dataOps, dataLetValue
       ]
+
+dataLetValue :: Parser (M.Value ParsedOp)
+dataLetValue = do
+  lvs <- asks M.letValues
+  M.lv_val <$> (mkLetVal lvs)
 
 -- Literals
 intLiteral = try $ M.Int <$> (L.signed (return ()) L.decimal)
@@ -139,8 +233,15 @@ type_ = (ti <|> parens ti)
 
 typeInner :: Parser M.FieldNote -> Parser (M.FieldNote, M.Type)
 typeInner fp = choice $ (\x -> x fp) <$>
-  [ t_ct, t_key, t_unit, t_signature, t_option, t_list, t_set
-  , t_operation, t_contract, t_pair, t_or, t_lambda, t_map, t_big_map]
+  [ t_ct, t_key, t_unit, t_signature, t_option, t_list, t_set, t_operation
+  , t_contract, t_pair, t_or, t_lambda, t_map, t_big_map, t_letType
+  ]
+
+t_letType fp = do
+  lts <- asks M.letTypes
+  lt <- M.lt_sig <$> (mkLetType lts)
+  f <- fp
+  return (f, lt)
 
 -- Comparable Types
 comparable :: Parser M.Comparable
@@ -267,26 +368,44 @@ t_map fp = (do symbol "map"; (f, t) <- fieldType fp; a <- comparable; b <- type_
 t_big_map fp = (do symbol "big_map"; (f, t) <- fieldType fp; a <- comparable; b <- type_; return (f, M.Type (M.T_big_map a b) t))
 
 -------------------------------------------------------------------------------
--- Assertions (Morley syntax)
+-- Operations Parsers
+-------------------------------------------------------------------------------
+ops :: Parser [M.ParsedOp]
+ops = do
+  lms <- asks M.letMacros
+  let lmac = M.LETMAC <$> (mkLetMac lms)
+  braces (sepEndBy (lmac <|> morley' <|> prim' <|> mac' <|> seq') semicolon)
+  where
+    prim' = M.PRIM <$> try prim
+    mac'  = M.MAC <$> try macro
+    seq'  = M.SEQ <$> try ops
+    morley' = M.MORLEY <$> morleyInstr
+
+-------------------------------------------------------------------------------
+-- Morley specific Instructions
 -------------------------------------------------------------------------------
 
-assertion :: Parser M.Assertion
-assertion = do
-  symbol "#-"
-  n <- lexeme (T.pack <$> some alphaNumChar)
-  c <- assertionComment
-  o <- ops
-  symbol "-#"
-  return $ M.Assertion n c o
+morleyInstr :: Parser M.MorleyInstr
+morleyInstr = choice [ stackOp, testOp, printOp]
 
-assertionComment :: Parser M.AssertionComment
-assertionComment = do
+stackOp = do symbol' "STACK"; M.STACK <$> (stack_ type_)
+testOp = do symbol' "TEST"; M.TEST <$> test
+printOp = do symbol' "PRINT"; M.PRINT <$> printComment
+
+test :: Parser M.Test
+test = do
+  n <- lexeme (T.pack <$> some alphaNumChar)
+  c <- printComment
+  o <- ops
+  return $ M.Test n c o
+
+printComment :: Parser M.PrintComment
+printComment = do
   symbol "\""
   let validChar = T.pack <$> some (satisfy (\x -> x /= '%' && x /= '"'))
   c <- many (Right <$> stackRef <|> Left <$> validChar)
   symbol "\""
-  return $ M.AssertionComment c
-
+  return $ M.PrintComment c
 
 stackRef :: Parser M.StackRef
 stackRef = do
@@ -294,11 +413,7 @@ stackRef = do
   n <- brackets L.decimal
   return $ M.StackRef n
 
-
--------------------------------------------------------------------------------
 -- Stack Type Signature (Morley syntax)
--------------------------------------------------------------------------------
-
 tyVar :: Parser M.TyVar
 tyVar = (M.TyCon <$> type_) <|> (M.VarID <$> varID)
 
@@ -321,47 +436,9 @@ stack_ p = symbol "'[" >> (emptyStk <|> stkCons <|> stkRest)
       s <- (symbol "," >> stkCons <|> stkRest) <|> emptyStk
       return $ M.StkCons t s
 
-stackFun :: Parser M.StackFun
-stackFun = do
-  vs <- fromMaybe [] <$> (optional (symbol "forall" >> some varID <* symbol "."))
-  a <- (stack_ tyVar)
-  symbol "->"
-  b <- (stack_ tyVar)
-  return $ M.StackFun vs a b
-
-customMacroName :: Parser T.Text
-customMacroName = lexeme $ do
-  v <- lowerChar
-  let validChar x = isAscii x && (isAlphaNum x || x == '\'' || x == '_')
-  vs <- many (satisfy validChar)
-  return $ T.pack (v:vs)
-
-customMacro :: Parser M.CustomMacro
-customMacro = lexeme $ do
-  n <- customMacroName
-  symbol "::"
-  s <- stackFun
-  symbol n
-  symbol "="
-  o <- ops
-  return $ M.CustomMacro n s o
-
- {- Operations Parsers -}
-ops :: Parser [M.ParsedOp]
-ops = do
-  cms <- asks M.cmacros
-  let cmac = M.CMAC <$> (mkCMac cms)
-  braces (sepEndBy (cmac <|> asrt <|> prim' <|> mac' <|> seq') semicolon)
-  where
-    prim' = M.PRIM <$> try prim
-    mac'  = M.MAC <$> try macro
-    seq'  = M.SEQ <$> try ops
-    asrt  = M.ASRT <$> try assertion
-
-mkCMac :: [M.CustomMacro] -> Parser M.CustomMacro
-mkCMac cms = choice $ mkParser <$> cms
-  where
-    mkParser cm = (try $ symbol (M.cm_name cm)) >> return cm
+-------------------------------------------------------------------------------
+-- Primitive Michelson Instructions
+-------------------------------------------------------------------------------
 
 prim :: Parser M.ParsedInstr
 prim = choice

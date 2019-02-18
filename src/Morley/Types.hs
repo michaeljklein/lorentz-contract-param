@@ -44,10 +44,13 @@ module Morley.Types
   , StackFun(..)
   , Var
   , TyVar(..)
-  , CustomMacro (..)
-  -- * Assertion
-  , Assertion (..)
-  , AssertionComment (..)
+  , LetMacro (..)
+  , LetValue (..)
+  , LetType (..)
+  -- * MorleyInstr
+  , MorleyInstr(..)
+  , Test (..)
+  , PrintComment (..)
   , StackRef (..)
   ) where
 
@@ -77,16 +80,18 @@ instance Exception ParserException where
   displayException (ParserException bundle) = errorBundlePretty bundle
 
 -- Parser Environment
---
 type PragmaState = Map Pragma Bool
-type CMacroState = [CustomMacro]
-data Env = Env { pragmas :: PragmaState, cmacros :: CMacroState }
-  deriving (Show, Eq)
+data Env = Env { pragmas :: PragmaState
+               , letMacros :: [LetMacro]
+               , letValues :: [LetValue]
+               , letTypes  :: [LetType]
+               } deriving (Show, Eq)
 --
-data Program = Program (Contract ParsedOp) Env
-  deriving (Show, Eq)
+data Program = Program (Contract ParsedOp) Env [Property] deriving (Show, Eq)
 
-data Pragma = XContractMain
+data Property = Property deriving (Eq, Show)
+
+data Pragma = XContractMain | XOverloadedPrimitives
   deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 allPragmas :: [Pragma]
@@ -95,8 +100,8 @@ allPragmas = [minBound :: Pragma ..]
 mkPragmaState :: [Pragma] -> PragmaState
 mkPragmaState ps = Map.fromList $ (,Prelude.False) <$> ps
 
-mkEnv :: [Pragma] -> [CustomMacro] -> Env
-mkEnv ps cs = Env (Map.fromList $ (,Prelude.False) <$> ps) cs
+mkEnv :: [Pragma] -> [LetMacro] -> [LetValue] -> [LetType]-> Env
+mkEnv ps = Env (Map.fromList $ (,Prelude.False) <$> ps)
 
 -------------------------------------
 -- Types produced by parser
@@ -105,33 +110,50 @@ type ParsedInstr = InstrAbstract ParsedOp
 data ParsedOp =
     PRIM ParsedInstr
   | MAC Macro
-  | CMAC CustomMacro
-  | ASRT Assertion
+  | LETMAC LetMacro
+  | MORLEY MorleyInstr
   | SEQ [ParsedOp]
-  deriving (Eq, Show)
+  deriving (Eq, Show, Data)
+
+data MorleyInstr =
+    STACK (Stack Type)
+  | TEST Test
+  | PRINT PrintComment
+  deriving (Eq, Show, Data)
 
 -- Stack Type
 type Var = T.Text
-data TyVar = VarID Var | TyCon Type deriving (Eq, Show)
-data Stack a = StkEmpty | StkRest | StkCons a (Stack a) deriving (Eq, Show)
-data StackFun = StackFun [Var] (Stack TyVar) (Stack TyVar) deriving (Eq, Show)
+data TyVar = VarID Var | TyCon Type deriving (Eq, Show, Data)
+data Stack a = StkEmpty | StkRest | StkCons a (Stack a) deriving (Eq, Show, Data)
+data StackFun = StackFun [Var] (Stack TyVar) (Stack TyVar) deriving (Eq, Show, Data)
 
--- CustomMacro
-data CustomMacro = CustomMacro
-  { cm_name :: T.Text
-  , cm_sig :: StackFun
-  , cm_expr :: [ParsedOp]
+-- Let-block
+data LetMacro = LetMacro
+  { lm_name :: T.Text
+  , lm_sig :: StackFun
+  , lm_expr :: [ParsedOp]
+  } deriving (Eq, Show, Data)
+
+data LetValue = LetValue
+  { lv_name :: T.Text
+  , lv_sig :: Type
+  , lv_val :: (Value ParsedOp)
+  } deriving (Eq, Show)
+
+data LetType = LetType
+  { lt_name :: T.Text
+  , lt_sig :: Type
   } deriving (Eq, Show)
 
 -- Assertion
-data Assertion = Assertion
-  { asrt_name :: T.Text
-  , asrt_comment :: AssertionComment
-  , assertionInstrs :: [ParsedOp]
-  } deriving (Eq, Show)
+data Test = Test
+  { testName :: T.Text
+  , testComment :: PrintComment
+  , testInstrs :: [ParsedOp]
+  } deriving (Eq, Show, Data)
 
-newtype AssertionComment = AssertionComment [Either T.Text StackRef] deriving (Eq, Show)
-newtype StackRef = StackRef Integer deriving (Eq, Show)
+newtype PrintComment = PrintComment [Either T.Text StackRef] deriving (Eq, Show, Data)
+newtype StackRef = StackRef Integer deriving (Eq, Show, Data)
 
 -------------------------------------
 -- Types after macroexpander
@@ -139,12 +161,13 @@ newtype StackRef = StackRef Integer deriving (Eq, Show)
 type ExpandedInstr = InstrAbstract ExpandedOp
 data ExpandedOp =
     PRIM_EX ExpandedInstr
+  | MORLEY_EX MorleyInstr
   | SEQ_EX [ExpandedOp]
   deriving (Eq, Show, Data)
 
 data PairStruct = F (VarNote, FieldNote) | P PairStruct PairStruct
-  deriving (Eq, Show)
-data CadrStruct = A | D deriving (Eq, Show)
+  deriving (Eq, Show, Data)
+data CadrStruct = A | D deriving (Eq, Show, Data)
 
 data Macro =
     CMP ParsedInstr VarNote
@@ -166,5 +189,5 @@ data Macro =
   | ASSERT_LEFT
   | ASSERT_RIGHT
   | IF_SOME [ParsedOp] [ParsedOp]
-  deriving (Eq, Show)
+  deriving (Eq, Show, Data)
 

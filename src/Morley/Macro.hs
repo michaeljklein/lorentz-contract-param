@@ -16,9 +16,9 @@ module Morley.Macro
 
 import Generics.SYB (everywhere, mkT)
 import Morley.Types
-  (CadrStruct(..), Contract(..), CustomMacro(..), Env(..), ExpandedInstr, ExpandedOp(..),
-  FieldNote, Instr, InstrAbstract(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..),
-  Program(..), TypeNote, VarNote)
+  (CadrStruct(..), Contract(..), Env(..), ExpandedInstr, ExpandedOp(..), FieldNote, Instr,
+  InstrAbstract(..), LetMacro(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..), Program(..),
+  TypeNote, VarNote)
 
 expandFlat :: [ParsedOp] -> [Instr]
 expandFlat = concatMap flatten . fmap expand
@@ -47,7 +47,7 @@ expand :: ParsedOp -> ExpandedOp
 expand (MAC m)  = SEQ_EX $ expandMacro m
 expand (PRIM i) = PRIM_EX $ fmap expand i
 expand (SEQ s)  = SEQ_EX $ expand <$> s
-expand (CMAC c) = SEQ_EX $ expand <$> (cm_expr c)
+expand (LETMAC c) = SEQ_EX $ expand <$> (lm_expr c)
 
 expandMacro :: Macro -> [ExpandedOp]
 expandMacro = \case
@@ -132,7 +132,7 @@ expandMapCadr cs v f ops = case cs of
     pairN = PAIR n n n n
 
 expandProgramMacros :: Program -> Contract ExpandedOp
-expandProgramMacros (Program Contract{..} _) =
+expandProgramMacros (Program Contract{..} _ _) =
   Contract para stor (map expand code)
 
 expandContractMacros :: Contract ParsedOp -> Contract ExpandedOp
