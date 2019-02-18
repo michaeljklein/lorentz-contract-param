@@ -2,22 +2,24 @@
 
 ## Summary
 
-| type   | Sugar                                | Desugar                                |
-|--------|--------------------------------------|----------------------------------------|
-| pair   | `(a ,b)`                             | `(pair a b)`                           |
-| pair   | `(a, b) :t %f`                       | `(pair :t %f a b)`                     |
-| pair   | `(a,b,c)`                            | `(a,(b,c))`                            |
-| pair   | `(a, b, c) :t %f`                    | `(a, (b, c)) :t %f`                    |
-| pair   | `(a :ta %fa, b :tb %fb, c :tc %fc)`  | `(a :ta %fa, (b :tb %fb, c :tc %fc))`  |
-| or     | `(a | b)`                            | `(or a b)`                             |
-| or     | `(a | b) :t %f`                      | `(or :t %f a b)`                       |
-| or     | `(a | b | c)`                        | `(a | (b | c))`                        |
-| or     | `(a | b | c) :t %f`                  | `(a | (b | c)) :t %f`                  |
-| or     | `(a :ta %fa | b :tb %fb | c :tc %fc)`| `(a :ta %fa | (b :tb %fb | c :tc %fc))`|
-| unit   | `()`                                 | `unit`                                 |
-| lambda | `(\ a -> b)`                         | `lambda a b`                           |
-| list   | `[a]`                                | `list a`                               |
-| set    | `{a}`                                | `set a`                                |
+| type   | Sugar                                   | Desugar                                   |
+|--------|-----------------------------------------|-------------------------------------------|
+| pair   | `(a ,b)`                                | `(pair a b)`                              |
+| pair   | `(a, b) :t %f`                          | `(pair :t %f a b)`                        |
+| pair   | `(a,b,c)`                               | `(a,(b,c))`                               |
+| pair   | `(a, b, c) :t %f`                       | `(a, (b, c)) :t %f`                       |
+| pair   | `(a :ta %fa, b :tb %fb, c :tc %fc)`     | `(a :ta %fa, (b :tb %fb, c :tc %fc))`     |
+| or     | `(a \| b)`                              | `(or a b)`                                |
+| or     | `(a \| b) :t %f`                        | `(or :t %f a b)`                          |
+| or     | `(a \| b \| c)`                         | `(a \| (b \| c))`                         |
+| or     | `(a \| b \| c) :t %f`                   | `(a \| (b \| c)) :t %f`                   |
+| or     | `(a :ta %fa \| b :tb %fb \| c :tc %fc)` | `(a :ta %fa \| (b :tb %fb \| c :tc %fc))` |
+| unit   | `()`                                    | `unit`                                    |
+| lambda | `(\ a -> b)`                            | `lambda a b`                              |
+| list   | `[a]`                                   | `list a`                                  |
+| set    | `{a}`                                   | `set a`                                   |
+
+
 
 | Value | Sugar       | Desugar      |
 |-------|-------------|--------------|
