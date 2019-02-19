@@ -128,60 +128,6 @@ Directives must appear at the beginning of a `.mtz`
 
 `#import` allows for let definitions in other files to be brought into scope.
 
-### Property Testing
-
-`#check <test-name> <property>`:
-
-```
-#check {push int 2; add';} ?S == {push int 2; push int 3; add';} ?S
-add3 :: [int, ...] -> [int, ...]
-add3 = push int 3; add;
-```
-
-The syntax for `<property>` is as follows, where `<op>` is an instruction, macro
-or sequence, `<value>` is a Michelson value, `<type>` is a Michelson type. One 
-addition that any `<op>`, `<value>` or `<type>` may be replaced by a `?<string>`
-hole which instructs the property checker to use an arbitrary generator instead
-of a concrete value or type at that point. A `<stack>` can also be replaced with
-a hole.
-
-The string in `?<string>` is a variable for an implicit universal
-quantification. That is, in any property `str1 == str2 => ?str1 == ?str2`.
-
-```
-<stack> = '[ <value> :: <type>, ..., <value> <type>]
-<cmp> = < | > | == | <= | >=
-
-<property> = <op> <stack> == <op> <stack> # check equality
-           | gas(<op> <stack>) <cmp> nat # check gas consumption
-           | pure <op>  # <op> doesn't read from chain or make `operation`s
-```
-
-Some examples:
-
-Checking instructions against a random stack:
-```
-#check {push int 2; add 2;} ?S == {push int 2; push int 2; add;} ?S
-```
-
-Checking arbitrary values in instructions against a known stack:
-```
-#check {push int ?A; add 2;} '[2] == {push int 2; push int ?A; add;} '[2]
-```
-
-Checking arbitrary types in instructions against known values
-
-```
-#check {push ?type 2; add 2;} [2] == {push int 2; push int ?A; add;} [2]
-```
-
-Properties can also be split across multiple lines:
-```
-#check "Test-name" 
-#    {push ?type 2; add 2;}          [2]
-# == {push int 2; push int ?A; add;} [2]
-```
-
 ### Test assertion
 
 An inline test assertion is a labeled sequence of instructions that runs in
@@ -215,14 +161,18 @@ comment to be printed during execution. The syntax `%[0]` is a reference into
 the stack and prints the `n`-th stack element from the head.
 
 ### Pragmas
-TBD
 
-## Breaking language extensions
-By enabling `#pragma -XContractMain`, the `code`, `parameter` and `storage`, and
-`let` blocks are removed. The syntax of the file now becomes identical to a let
-block. The contract `parameter`, `storage` and `code` blocks are now defined via
-the reserved the type synonyms `parameter`, `storage` and the reserved macro
-`main`:
+A `#pragma` directive allows the programmer to set options in the parser,
+typechecker and interpreter. By design, the default state of all such options
+allows a standard `.tz` file to be validly parser, typechecked and run, but
+using `#pragma` the programmer can break this supersetting principle for a
+specific file. 
+
+For example, by enabling `#pragma -XContractMain`, the `code`, `parameter` and
+`storage`, and `let` blocks are removed. The syntax of the file now becomes
+identical to a let block. The contract `parameter`, `storage` and `code` blocks
+are now defined via the reserved the type synonyms `parameter`, `storage` and
+the reserved macro `main`:
 
 ```
 type parameter = 'parameter
