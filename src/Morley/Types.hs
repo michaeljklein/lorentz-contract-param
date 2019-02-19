@@ -11,9 +11,11 @@ module Morley.Types
   , InstrAbstract (..)
   , Instr
   , Op (..)
-  , TypeNote
-  , FieldNote
-  , VarNote
+  , TypeAnn
+  , FieldAnn
+  , VarAnn
+  , ann
+  , noAnn
   , Type (..)
   , Comparable (..)
   , T (..)
@@ -59,8 +61,8 @@ import Data.Data (Data(..))
 import qualified Data.Map.Lazy as Map
 import qualified Data.Text as T
 import Michelson.Types
-  (CT(..), Comparable(..), Contract(..), Elt(..), FieldNote, Instr, InstrAbstract(..), Op(..),
-  Parameter, Storage, T(..), Type(..), TypeNote, Value(..), VarNote)
+  (CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, Instr, InstrAbstract(..), Op(..),
+  Parameter, Storage, T(..), Type(..), TypeAnn, Value(..), VarAnn, ann, noAnn)
 import Morley.Default (Default(..))
 import Text.Megaparsec
 -------------------------------------
@@ -165,22 +167,22 @@ data ExpandedOp =
   | SEQ_EX [ExpandedOp]
   deriving (Eq, Show, Data)
 
-data PairStruct = F (VarNote, FieldNote) | P PairStruct PairStruct
+data PairStruct = F (VarAnn, FieldAnn) | P PairStruct PairStruct
   deriving (Eq, Show, Data)
 data CadrStruct = A | D deriving (Eq, Show, Data)
 
 data Macro =
-    CMP ParsedInstr VarNote
+    CMP ParsedInstr VarAnn
   | IFX ParsedInstr [ParsedOp] [ParsedOp]
-  | IFCMP ParsedInstr VarNote [ParsedOp] [ParsedOp]
+  | IFCMP ParsedInstr VarAnn [ParsedOp] [ParsedOp]
   | FAIL
-  | PAPAIR PairStruct TypeNote VarNote
+  | PAPAIR PairStruct TypeAnn VarAnn
   | UNPAIR PairStruct
-  | CADR [CadrStruct] VarNote FieldNote
-  | SET_CADR [CadrStruct] VarNote FieldNote
-  | MAP_CADR [CadrStruct] VarNote FieldNote [ParsedOp]
+  | CADR [CadrStruct] VarAnn FieldAnn
+  | SET_CADR [CadrStruct] VarAnn FieldAnn
+  | MAP_CADR [CadrStruct] VarAnn FieldAnn [ParsedOp]
   | DIIP Integer [ParsedOp]
-  | DUUP Integer VarNote
+  | DUUP Integer VarAnn
   | ASSERT
   | ASSERTX ParsedInstr
   | ASSERT_CMP ParsedInstr

@@ -17,6 +17,7 @@ spec = describe "Macros tests" $ do
   it "expandMapCadr test" expandMapCadrTest
   it "mapLeaves test" mapLeavesTest
   it "flatten test" flattenTest
+  it "expandValue test" expandValueTest
 
 expandPapairTest :: Expectation
 expandPapairTest = do
@@ -28,7 +29,7 @@ expandPapairTest = do
   expandPapair (P pair pair) n n `shouldBe`
     [MAC $ PAPAIR pair n n, MAC $ PAPAIR pair n n, PRIM $ PAIR n n n n]
   where
-    n = Nothing
+    n = noAnn
     leaf = F (n, n)
     pair = P leaf leaf
 
@@ -43,7 +44,7 @@ expandUnpapairTest = do
   expandUnpapair (P pair pair) `shouldBe`
     [MAC $ UNPAIR (P leaf leaf), MAC $ UNPAIR pair, MAC $ UNPAIR pair]
   where
-    n = Nothing
+    n = noAnn
     leaf = F (n, n)
     pair = P leaf leaf
 
@@ -54,9 +55,9 @@ expandCadrTest = do
   expandCadr (A:xs) v f `shouldBe` [PRIM $ CAR n n, MAC $ CADR xs v f]
   expandCadr (D:xs) v f `shouldBe` [PRIM $ CDR n n, MAC $ CADR xs v f]
   where
-    v = Just "var"
-    f = Just "field"
-    n = Nothing
+    v = ann "var"
+    f = ann "field"
+    n = noAnn
     xs = [A, D]
 
 expandSetCadrTest :: Expectation
@@ -68,9 +69,9 @@ expandSetCadrTest = do
   expandSetCadr (D:xs) v f `shouldBe`
     PRIM <$> [DUP n, DIP [PRIM $ CDR n n, MAC $ SET_CADR xs v f], CDR n n, SWAP, PAIR n n n n]
   where
-    v = Just "var"
-    f = Just "field"
-    n = Nothing
+    v = ann "var"
+    f = ann "field"
+    n = noAnn
     xs = [A, D]
 
 expandMapCadrTest :: Expectation
@@ -84,9 +85,9 @@ expandMapCadrTest = do
   expandMapCadr (D:xs) v f ops `shouldBe`
     PRIM <$> [DUP n, DIP [PRIM $ CDR n n, MAC $ MAP_CADR xs v f ops], CAR n n, PAIR n n n n]
   where
-    v = Just "var"
-    f = Just "field"
-    n = Nothing
+    v = ann "var"
+    f = ann "field"
+    n = noAnn
     xs = [A, D]
     ops = [PRIM $ DUP n]
 
@@ -98,11 +99,11 @@ mapLeavesTest = do
   mapLeaves annotations (P pair pair) `shouldBe`
     P (P (leaf "var1" "field1") (leaf "var2" "field2")) (P (leaf "var3" "field3") (F (n, n)))
   where
-    annotations = zip (Just <$> ["var1", "var2", "var3"]) (Just <$> ["field1", "field2", "field3"])
-    n = Nothing
-    v = Just "var"
-    f = Just "field"
-    leaf v' f' = F (Just v', Just f')
+    annotations = zip (ann <$> ["var1", "var2", "var3"]) (ann <$> ["field1", "field2", "field3"])
+    n = noAnn
+    v = ann "var"
+    f = ann "field"
+    leaf v' f' = F (ann v', ann f')
     pair = P (F (n, n)) (F (n, n))
 
 flattenTest :: Expectation
@@ -117,10 +118,10 @@ expandFlatTest = do
   expandFlat [papair] `shouldBe` [DIP [Op $ PAIR n n n n], PAIR n n n n]
   expandFlat [diiiip] `shouldBe` [DIP [Op $ DIP [Op $ DIP [Op $ DIP[Op $ SWAP]]]]]
   where
-    n = Nothing
+    n = noAnn
     papair :: ParsedOp
     papair =
-      MAC (PAPAIR (P (F (Nothing,Nothing)) (P (F (Nothing,Nothing)) (F (Nothing,Nothing)))) Nothing Nothing)
+      MAC (PAPAIR (P (F (n, n)) (P (F (n, n)) (F (n, n)))) n n)
     diiiip :: ParsedOp
     diiiip = MAC (DIIP 4 [PRIM SWAP])
 
@@ -134,3 +135,31 @@ expandTest = do
     diip = MAC (DIIP 2 [PRIM SWAP])
     expandedDiip :: ExpandedOp
     expandedDiip = SEQ_EX [PRIM_EX (DIP [SEQ_EX [PRIM_EX (DIP [PRIM_EX SWAP])]])]
+
+expandValueTest :: Expectation
+expandValueTest = do
+  expandValue parsedPair `shouldBe` expandedPair
+  expandValue parsedPapair `shouldBe` expandedPapair
+  expandValue parsedLambdaWithMac `shouldBe` expandedLambdaWithMac
+  where
+    parsedPair :: Value ParsedOp
+    parsedPair = ValuePair (ValueInt 5) (ValueInt 5)
+
+    expandedPair :: Value Op
+    expandedPair = ValuePair (ValueInt 5) (ValueInt 5)
+
+    parsedPapair :: Value ParsedOp
+    parsedPapair = ValuePair (ValuePair (ValueInt 5) (ValueInt 5)) (ValueInt 5)
+
+    expandedPapair :: Value Op
+    expandedPapair = ValuePair (ValuePair (ValueInt 5) (ValueInt 5)) (ValueInt 5)
+
+    parsedLambdaWithMac :: Value ParsedOp
+    parsedLambdaWithMac = ValueLambda
+      [MAC (PAPAIR (P (F (noAnn, noAnn)) (P (F (noAnn, noAnn)) (F (noAnn, noAnn)))) noAnn noAnn)]
+
+    expandedLambdaWithMac :: Value Op
+    expandedLambdaWithMac = ValueLambda
+      [ Op {unOp = DIP [Op {unOp = PAIR noAnn noAnn noAnn noAnn}]}
+      , Op {unOp = PAIR noAnn noAnn noAnn noAnn}
+      ]

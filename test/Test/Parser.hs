@@ -4,14 +4,16 @@ module Test.Parser
 
 import Data.List (isSuffixOf)
 import Morley.Parser (noEnv, program)
+import Morley.Types as M
 import System.Directory (listDirectory)
-import Test.Hspec (Expectation, Spec, describe, it, shouldSatisfy)
+import Test.Hspec (Expectation, Spec, describe, it, shouldBe, shouldSatisfy)
 import Text.Megaparsec (parse)
 
 
 spec :: Spec
 spec = describe "Parser tests" $ do
   it "Successfully parses contracts examples from contracts/" parseContractsTest
+  it "value parser test" valueParserTest
 
 parseContractsTest :: Expectation
 parseContractsTest = do
@@ -24,3 +26,12 @@ checkFile :: FilePath -> Expectation
 checkFile file = do
   code <- readFile file
   parse (noEnv program) file code `shouldSatisfy` isRight
+
+valueParserTest :: Expectation
+valueParserTest = do
+  parse value "" "{PUSH int 5;}" `shouldBe`
+    (Right $ M.ValueLambda [M.PRIM (M.PUSH noAnn (M.Type (M.T_comparable M.T_int) noAnn) (M.ValueInt 5))])
+  parse value "" "{1; 2}" `shouldBe`
+    (Right $ M.ValueSeq [M.ValueInt 1, M.ValueInt 2])
+  parse value "" "{Elt 1 2; Elt 3 4}" `shouldBe`
+    (Right $ M.ValueMap [M.Elt (M.ValueInt 1) (M.ValueInt 2), M.Elt (M.ValueInt 3) (M.ValueInt 4)])

@@ -6,6 +6,7 @@ module Morley.Parser
   , noEnv
   , ParserException(..)
   , Program (..)
+  , value
   ) where
 
 import Prelude hiding (many, note, some, try)
@@ -148,14 +149,14 @@ stackFun = do
 --------------------------------------------------------------------------------
 -- Value Parsers
 --------------------------------------------------------------------------------
-data_ :: Parser (M.Value ParsedOp)
-data_ = lexeme $ dataInner <|> parens dataInner
+value :: Parser (M.Value ParsedOp)
+value = lexeme $ dataInner <|> parens dataInner
   where
     dataInner :: Parser (M.Value M.ParsedOp)
     dataInner = choice $
       [ intLiteral, stringLiteral, bytesLiteral, unitValue
       , trueValue, falseValue, pairValue, leftValue, rightValue
-      , someValue, noneValue, seqValue, mapValue, dataOps, dataLetValue
+      , someValue, noneValue, seqValue, mapValue, lambdaValue, dataLetValue
       ]
 
 dataLetValue :: Parser (M.Value ParsedOp)
@@ -164,18 +165,18 @@ dataLetValue = do
   M.lv_val <$> (mkLetVal lvs)
 
 -- Literals
-intLiteral = try $ M.Int <$> (L.signed (return ()) L.decimal)
+intLiteral = try $ M.ValueInt <$> (L.signed (return ()) L.decimal)
 bytesLiteral = try $ do
   symbol "0x"
   hexdigits <- takeWhile1P Nothing Char.isHexDigit
   let (bytes, remain) = B16.decode $ encodeUtf8 hexdigits
   if remain == ""
-  then return $ M.Bytes bytes
+  then return $ M.ValueBytes bytes
   else error "odd number bytes" -- TODO: better errors
 
 -- this parses more escape sequences than are in the michelson spec
 -- should investigate which sequences this matters for, e.g. \xa == \n
-stringLiteral = try $ M.String <$>
+stringLiteral = try $ M.ValueString <$>
   (T.pack <$> (char '"' >> manyTill L.charLiteral (char '"')))
 
 {-
@@ -189,39 +190,38 @@ strEscape = char '\\' >> esc
       <|> (char '\\' >> return "\\")
       <|> (char '"' >> return "\"")
 -}
-unitValue = do symbol "Unit"; return M.Unit
-trueValue = do symbol "True"; return M.True
-falseValue = do symbol "False"; return M.False
+unitValue = do symbol "Unit"; return M.ValueUnit
+trueValue = do symbol "True"; return M.ValueTrue
+falseValue = do symbol "False"; return M.ValueFalse
 pairValue = core <|> tuple
   where
-    core = try $ do symbol "Pair"; a <- data_; M.Pair a <$> data_
+    core = try $ do symbol "Pair"; a <- value; M.ValuePair a <$> value
     tuple = try $ do
       symbol "("
-      a <- data_
+      a <- value
       comma
-      b <- tupleInner <|> data_
+      b <- tupleInner <|> value
       symbol ")"
-      return $ M.Pair a b
+      return $ M.ValuePair a b
     tupleInner = try $ do
-      a <- data_
+      a <- value
       comma
-      b <- tupleInner <|> data_
-      return $ M.Pair a b
+      b <- tupleInner <|> value
+      return $ M.ValuePair a b
 
-leftValue = do symbol "Left"; M.Left <$> data_
-rightValue = do symbol "Right"; M.Right <$> data_
-someValue = do symbol "Some"; M.Some <$> data_
-noneValue = do symbol "None"; return M.None
-dataOps = M.DataOps <$> ops
-seqValue = M.Seq <$> (braces $ sepEndBy data_ semicolon)
-eltValue = do symbol "Elt"; M.Elt <$> data_ <*> data_
-mapValue = M.Map <$> (braces $ sepEndBy eltValue semicolon)
+leftValue = do symbol "Left"; M.ValueLeft <$> value
+rightValue = do symbol "Right"; M.ValueRight <$> value
+someValue = do symbol "Some"; M.ValueSome <$> value
+noneValue = do symbol "None"; return M.ValueNone
+lambdaValue = M.ValueLambda <$> ops
+seqValue = M.ValueSeq <$> (try $ braces $ sepEndBy value semicolon)
+eltValue = do symbol "Elt"; M.Elt <$> value <*> value
+mapValue = M.ValueMap <$> (try $ braces $ sepEndBy eltValue semicolon)
 
 -------------------------------------------------------------------------------
 -- Types
 -------------------------------------------------------------------------------
-
-field :: Parser (M.FieldNote, M.Type)
+field :: Parser (M.FieldAnn, M.Type)
 field = lexeme (fi <|> parens fi)
   where
     fi = typeInner noteF
@@ -229,9 +229,9 @@ field = lexeme (fi <|> parens fi)
 type_ :: Parser M.Type
 type_ = (ti <|> parens ti)
   where
-    ti = snd <$> (lexeme $ typeInner (pure Nothing))
+    ti = snd <$> (lexeme $ typeInner (pure M.noAnn))
 
-typeInner :: Parser M.FieldNote -> Parser (M.FieldNote, M.Type)
+typeInner :: Parser M.FieldAnn -> Parser (M.FieldAnn, M.Type)
 typeInner fp = choice $ (\x -> x fp) <$>
   [ t_ct, t_key, t_unit, t_signature, t_option, t_list, t_set, t_operation
   , t_contract, t_pair, t_or, t_lambda, t_map, t_big_map, t_letType
@@ -293,7 +293,7 @@ t_pair fp = core <|> tuple
       (l, a) <- field
       comma
       (r, b) <- tupleInner <|> field
-      return (Nothing, M.Type (M.T_pair l r a b) Nothing)
+      return (M.noAnn, M.Type (M.T_pair l r a b) M.noAnn)
 
 t_or fp = core <|> bar
   where
@@ -315,7 +315,7 @@ t_or fp = core <|> bar
       (l, a) <- field
       symbol "|"
       (r, b) <- barInner <|> field
-      return (Nothing, M.Type (M.T_or l r a b) Nothing)
+      return (M.noAnn, M.Type (M.T_or l r a b) M.noAnn)
 
 t_option fp = do
   symbol "option"
@@ -469,7 +469,7 @@ dipOp   = do symbol' "DIP"; M.DIP <$> ops
 dropOp   = do symbol' "DROP"; return M.DROP;
 dupOp    = do symbol' "DUP"; M.DUP <$> noteVDef
 swapOp   = do symbol' "SWAP"; return M.SWAP;
-pushOp   = do symbol' "PUSH"; v <- noteVDef; a <- type_; M.PUSH v a <$> data_
+pushOp   = do symbol' "PUSH"; v <- noteVDef; a <- type_; M.PUSH v a <$> value
 unitOp   = do symbol' "UNIT"; (t, v) <- notesTV; return $ M.UNIT t v
 lambdaOp = do symbol' "LAMBDA"; v <- noteVDef; a <- type_; b <- type_;
               M.LAMBDA v a b <$> ops
@@ -614,14 +614,14 @@ pairMac = do
   a <- pairMacInner
   symbol' "R"
   (tn, vn, fns) <- permute3Def noteTDef noteV (some noteF)
-  let ps = Macro.mapLeaves ((Nothing,) <$> fns) a
+  let ps = Macro.mapLeaves ((M.noAnn,) <$> fns) a
   return $ M.PAPAIR ps tn vn
 
 pairMacInner :: Parser M.PairStruct
 pairMacInner = do
   string' "P"
-  l <- (string' "A" >> return (M.F (Nothing, Nothing))) <|> pairMacInner
-  r <- (string' "I" >> return (M.F (Nothing, Nothing))) <|> pairMacInner
+  l <- (string' "A" >> return (M.F (M.noAnn, M.noAnn))) <|> pairMacInner
+  r <- (string' "I" >> return (M.F (M.noAnn, M.noAnn))) <|> pairMacInner
   return $ M.P l r
 
 unpairMac :: Parser M.Macro

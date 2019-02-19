@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable, DerivingStrategies #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Michelson.Types
   (
@@ -8,8 +9,13 @@ module Michelson.Types
   , Contract (..)
 
     -- * Data types
+  , Timestamp (..)
+  , Mutez (..)
+  , Address (..)
   , Value (..)
   , Elt (..)
+  , NetworkOp (..)
+  , contractAddress
 
   -- Typechecker types
   , InstrAbstract (..)
@@ -17,18 +23,25 @@ module Michelson.Types
   , Op (..)
 
     -- * Michelson types
-  , TypeNote
-  , FieldNote
-  , VarNote
+  , Annotation
+  , TypeAnn
+  , FieldAnn
+  , VarAnn
+  , noAnn
+  , ann
   , Type (..)
   , Comparable (..)
   , T (..)
   , CT (..)
   ) where
 
-import qualified Data.ByteString as B
+import Data.Aeson
+  (FromJSON(..), FromJSONKey, ToJSON(..), ToJSONKey, genericParseJSON, genericToJSON)
+import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
+import Data.Default (Default(..))
 import qualified Data.Text as T
+import Formatting.Buildable (Buildable)
 
 type Parameter = Type
 type Storage = Type
@@ -36,140 +49,187 @@ data Contract op = Contract
   { para :: Parameter
   , stor :: Storage
   , code :: [op]
-  } deriving (Eq, Show, Functor, Data)
+  } deriving (Eq, Show, Functor, Data, Generic)
 
 -------------------------------------
 -- Flattened types after macroexpander
 -------------------------------------
 type Instr = InstrAbstract Op
 newtype Op = Op {unOp :: Instr}
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
+  deriving newtype (ToJSON, FromJSON)
 
 -------------------------------------
 -- Basic polymorphic types for Parser/Macro/Typechecker modules
 -------------------------------------
 
+newtype Timestamp = Timestamp
+  { unTimestamp :: Word64
+  } deriving stock (Show, Eq, Ord, Data)
+    deriving newtype (ToJSON, FromJSON)
+
+newtype Mutez = Mutez
+  { unMutez :: Word64
+  } deriving stock (Show, Eq, Ord, Data)
+    deriving newtype (ToJSON, FromJSON)
+
+newtype Address = Address
+  { unAddress :: Text
+  } deriving stock (Show, Eq, Ord, Data)
+    deriving newtype (ToJSON, FromJSON, ToJSONKey, FromJSONKey, Buildable)
+
+-- TODO [TM-17] I guess it's possible to compute address of a contract, but I
+-- don't know how do it (yet). Maybe it requires more data. In the
+-- worst case we can store such map in GState. Maybe we'll have to
+-- move this function to Morley.
+contractAddress :: Contract Op -> Address
+contractAddress _ = Address "dummy-address"
+
 {- Data types -}
 data Value op =
-    Int     Integer
-  | String  T.Text
-  | Bytes   B.ByteString
-  | Unit
-  | True
-  | False
-  | Pair    (Value op) (Value op)
-  | Left    (Value op)
-  | Right   (Value op)
-  | Some    (Value op)
-  | None
-  | Seq     [Value op]
-  | Map     [Elt op]
-  | DataOps [op]
-  deriving (Eq, Show, Functor, Data)
+    ValueInt     Integer
+  | ValueString  Text
+  | ValueBytes   ByteString
+  | ValueUnit
+  | ValueTrue
+  | ValueFalse
+  | ValuePair    (Value op) (Value op)
+  | ValueLeft    (Value op)
+  | ValueRight   (Value op)
+  | ValueSome    (Value op)
+  | ValueNone
+  | ValueSeq     [Value op]
+  -- ^ A sequence of elements: can be a list or a set.
+  -- We can't distinguish lists and sets during parsing.
+  | ValueMap     [Elt op]
+  | ValueLambda  [op]
+  deriving (Eq, Show, Functor, Data, Generic)
 
 data Elt op = Elt (Value op) (Value op)
-  deriving (Eq, Show, Functor, Data)
+  deriving (Eq, Show, Functor, Data, Generic)
+
+-- | Corresponds to the @operation@ type in Michelson.
+-- TODO: add actual data.
+data NetworkOp
+  = CreateContract
+  | CreateAccount
+  | TransferTokens
+  | SetDelegate
 
 data InstrAbstract op =
     DROP
-  | DUP               VarNote
+  | DUP               VarAnn
   | SWAP
-  | PUSH              VarNote Type (Value op)
-  | SOME              TypeNote VarNote FieldNote
-  | NONE              TypeNote VarNote FieldNote Type
-  | UNIT              TypeNote VarNote
+  | PUSH              VarAnn Type (Value op)
+  | SOME              TypeAnn VarAnn FieldAnn
+  | NONE              TypeAnn VarAnn FieldAnn Type
+  | UNIT              TypeAnn VarAnn
   | IF_NONE           [op] [op]
-  | PAIR              TypeNote VarNote FieldNote FieldNote
-  | CAR               VarNote FieldNote
-  | CDR               VarNote FieldNote
-  | LEFT              TypeNote VarNote FieldNote FieldNote Type
-  | RIGHT             TypeNote VarNote FieldNote FieldNote Type
+  | PAIR              TypeAnn VarAnn FieldAnn FieldAnn
+  | CAR               VarAnn FieldAnn
+  | CDR               VarAnn FieldAnn
+  | LEFT              TypeAnn VarAnn FieldAnn FieldAnn Type
+  | RIGHT             TypeAnn VarAnn FieldAnn FieldAnn Type
   | IF_LEFT           [op] [op]
   | IF_RIGHT          [op] [op]
-  | NIL               TypeNote VarNote Type
-  | CONS              VarNote
+  | NIL               TypeAnn VarAnn Type
+  | CONS              VarAnn
   | IF_CONS           [op] [op]
-  | SIZE              VarNote
-  | EMPTY_SET         TypeNote VarNote Comparable
-  | EMPTY_MAP         TypeNote VarNote Comparable Type
-  | MAP               VarNote [op]
-  | ITER              VarNote [op]
-  | MEM               VarNote
-  | GET               VarNote
+  | SIZE              VarAnn
+  | EMPTY_SET         TypeAnn VarAnn Comparable
+  | EMPTY_MAP         TypeAnn VarAnn Comparable Type
+  | MAP               VarAnn [op]
+  | ITER              VarAnn [op]
+  | MEM               VarAnn
+  | GET               VarAnn
   | UPDATE
   | IF                [op] [op]
   | LOOP              [op]
   | LOOP_LEFT         [op]
-  | LAMBDA            VarNote Type Type [op]
-  | EXEC              VarNote
+  | LAMBDA            VarAnn Type Type [op]
+  | EXEC              VarAnn
   | DIP               [op]
   | FAILWITH
-  | CAST              Type VarNote
-  | RENAME            VarNote
-  | PACK              VarNote
-  | UNPACK            VarNote Type
-  | CONCAT            VarNote
-  | SLICE             VarNote
+  | CAST              Type VarAnn
+  | RENAME            VarAnn
+  | PACK              VarAnn
+  | UNPACK            VarAnn Type
+  | CONCAT            VarAnn
+  | SLICE             VarAnn
   | ISNAT
-  | ADD               VarNote
-  | SUB               VarNote
-  | MUL               VarNote
-  | EDIV              VarNote
-  | ABS               VarNote
+  | ADD               VarAnn
+  | SUB               VarAnn
+  | MUL               VarAnn
+  | EDIV              VarAnn
+  | ABS               VarAnn
   | NEG
   | MOD
-  | LSL               VarNote
-  | LSR               VarNote
-  | OR                VarNote
-  | AND               VarNote
-  | XOR               VarNote
-  | NOT               VarNote
-  | COMPARE           VarNote
-  | EQ                VarNote
-  | NEQ               VarNote
-  | LT                VarNote
-  | GT                VarNote
-  | LE                VarNote
-  | GE                VarNote
-  | INT               VarNote
-  | SELF              VarNote
+  | LSL               VarAnn
+  | LSR               VarAnn
+  | OR                VarAnn
+  | AND               VarAnn
+  | XOR               VarAnn
+  | NOT               VarAnn
+  | COMPARE           VarAnn
+  | EQ                VarAnn
+  | NEQ               VarAnn
+  | LT                VarAnn
+  | GT                VarAnn
+  | LE                VarAnn
+  | GE                VarAnn
+  | INT               VarAnn
+  | SELF              VarAnn
   | CONTRACT          Type
-  | TRANSFER_TOKENS   VarNote
+  | TRANSFER_TOKENS   VarAnn
   | SET_DELEGATE
-  | CREATE_ACCOUNT    VarNote VarNote
-  | CREATE_CONTRACT   VarNote VarNote
-  | CREATE_CONTRACT2  VarNote VarNote (Contract op)
-  | IMPLICIT_ACCOUNT  VarNote
-  | NOW               VarNote
-  | AMOUNT            VarNote
-  | BALANCE           VarNote
-  | CHECK_SIGNATURE   VarNote
-  | SHA256            VarNote
-  | SHA512            VarNote
-  | BLAKE2B           VarNote
-  | HASH_KEY          VarNote
-  | STEPS_TO_QUOTA    VarNote
-  | SOURCE            VarNote
-  | SENDER            VarNote
-  | ADDRESS           VarNote
-  deriving (Eq, Show, Functor, Data)
+  | CREATE_ACCOUNT    VarAnn VarAnn
+  | CREATE_CONTRACT   VarAnn VarAnn
+  | CREATE_CONTRACT2  VarAnn VarAnn (Contract op)
+  | IMPLICIT_ACCOUNT  VarAnn
+  | NOW               VarAnn
+  | AMOUNT            VarAnn
+  | BALANCE           VarAnn
+  | CHECK_SIGNATURE   VarAnn
+  | SHA256            VarAnn
+  | SHA512            VarAnn
+  | BLAKE2B           VarAnn
+  | HASH_KEY          VarAnn
+  | STEPS_TO_QUOTA    VarAnn
+  | SOURCE            VarAnn
+  | SENDER            VarAnn
+  | ADDRESS           VarAnn
+  deriving (Eq, Show, Functor, Data, Generic)
 
 -------------------------------------
 -- Basic types for Michelson types --
 -------------------------------------
+newtype Annotation tag = Annotation T.Text
+  deriving (Eq, Show, Data)
+  deriving newtype (ToJSON, FromJSON)
 
-{- Michelson Types -}
--- Type Annotations
-type TypeNote = Maybe T.Text
-type FieldNote = Maybe T.Text
-type VarNote = Maybe T.Text
+instance Default (Annotation tag) where
+  def = Annotation ""
+
+data TypeTag
+data FieldTag
+data VarTag
+
+type TypeAnn = Annotation TypeTag
+type FieldAnn = Annotation FieldTag
+type VarAnn = Annotation VarTag
+
+noAnn :: Annotation a
+noAnn = Annotation ""
+
+ann :: T.Text -> Annotation a
+ann = Annotation
 
 -- Annotated type
-data Type = Type T TypeNote
+data Type = Type T TypeAnn
   deriving (Eq, Show, Data)
 
 -- Annotated Comparable Sub-type
-data Comparable = Comparable CT TypeNote
+data Comparable = Comparable CT TypeAnn
   deriving (Eq, Show, Data)
 
 -- Michelson Type
@@ -178,13 +238,13 @@ data T =
   | T_key
   | T_unit
   | T_signature
-  | T_option FieldNote Type
+  | T_option FieldAnn Type
   | T_list Type
   | T_set Comparable
   | T_operation
   | T_contract Type
-  | T_pair FieldNote FieldNote Type Type
-  | T_or FieldNote FieldNote Type Type
+  | T_pair FieldAnn FieldAnn Type Type
+  | T_or FieldAnn FieldAnn Type Type
   | T_lambda Type Type
   | T_map Comparable Type
   | T_big_map Comparable Type
@@ -202,3 +262,51 @@ data CT =
   | T_timestamp
   | T_address
   deriving (Eq, Show, Data)
+
+----------------------------------------------------------------------------
+-- JSON serialization
+--
+-- TODO:
+-- 1. Get rid of dirty hack with bytestrings (unsuppress `-Worphans` once done).
+-- 2. Figure out whether it's possible to use TH for types with parameters.
+-- 3. Maybe write it manually using some specific format, e. g. use JSON
+-- syntax from Michelson specification.
+----------------------------------------------------------------------------
+
+-- FIXME: this is a very bad dirty hack, it's temporary.
+instance ToJSON ByteString where
+  toJSON = toJSON @Text . decodeUtf8
+
+-- FIXME: this is a very bad dirty hack, it's temporary.
+instance FromJSON ByteString where
+  parseJSON = fmap (encodeUtf8 @Text) . parseJSON
+
+-- deriveJSON defaultOptions ''Contract
+instance ToJSON op => ToJSON (Contract op) where
+  toJSON = genericToJSON defaultOptions
+
+instance FromJSON op => FromJSON (Contract op) where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON op => ToJSON (InstrAbstract op) where
+  toJSON = genericToJSON defaultOptions
+
+instance FromJSON op => FromJSON (InstrAbstract op) where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON op => ToJSON (Value op) where
+  toJSON = genericToJSON defaultOptions
+
+instance FromJSON op => FromJSON (Value op) where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON op => ToJSON (Elt op) where
+  toJSON = genericToJSON defaultOptions
+
+instance FromJSON op => FromJSON (Elt op) where
+  parseJSON = genericParseJSON defaultOptions
+
+deriveJSON defaultOptions ''Type
+deriveJSON defaultOptions ''Comparable
+deriveJSON defaultOptions ''T
+deriveJSON defaultOptions ''CT
