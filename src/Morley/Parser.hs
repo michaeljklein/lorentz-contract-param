@@ -2,10 +2,14 @@
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
 
 module Morley.Parser
-  ( program
+  ( contract
+  , program
   , noEnv
-  , ParserException(..)
   , Program (..)
+  , ParserException (..)
+  , ops
+  , stringLiteral
+  , type_
   , value
   ) where
 
@@ -23,7 +27,8 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import Morley.Lexer
 import qualified Morley.Macro as Macro
 import Morley.Parser.Annotations
-import Morley.Types (ParsedOp(..), Parser, ParserException(..), Program(..))
+import Morley.Types
+  (CustomParserException(..), ParsedOp(..), Parser, ParserException(..), Program(..))
 import qualified Morley.Types as M
 
 -------------------------------------------------------------------------------
@@ -40,7 +45,7 @@ program = do
   c <- local (const env) contract
   return $ Program c env []
 
-noEnv :: Parser a -> Parsec Void Text a
+--noEnv :: Parser a -> Parsec Void Text a
 noEnv p = runReaderT p (M.mkEnv [] [] [] [])
 
 pragma :: Parser M.Pragma
@@ -172,30 +177,40 @@ bytesLiteral = try $ do
   let (bytes, remain) = B16.decode $ encodeUtf8 hexdigits
   if remain == ""
   then return $ M.ValueBytes bytes
-  else error "odd number bytes" -- TODO: better errors
+  else customFailure OddNumberBytesException
 
--- this parses more escape sequences than are in the michelson spec
--- should investigate which sequences this matters for, e.g. \xa == \n
+stringLiteral :: Parser (M.Value ParsedOp)
 stringLiteral = try $ M.ValueString <$>
-  (T.pack <$> (char '"' >> manyTill L.charLiteral (char '"')))
+  (T.pack <$>
+    ( (++) <$>
+        (concat <$> (string "\"" >> many validChar)) <*>
+        (manyTill (lineBreakChar <|> (customFailure $ UnexpectedLineBreak)) (string "\""))
+    )
+  )
+  where
+      validChar :: Parser String
+      validChar =
+        try strEscape <|>
+          try ((:[]) <$> satisfy (\x -> x /= '"' && x /= '\n' && x /= '\r'))
+      lineBreakChar :: Parser Char
+      lineBreakChar = char '\n' <|> char '\r'
 
-{-
--- could do something explicit based on this
-strEscape :: Parser T.Text
+strEscape :: Parser String
 strEscape = char '\\' >> esc
   where
-    esc = (char 'n' >> return "\n")
-      <|> (char 't' >> return "\t")
+    esc = (char 't' >> return "\t")
       <|> (char 'b' >> return "\b")
       <|> (char '\\' >> return "\\")
       <|> (char '"' >> return "\"")
--}
+      <|> (char 'n' >> return "\n")
+      <|> (char 'r' >> return "\r")
+
 unitValue = do symbol "Unit"; return M.ValueUnit
 trueValue = do symbol "True"; return M.ValueTrue
 falseValue = do symbol "False"; return M.ValueFalse
 pairValue = core <|> tuple
   where
-    core = try $ do symbol "Pair"; a <- value; M.ValuePair a <$> value
+    core = do symbol "Pair"; a <- value; M.ValuePair a <$> value
     tuple = try $ do
       symbol "("
       a <- value
@@ -227,7 +242,7 @@ field = lexeme (fi <|> parens fi)
     fi = typeInner noteF
 
 type_ :: Parser M.Type
-type_ = (ti <|> parens ti)
+type_ = (ti <|> parens ti) <|> (customFailure UnknownTypeException)
   where
     ti = snd <$> (lexeme $ typeInner (pure M.noAnn))
 
@@ -275,7 +290,7 @@ t_unit fp = do
 
 t_pair fp = core <|> tuple
   where
-    core = try $ do
+    core = do
       symbol "pair"
       (f, t) <- fieldType fp
       (l, a) <- field
@@ -297,7 +312,7 @@ t_pair fp = core <|> tuple
 
 t_or fp = core <|> bar
   where
-    core = try $ do
+    core = do
       symbol "or"
       (f, t) <- fieldType fp
       (l, a) <- field
@@ -325,13 +340,13 @@ t_option fp = do
 
 t_lambda fp = core <|> slashLambda
   where
-    core = try $ do
+    core = do
       symbol "lambda"
       (f, t) <- fieldType fp
       a <- type_
       b <- type_
       return (f, M.Type (M.T_lambda a b) t)
-    slashLambda = try $ do
+    slashLambda = do
       symbol "\\"
       (f, t) <- fieldType fp
       a <- type_
@@ -342,24 +357,24 @@ t_lambda fp = core <|> slashLambda
 -- Container types
 t_list fp = core <|> bracketList
   where
-    core = try $ do
+    core = do
       symbol "list"
       (f, t) <- fieldType fp
       a <- type_
       return (f, M.Type (M.T_list a) t)
-    bracketList = try $ do
+    bracketList = do
       a <- brackets type_
       (f, t) <- fieldType fp
       return (f, M.Type (M.T_list a) t)
 
 t_set fp = core <|> braceSet
   where
-    core = try $ do
+    core = do
       symbol "set"
       (f, t) <- fieldType fp
       a <- comparable
       return (f, M.Type (M.T_set a) t)
-    braceSet = try $ do
+    braceSet = do
       a <- braces comparable
       (f, t) <- fieldType fp
       return (f, M.Type (M.T_set a) t)
@@ -374,7 +389,7 @@ ops :: Parser [M.ParsedOp]
 ops = do
   lms <- asks M.letMacros
   let lmac = M.LETMAC <$> (mkLetMac lms)
-  braces (sepEndBy (lmac <|> morley' <|> prim' <|> mac' <|> seq') semicolon)
+  braces (sepEndBy (lmac <|> morley' <|> prim' <|> mac' <|> primOrMac  <|> seq') semicolon)
   where
     prim' = M.PRIM <$> try prim
     mac'  = M.MAC <$> try macro
@@ -442,24 +457,24 @@ stack_ p = symbol "'[" >> (emptyStk <|> stkCons <|> stkRest)
 
 prim :: Parser M.ParsedInstr
 prim = choice
-  [ dropOp, dupOp, swapOp, pushOp, someOp, noneOp, unitOp, ifNoneOp, pairOp
+  [ dropOp, dupOp, swapOp, pushOp, someOp, noneOp, unitOp, ifNoneOp
   , carOp, cdrOp, leftOp, rightOp, ifLeftOp, ifRightOp, nilOp, consOp, ifConsOp
-  , sizeOp, emptySetOp, emptyMapOp, mapOp, iterOp, memOp, getOp, updateOp, ifOp
+  , sizeOp, emptySetOp, emptyMapOp, iterOp, memOp, getOp, updateOp
   , loopLOp, loopOp, lambdaOp, execOp, dipOp, failWithOp, castOp, renameOp
   , concatOp, packOp, unpackOp, sliceOp, isNatOp, addressOp, addOp, subOp
-  , mulOp, edivOp, absOp, negOp, modOp, lslOp, lsrOp, orOp, andOp, xorOp, notOp
+  , mulOp, edivOp, absOp, negOp, lslOp, lsrOp, orOp, andOp, xorOp, notOp
   , compareOp, eqOp, neqOp, ltOp, leOp, gtOp, geOp, intOp, selfOp, contractOp
   , transferTokensOp, setDelegateOp, createAccountOp, createContract2Op
   , createContractOp, implicitAccountOp, nowOp, amountOp, balanceOp, checkSigOp
   , sha256Op, sha512Op, blake2BOp, hashKeyOp, stepsToQuotaOp, sourceOp, senderOp
   ]
+
 -------------------------------------------------------------------------------
 -- Core instructions
 -------------------------------------------------------------------------------
 
 -- Control Structures
 failWithOp = do symbol' "FAILWITH"; return M.FAILWITH
-ifOp    = do symbol' "IF"; a <- ops; M.IF a <$> ops
 loopOp  = do symbol' "LOOP"; M.LOOP <$> ops
 loopLOp = do symbol' "LOOP_LEFT"; M.LOOP_LEFT <$> ops
 execOp  = do symbol' "EXEC"; M.EXEC <$> noteVDef
@@ -498,7 +513,6 @@ mulOp  = do symbol' "MUL"; M.MUL <$> noteVDef
 edivOp = do symbol' "EDIV";M.EDIV <$> noteVDef
 absOp  = do symbol' "ABS"; M.ABS <$> noteVDef
 negOp  = do symbol' "NEG"; return M.NEG;
-modOp  = do symbol' "MOD"; return M.MOD;
 
 -- Bitwise logical operators
 lslOp = do symbol' "LSL"; M.LSL <$> noteVDef
@@ -520,7 +534,7 @@ emptyMapOp = do symbol' "EMPTY_MAP"; (t, v) <- notesTV; a <- comparable;
                 M.EMPTY_MAP t v a <$> type_
 memOp      = do symbol' "MEM"; M.MEM <$> noteVDef
 updateOp   = do symbol' "UPDATE"; return M.UPDATE
-iterOp     = do symbol' "ITER"; v <- noteVDef; M.ITER v <$> ops
+iterOp     = do symbol' "ITER"; M.ITER <$> ops
 sizeOp     = do symbol' "SIZE"; M.SIZE <$> noteVDef
 mapOp      = do symbol' "MAP"; v <- noteVDef; M.MAP v <$> ops
 getOp      = do symbol' "GET"; M.GET <$> noteVDef
@@ -575,7 +589,7 @@ sha512Op   = do symbol' "SHA512"; M.SHA512 <$> noteVDef
 hashKeyOp  = do symbol' "HASH_KEY"; M.HASH_KEY <$> noteVDef
 
 {- Type operations -}
-castOp = do symbol' "CAST"; t <- type_; M.CAST t <$> noteVDef
+castOp = do symbol' "CAST"; M.CAST <$> noteVDef <*> type_;
 renameOp = do symbol' "RENAME"; M.RENAME <$> noteVDef
 isNatOp = do symbol' "ISNAT"; return M.ISNAT
 intOp = do symbol' "INT"; M.INT <$> noteVDef
@@ -587,10 +601,7 @@ cmpOp = eqOp <|> neqOp <|> ltOp <|> gtOp <|> leOp <|> gtOp <|> geOp
 
 macro :: Parser M.Macro
 macro = do symbol' "CMP"; a <- cmpOp; M.CMP a <$> noteVDef
-  <|> do symbol' "IFCMP"; a <- cmpOp; v <- noteVDef; b <- ops;
-         M.IFCMP a v b <$> ops
   <|> do symbol' "IF_SOME"; a <- ops; M.IF_SOME a <$> ops
-  <|> do symbol' "IF"; a <- cmpOp; bt <- ops; M.IFX a bt <$> ops
   <|> do symbol' "FAIL"; return M.FAIL
   <|> do symbol' "ASSERT_CMP"; M.ASSERT_CMP <$> cmpOp
   <|> do symbol' "ASSERT_NONE"; return M.ASSERT_NONE
@@ -601,11 +612,9 @@ macro = do symbol' "CMP"; a <- cmpOp; M.CMP a <$> noteVDef
   <|> do symbol' "ASSERT"; return M.ASSERT
   <|> do string' "DI"; n <- num "I"; symbol' "P"; M.DIIP (n + 1) <$> ops
   <|> do string' "DU"; n <- num "U"; symbol' "P"; M.DUUP (n + 1) <$> noteVDef
-  <|> pairMac
   <|> unpairMac
   <|> cadrMac
   <|> setCadrMac
-  <|> mapCadrMac
   where
    num str = fromIntegral . length <$> some (string' str)
 
@@ -659,3 +668,21 @@ mapCadrMac = do
   symbol' "R"
   (v, f) <- notesVF
   M.MAP_CADR a v f <$> ops
+
+ifCmpMac :: Parser M.Macro
+ifCmpMac = symbol' "IFCMP" >> M.IFCMP <$> cmpOp <*> noteVDef <*> ops <*> ops
+
+ifOrIfX :: Parser M.ParsedOp
+ifOrIfX = do
+  symbol' "IF"
+  a <- eitherP cmpOp ops
+  case a of
+    Left cmp -> M.MAC <$> (M.IFX cmp <$> ops <*> ops)
+    Right op -> M.PRIM <$> (M.IF op <$> ops)
+
+-- Some of the operations and macros have the same prefixes in their names
+-- So this case should be handled separately
+primOrMac :: Parser M.ParsedOp
+primOrMac = ((M.MAC <$> ifCmpMac) <|> ifOrIfX)
+  <|> ((M.MAC <$> mapCadrMac) <|> (M.PRIM <$> mapOp))
+  <|> (try (M.PRIM <$> pairOp) <|> M.MAC <$> pairMac)

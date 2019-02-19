@@ -7,4 +7,4 @@ code { DROP;
        PUSH int 2; 
        PUSH int 10;
        TEST Test1 "%[0] + %[1] > 10" {sumIsGreaterThan10;};
-       DROP; UNIT; NIL operation; PAIR; };
+       DROP; DROP; UNIT; NIL operation; PAIR; };

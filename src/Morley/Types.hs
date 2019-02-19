@@ -23,6 +23,7 @@ module Morley.Types
   , CT (..)
 
   -- Parser types
+  , CustomParserException (..)
   , Parser
   , ParserException(..)
   , Program (..)
@@ -68,18 +69,33 @@ import Michelson.Types
   noAnn)
 import Morley.Default (Default(..))
 import Text.Megaparsec
+import qualified Text.Show
+
 -------------------------------------
 -- Types for the parser
 -------------------------------------
 
 
-type Parser = ReaderT Env (Parsec Void T.Text)
+type Parser = ReaderT Env (Parsec CustomParserException T.Text)
 
 instance Default a => Default (Parser a) where
   def = pure def
 
-data ParserException = ParserException (ParseErrorBundle T.Text Void)
-  deriving (Show)
+data CustomParserException
+  = UnknownTypeException
+  | OddNumberBytesException
+  | UnexpectedLineBreak
+  deriving (Eq, Data, Ord, Show)
+
+instance ShowErrorComponent CustomParserException where
+  showErrorComponent UnknownTypeException = "unknown type"
+  showErrorComponent OddNumberBytesException = "odd number bytes"
+  showErrorComponent UnexpectedLineBreak = "unexpected linebreak"
+
+data ParserException = ParserException (ParseErrorBundle T.Text CustomParserException)
+
+instance Show ParserException where
+  show (ParserException bundle) = errorBundlePretty bundle
 
 instance Exception ParserException where
   displayException (ParserException bundle) = errorBundlePretty bundle
@@ -115,8 +131,8 @@ mkEnv ps = Env (Map.fromList $ (,Prelude.False) <$> ps)
 -- Types produced by parser
 -------------------------------------
 type ParsedInstr = InstrAbstract ParsedOp
-data ParsedOp =
-    PRIM ParsedInstr
+data ParsedOp
+  = PRIM ParsedInstr
   | MAC Macro
   | LETMAC LetMacro
   | MORLEY MorleyInstr
@@ -167,18 +183,24 @@ newtype StackRef = StackRef Integer deriving (Eq, Show, Data)
 -- Types after macroexpander
 -------------------------------------
 type ExpandedInstr = InstrAbstract ExpandedOp
-data ExpandedOp =
-    PRIM_EX ExpandedInstr
+data ExpandedOp
+  = PRIM_EX ExpandedInstr
   | MORLEY_EX MorleyInstr
   | SEQ_EX [ExpandedOp]
   deriving (Eq, Show, Data)
 
-data PairStruct = F (VarAnn, FieldAnn) | P PairStruct PairStruct
+data PairStruct
+  = F (VarAnn, FieldAnn)
+  | P PairStruct PairStruct
   deriving (Eq, Show, Data)
-data CadrStruct = A | D deriving (Eq, Show, Data)
 
-data Macro =
-    CMP ParsedInstr VarAnn
+data CadrStruct
+  = A
+  | D
+  deriving (Eq, Show, Data)
+
+data Macro
+  = CMP ParsedInstr VarAnn
   | IFX ParsedInstr [ParsedOp] [ParsedOp]
   | IFCMP ParsedInstr VarAnn [ParsedOp] [ParsedOp]
   | FAIL

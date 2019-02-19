@@ -2,36 +2,133 @@ module Test.Parser
   ( spec
   ) where
 
-import Data.List (isSuffixOf)
-import Morley.Parser (noEnv, program, value)
+import Morley.Parser as P
 import Morley.Types as M
-import System.Directory (listDirectory)
 import Test.Hspec (Expectation, Spec, describe, it, shouldBe, shouldSatisfy)
 import Text.Megaparsec (parse)
 
+import Test.Util.Contracts (getIllTypedContracts, getWellTypedContracts)
 
 spec :: Spec
 spec = describe "Parser tests" $ do
   it "Successfully parses contracts examples from contracts/" parseContractsTest
+  it "Test stringLiteral" stringLiteralTest
+  it "IF parsers test" ifParsersTest
+  it "MAP parsers test" mapParsersTest
+  it "PAIR parsers test" pairParsersTest
+  it "pair type parser test" pairTypeParserTest
+  it "or type parser test" orTypeParserTest
+  it "lambda type parser test" lambdaTypeParserTest
+  it "list type parser test" listTypeParserTest
+  it "set type parser test" setTypeParserTest
+  it "pair constructor test" pairTest
   it "value parser test" valueParserTest
 
 parseContractsTest :: Expectation
 parseContractsTest = do
-  let dir = "contracts"
-  files <- (fmap . fmap) (\s -> dir ++ "/" ++ s) $
-    fmap (filter (\ x -> (isSuffixOf ".tz" x) || (isSuffixOf ".mtz" x))) $ listDirectory dir
-  void $ mapM checkFile files
+  files <- mappend <$> getWellTypedContracts <*> getIllTypedContracts
+  mapM_ checkFile files
 
 checkFile :: FilePath -> Expectation
 checkFile file = do
   code <- readFile file
-  parse (noEnv program) file code `shouldSatisfy` isRight
+  parse (P.noEnv P.program) file code `shouldSatisfy` isRight
 
 valueParserTest :: Expectation
 valueParserTest = do
-  parse (noEnv value) "" "{PUSH int 5;}" `shouldBe`
+  parse (P.noEnv P.value) "" "{PUSH int 5;}" `shouldBe`
     (Right $ M.ValueLambda [M.PRIM (M.PUSH noAnn (M.Type (M.T_comparable M.T_int) noAnn) (M.ValueInt 5))])
-  parse (noEnv value) "" "{1; 2}" `shouldBe`
+  parse (P.noEnv P.value) "" "{1; 2}" `shouldBe`
     (Right $ M.ValueSeq [M.ValueInt 1, M.ValueInt 2])
-  parse (noEnv value) "" "{Elt 1 2; Elt 3 4}" `shouldBe`
+  parse (P.noEnv P.value) "" "{Elt 1 2; Elt 3 4}" `shouldBe`
     (Right $ M.ValueMap [M.Elt (M.ValueInt 1) (M.ValueInt 2), M.Elt (M.ValueInt 3) (M.ValueInt 4)])
+
+stringLiteralTest :: Expectation
+stringLiteralTest = do
+  parse (P.noEnv P.stringLiteral) "" "\"\"" `shouldSatisfy` isRight
+  parse (P.noEnv P.stringLiteral) "" "\" \\t \\b \\n\\r  \"" `shouldSatisfy` isRight
+  parse (P.noEnv P.stringLiteral) "" "\"abacaba \\t \n\n\r\"" `shouldSatisfy` isRight
+  parse (P.noEnv P.stringLiteral) "" "\"abacaba \\t \n\n\r a\"" `shouldSatisfy` isLeft
+  parse (P.noEnv P.stringLiteral) "" "\"abacaba \\t \\n\\n\\r" `shouldSatisfy` isLeft
+
+ifParsersTest :: Expectation
+ifParsersTest = do
+  parse (P.noEnv P.ops) "" "{IF {} {};}" `shouldBe`
+    (Prelude.Right [M.PRIM $ M.IF [] []])
+  parse (P.noEnv P.ops) "" "{IFEQ {} {};}" `shouldBe`
+    (Prelude.Right [M.MAC $ M.IFX (M.EQ noAnn) [] []])
+  parse (P.noEnv P.ops) "" "{IFCMPEQ {} {};}" `shouldBe`
+    (Prelude.Right [M.MAC $ M.IFCMP (M.EQ noAnn) noAnn [] []])
+
+mapParsersTest :: Expectation
+mapParsersTest = do
+  parse (P.noEnv P.ops) "" "{MAP {};}" `shouldBe`
+    (Prelude.Right [M.PRIM $ M.MAP noAnn []])
+  parse (P.noEnv P.ops) "" "{MAP_CAR {};}" `shouldBe`
+    (Prelude.Right [M.MAC $ M.MAP_CADR [M.A] noAnn noAnn []])
+
+pairParsersTest :: Expectation
+pairParsersTest = do
+  parse (P.noEnv P.ops) "" "{PAIR;}" `shouldBe`
+    Prelude.Right [M.PRIM $ PAIR noAnn noAnn noAnn noAnn]
+  parse (P.noEnv P.ops) "" "{PAIR %a;}" `shouldBe`
+    Prelude.Right [MAC $ PAPAIR (P (F (noAnn, M.ann "a")) (F (noAnn,noAnn))) noAnn noAnn]
+  parse (P.noEnv P.ops) "" "{PAPAIR;}" `shouldBe`
+    Prelude.Right
+      [MAC $
+        PAPAIR (P (F (noAnn,noAnn)) (P (F (noAnn,noAnn)) (F (noAnn,noAnn))))
+          noAnn noAnn
+      ]
+
+pairTypeParserTest :: Expectation
+pairTypeParserTest = do
+  parse (P.noEnv P.type_) "" "pair unit unit" `shouldBe` Right unitPair
+  parse (P.noEnv P.type_) "" "(unit, unit)" `shouldBe` Right unitPair
+  where
+    unitPair :: M.Type
+    unitPair =
+      M.Type (M.T_pair noAnn noAnn (M.Type M.T_unit noAnn) (M.Type M.T_unit noAnn)) noAnn
+
+orTypeParserTest :: Expectation
+orTypeParserTest = do
+  parse (P.noEnv P.type_) "" "or unit unit" `shouldBe` Right unitOr
+  parse (P.noEnv P.type_) "" "(unit | unit)" `shouldBe` Right unitOr
+  where
+    unitOr :: M.Type
+    unitOr =
+      M.Type (M.T_or noAnn noAnn (M.Type M.T_unit noAnn) (M.Type M.T_unit noAnn)) noAnn
+
+lambdaTypeParserTest :: Expectation
+lambdaTypeParserTest = do
+  parse (P.noEnv P.type_) "" "lambda unit unit" `shouldBe` Right lambdaUnitUnit
+  parse (P.noEnv P.type_) "" "\\unit -> unit" `shouldBe` Right lambdaUnitUnit
+  where
+    lambdaUnitUnit :: M.Type
+    lambdaUnitUnit =
+      M.Type (M.T_lambda (M.Type M.T_unit noAnn) (M.Type M.T_unit noAnn)) noAnn
+
+listTypeParserTest :: Expectation
+listTypeParserTest = do
+  parse (P.noEnv P.type_) "" "list unit" `shouldBe` Right unitList
+  parse (P.noEnv P.type_) "" "[unit]" `shouldBe` Right unitList
+  where
+    unitList :: M.Type
+    unitList =
+      M.Type (M.T_list (M.Type M.T_unit noAnn)) noAnn
+
+setTypeParserTest :: Expectation
+setTypeParserTest = do
+  parse (P.noEnv P.type_) "" "set int" `shouldBe` Right intSet
+  parse (P.noEnv P.type_) "" "{int}" `shouldBe` Right intSet
+  where
+    intSet :: M.Type
+    intSet =
+      M.Type (M.T_set (M.Comparable M.T_int noAnn)) noAnn
+
+pairTest :: Expectation
+pairTest = do
+  parse (P.noEnv P.value) "" "Pair Unit Unit" `shouldBe` Right unitPair
+  parse (P.noEnv P.value) "" "(Unit, Unit)" `shouldBe` Right unitPair
+  where
+    unitPair :: M.Value M.ParsedOp
+    unitPair = M.ValuePair M.ValueUnit M.ValueUnit
