@@ -113,7 +113,7 @@ letType = lexeme $ do
   symbol "="
   t <- type_
   case t of
-    (M.Type t' Nothing) -> return $ M.LetType n (M.Type t' (Just n))
+    (M.Type t' (M.Annotation "")) -> return $ M.LetType n (M.Type t' (M.ann n))
     _ -> return $ M.LetType n t
 
 letValue :: Parser M.LetValue
@@ -122,7 +122,7 @@ letValue = lexeme $ do
   symbol "::"
   t <- type_
   symbol "="
-  v <- data_
+  v <- value
   return $ M.LetValue n t v
 
 mkLetMac :: [M.LetMacro] -> Parser M.LetMacro

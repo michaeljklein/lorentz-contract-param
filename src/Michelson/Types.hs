@@ -23,7 +23,7 @@ module Michelson.Types
   , Op (..)
 
     -- * Michelson types
-  , Annotation
+  , Annotation (..)
   , TypeAnn
   , FieldAnn
   , VarAnn

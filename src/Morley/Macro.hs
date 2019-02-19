@@ -26,8 +26,8 @@ module Morley.Macro
 import Generics.SYB (everywhere, mkT)
 import Morley.Types
   (CadrStruct(..), Contract(..), Elt(..), ExpandedInstr, ExpandedOp(..), FieldAnn, Instr,
-  InstrAbstract(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..), Program(..), TypeAnn,
-  Value(..), VarAnn, noAnn)
+  InstrAbstract(..), LetMacro(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..), Program(..),
+  TypeAnn, Value(..), VarAnn, noAnn)
 
 expandFlat :: [ParsedOp] -> [Instr]
 expandFlat = concatMap flatten . fmap expand

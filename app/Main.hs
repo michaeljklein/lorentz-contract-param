@@ -3,10 +3,6 @@ module Main
   ) where
 
 import Data.Text.IO (getContents)
-import Morley.Macro (expandProgramMacros)
-import qualified Morley.Parser as P
-
-import Data.Text.IO (getContents)
 import Fmt (pretty)
 import System.Console.ArgParser
 import System.Console.ArgParser.Params (FlagParam, StdArgParam)
@@ -14,7 +10,7 @@ import Text.Megaparsec (parse)
 import Text.Pretty.Simple (pPrint)
 
 import Michelson.Types
-import Morley.Macro (expandContractMacros, expandFlattenContract, expandValue)
+import Morley.Macro (expandContractMacros, expandFlattenContract, expandProgramMacros, expandValue)
 import qualified Morley.Parser as P
 import Morley.Runtime (Account(..), TxData(..), originateContract, runContract)
 import Morley.Types
@@ -73,7 +69,7 @@ valueOption name = mkValue `parsedBy` reqFlag name
 
     parseValue :: Text -> Either Text (Value Op)
     parseValue text =
-      either (Left . show) (Right . expandValue) $ parse P.value "" text
+      either (Left . show) (Right . expandValue) $ parse (P.noEnv P.value) "" text
 
 mutezOption :: String -> ParserSpec Mutez
 mutezOption name = Mutez . fromIntegral `parsedBy` reqFlag @Int name
@@ -123,10 +119,10 @@ main = do
     run :: CmdLnArgs -> IO ()
     run args = case args of
       Parse mFilename hasExpandMacros -> do
-        contract <- readAndParseContract mFilename
+        program <- readAndParseProgram mFilename
         if hasExpandMacros
-          then pPrint $ expandContractMacros contract
-          else pPrint contract
+          then pPrint $ expandProgramMacros program
+          else pPrint program
       TypeCheck _filename _hasVerboseFlag -> error "Not implemented yet:("
       Run RunOptions {..} -> do
         michelsonContract <- prepareContract roContractFile
@@ -145,8 +141,8 @@ main = do
     readCode :: Maybe FilePath -> IO Text
     readCode = maybe getContents readFile
 
-    readAndParseContract :: Maybe FilePath -> IO (Contract ParsedOp)
-    readAndParseContract mFilename = do
+    readAndParseProgram :: Maybe FilePath -> IO Program
+    readAndParseProgram mFilename = do
       code <- readCode mFilename
       let filename = fromMaybe "<stdin>" mFilename
       either (throwM . P.ParserException) pure $
@@ -155,7 +151,8 @@ main = do
     -- Read and parse the contract, expand and type check.
     prepareContract :: Maybe FilePath -> IO (Contract Op)
     prepareContract mFile = do
-      contract <- readAndParseContract mFile
+      contract <- getContract <$> readAndParseProgram mFile
+      -- TEMPORARY SHIM: this throws away Program Env! BAD!
       let
         michelsonContract :: Contract Op
         michelsonContract = expandFlattenContract contract

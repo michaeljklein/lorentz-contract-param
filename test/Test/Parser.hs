@@ -3,7 +3,7 @@ module Test.Parser
   ) where
 
 import Data.List (isSuffixOf)
-import Morley.Parser (noEnv, program)
+import Morley.Parser (noEnv, program, value)
 import Morley.Types as M
 import System.Directory (listDirectory)
 import Test.Hspec (Expectation, Spec, describe, it, shouldBe, shouldSatisfy)
@@ -29,9 +29,9 @@ checkFile file = do
 
 valueParserTest :: Expectation
 valueParserTest = do
-  parse value "" "{PUSH int 5;}" `shouldBe`
+  parse (noEnv value) "" "{PUSH int 5;}" `shouldBe`
     (Right $ M.ValueLambda [M.PRIM (M.PUSH noAnn (M.Type (M.T_comparable M.T_int) noAnn) (M.ValueInt 5))])
-  parse value "" "{1; 2}" `shouldBe`
+  parse (noEnv value) "" "{1; 2}" `shouldBe`
     (Right $ M.ValueSeq [M.ValueInt 1, M.ValueInt 2])
-  parse value "" "{Elt 1 2; Elt 3 4}" `shouldBe`
+  parse (noEnv value) "" "{Elt 1 2; Elt 3 4}" `shouldBe`
     (Right $ M.ValueMap [M.Elt (M.ValueInt 1) (M.ValueInt 2), M.Elt (M.ValueInt 3) (M.ValueInt 4)])

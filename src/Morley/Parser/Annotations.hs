@@ -77,7 +77,7 @@ notesTV = permute2Def noteT noteV
 notesVF :: Parser (M.VarAnn, M.FieldAnn)
 notesVF  = permute2Def noteV noteF
 
-fieldType :: Parser M.FieldNote -> Parser (M.FieldNote, M.TypeNote)
+fieldType :: Parser M.FieldAnn -> Parser (M.FieldAnn, M.TypeAnn)
 fieldType fp = try $ runPermutation $
   (,) <$> toPermutationWithDefault  def     fp
       <*> toPermutationWithDefault M.noAnn noteT

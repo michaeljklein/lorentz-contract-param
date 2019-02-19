@@ -11,6 +11,7 @@ module Morley.Types
   , InstrAbstract (..)
   , Instr
   , Op (..)
+  , Annotation (..)
   , TypeAnn
   , FieldAnn
   , VarAnn
@@ -25,6 +26,7 @@ module Morley.Types
   , Parser
   , ParserException(..)
   , Program (..)
+  , getContract
   , Pragma (..)
   , allPragmas
   , mkEnv
@@ -61,8 +63,9 @@ import Data.Data (Data(..))
 import qualified Data.Map.Lazy as Map
 import qualified Data.Text as T
 import Michelson.Types
-  (CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, Instr, InstrAbstract(..), Op(..),
-  Parameter, Storage, T(..), Type(..), TypeAnn, Value(..), VarAnn, ann, noAnn)
+  (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, Instr,
+  InstrAbstract(..), Op(..), Parameter, Storage, T(..), Type(..), TypeAnn, Value(..), VarAnn, ann,
+  noAnn)
 import Morley.Default (Default(..))
 import Text.Megaparsec
 -------------------------------------
@@ -90,6 +93,9 @@ data Env = Env { pragmas :: PragmaState
                } deriving (Show, Eq)
 --
 data Program = Program (Contract ParsedOp) Env [Property] deriving (Show, Eq)
+
+getContract :: Program -> Contract ParsedOp
+getContract (Program c _ _) = c
 
 data Property = Property deriving (Eq, Show)
 
