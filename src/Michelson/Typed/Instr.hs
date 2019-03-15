@@ -22,7 +22,7 @@ import Michelson.Typed.Value (Val(..))
 (#) :: Instr a b -> Instr b c -> Instr a c
 (#) = Seq
 
-infixl 0 #
+infixr 0 #
 
 -- | Representation of Michelson instruction or sequence
 -- of instructions.

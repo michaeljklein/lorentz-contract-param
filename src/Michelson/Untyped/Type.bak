@@ -1,0 +1,267 @@
+{-# LANGUAGE DeriveDataTypeable, DerivingStrategies #-}
+
+-- | Michelson types represented in untyped model.
+
+module Michelson.Untyped.Type2
+  ( Type (..)
+  , Comparable (..)
+  , compToType
+  , typeToComp
+  , T (..)
+  , CT (..)
+  , pattern Tint
+  , pattern Tnat
+  , pattern Tstring
+  , pattern Tbytes
+  , pattern Tmutez
+  , pattern Tbool
+  , pattern Tkey_hash
+  , pattern Ttimestamp
+  , pattern Taddress
+  , tint
+  , tnat
+  , tstring
+  , tbytes
+  , tmutez
+  , tbool
+  , tkeyHash
+  , ttimestamp
+  , taddress
+  , isAtomicType
+  , isKey
+  , isSignature
+  , isComparable
+  , isMutez
+  , isKeyHash
+  , isBool
+  , isString
+  , isInteger
+  , isTimestamp
+  , isNat
+  , isInt
+  , isBytes
+  ) where
+
+import Data.Aeson.TH (defaultOptions, deriveJSON)
+import Data.Data (Data(..))
+import Data.Text.Lazy.Builder (Builder)
+import Fmt ((+|), (|+))
+import Formatting.Buildable (Buildable(build))
+
+import Michelson.Untyped.Annotation
+
+-- Annotated type
+data Type = Type T TypeAnn
+  deriving (Eq, Show, Data, Generic)
+
+instance Buildable Type where
+  build (Type t a) = t |+ " " +| a |+ ""
+
+-- Annotated Comparable Sub-type
+data Comparable = Comparable CT TypeAnn
+  deriving (Eq, Show, Data, Generic)
+
+instance Buildable Comparable where
+  build (Comparable ct a)
+    | a == noAnn = build ct
+    | otherwise = ct |+ " " +| a |+ ""
+
+compToType :: Comparable -> Type
+compToType (Comparable ct tn) = Type (Tcomparable ct) tn
+
+typeToComp :: Type -> Maybe Comparable
+typeToComp (Type (Tcomparable ct) tn) = Just $ Comparable ct tn
+typeToComp _ = Nothing
+
+-- Michelson Type
+data T =
+    Tcomparable CT
+  | Tkey
+  | Tunit
+  | Tsignature
+  | Toption FieldAnn Type
+  | Tlist Type
+  | Tset Comparable
+  | Toperation
+  | Tcontract Type
+  | Tpair FieldAnn FieldAnn Type Type
+  | Tor FieldAnn FieldAnn Type Type
+  | Tlambda Type Type
+  | Tmap Comparable Type
+  | Tbig_map Comparable Type
+  deriving (Eq, Show, Data, Generic)
+
+instance Buildable T where
+  build =
+    \case
+      Tcomparable ct -> build ct
+      Tkey -> "key"
+      Tunit -> "unit"
+      Tsignature -> "signature"
+      Toption fa t -> "option (" +| t |+ " " +| fa |+ ")"
+      Tlist t -> "list (" +| t |+ ")"
+      Tset c -> "set (" +| c |+ ")"
+      Toperation -> "operation"
+      Tcontract t -> "contract " +| t |+ ""
+      Tpair fa1 fa2 t1 t2 ->
+        "pair (" +| t1 |+ " " +| fa1 |+ ")"
+         +| " (" +| t2 |+ " " +| fa2 |+ ")"
+      Tor fa1 fa2 t1 t2 ->
+        "or ("   +| t1 |+ " " +| fa1 |+ ")"
+         +| " (" +| t2 |+ " " +| fa2 |+ ")"
+      Tlambda t1 t2 -> build2 "lambda" t1 t2
+      Tmap t1 t2 -> build2 "map" t1 t2
+      Tbig_map t1 t2 -> build2 "big_map" t1 t2
+    where
+      -- build something with 2 type parameters
+      build2 :: (Buildable t1, Buildable t2) => Builder -> t1 -> t2 -> Builder
+      build2 name t1 t2 = name |+ " (" +| t1 |+ " " +| t2 |+ ")"
+
+-- Comparable Sub-Type
+data CT =
+    CTint
+  | CTnat
+  | CTstring
+  | CTbytes
+  | CTmutez
+  | CTbool
+  | CTkey_hash
+  | CTtimestamp
+  | CTaddress
+  deriving (Eq, Ord, Show, Data, Enum, Bounded, Generic)
+
+instance Buildable CT where
+  build =
+    \case
+      CTint -> "int"
+      CTnat -> "nat"
+      CTstring -> "string"
+      CTbytes -> "bytes"
+      CTmutez -> "mutez"
+      CTbool -> "bool"
+      CTkey_hash -> "key_hash"
+      CTtimestamp -> "timestamp"
+      CTaddress -> "address"
+
+pattern Tint :: T
+pattern Tint <- Tcomparable CTint
+
+pattern Tnat :: T
+pattern Tnat <- Tcomparable CTnat
+
+pattern Tstring :: T
+pattern Tstring <- Tcomparable CTstring
+
+pattern Tbytes :: T
+pattern Tbytes <- Tcomparable CTbytes
+
+pattern Tmutez :: T
+pattern Tmutez <- Tcomparable CTmutez
+
+pattern Tbool :: T
+pattern Tbool <- Tcomparable CTbool
+
+pattern Tkey_hash :: T
+pattern Tkey_hash <- Tcomparable CTkey_hash
+
+pattern Ttimestamp :: T
+pattern Ttimestamp <- Tcomparable CTtimestamp
+
+pattern Taddress :: T
+pattern Taddress <- Tcomparable CTaddress
+
+tint :: T
+tint = Tcomparable CTint
+
+tnat :: T
+tnat = Tcomparable CTnat
+
+tstring :: T
+tstring = Tcomparable CTstring
+
+tbytes :: T
+tbytes = Tcomparable CTbytes
+
+tmutez :: T
+tmutez = Tcomparable CTmutez
+
+tbool :: T
+tbool = Tcomparable CTbool
+
+tkeyHash :: T
+tkeyHash = Tcomparable CTkey_hash
+
+ttimestamp :: T
+ttimestamp = Tcomparable CTtimestamp
+
+taddress :: T
+taddress = Tcomparable CTaddress
+
+isAtomicType :: Type -> Bool
+isAtomicType t@(Type _ (Annotation "")) =
+    isComparable t || isKey t || isUnit t || isSignature t || isOperation t
+isAtomicType _ = False
+
+isKey :: Type -> Bool
+isKey (Type Tkey _) = True
+isKey _              = False
+
+isUnit :: Type -> Bool
+isUnit (Type Tunit _) = True
+isUnit _               = False
+
+isSignature :: Type -> Bool
+isSignature (Type Tsignature _) = True
+isSignature _                    = False
+
+isOperation :: Type -> Bool
+isOperation (Type Toperation _) = True
+isOperation _                    = False
+
+isComparable :: Type -> Bool
+isComparable (Type (Tcomparable _) _) = True
+isComparable _ = False
+
+isMutez :: Type -> Bool
+isMutez (Type (Tcomparable CTmutez) _) = True
+isMutez _ = False
+
+isTimestamp :: Type -> Bool
+isTimestamp (Type (Tcomparable CTtimestamp) _) = True
+isTimestamp _ = False
+
+isKeyHash :: Type -> Bool
+isKeyHash (Type (Tcomparable CTkey_hash) _) = True
+isKeyHash _ = False
+
+isBool  :: Type -> Bool
+isBool (Type (Tcomparable CTbool) _) = True
+isBool _ = False
+
+isString  :: Type -> Bool
+isString (Type (Tcomparable CTstring) _) = True
+isString _ = False
+
+isInteger :: Type -> Bool
+isInteger a = isNat a || isInt a || isMutez a || isTimestamp a
+
+isNat  :: Type -> Bool
+isNat (Type (Tcomparable CTnat) _) = True
+isNat _ = False
+
+isInt  :: Type -> Bool
+isInt (Type (Tcomparable CTint) _) = True
+isInt _ = False
+
+isBytes :: Type -> Bool
+isBytes (Type (Tcomparable CTbytes) _) = True
+isBytes _ = False
+
+----------------------------------------------------------------------------
+-- JSON serialization
+----------------------------------------------------------------------------
+
+deriveJSON defaultOptions ''Type
+deriveJSON defaultOptions ''Comparable
+deriveJSON defaultOptions ''T
+deriveJSON defaultOptions ''CT
