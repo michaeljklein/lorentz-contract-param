@@ -10,6 +10,7 @@ module Michelson.Untyped.Type
   , T (..)
   , CT (..)
   , ToCT
+  , FromCT
   , pattern Tint
   , pattern Tnat
   , pattern Tstring
@@ -137,17 +138,28 @@ data CT =
 -- | Type function that converts a regular Haskell type into a comparable type
 -- (which has kind @CT@)
 type family ToCT a :: CT where
-  ToCT Integer = 'T_int
-  ToCT Int = 'T_int
-  ToCT Natural = 'T_nat
-  ToCT Word64 = 'T_nat
-  ToCT Text = 'T_string
-  ToCT Bool = 'T_bool
+  ToCT Integer    = 'T_int
+  ToCT Int        = 'T_int
+  ToCT Natural    = 'T_nat
+  ToCT Word64     = 'T_nat
+  ToCT Text       = 'T_string
+  ToCT Bool       = 'T_bool
   ToCT ByteString = 'T_bytes
-  ToCT Mutez = 'T_mutez
-  ToCT Address = 'T_address
-  ToCT KeyHash = 'T_key_hash
-  ToCT Timestamp = 'T_timestamp
+  ToCT Mutez      = 'T_mutez
+  ToCT Address    = 'T_address
+  ToCT KeyHash    = 'T_key_hash
+  ToCT Timestamp  = 'T_timestamp
+
+type family FromCT (a :: CT) where
+  FromCT 'T_int       = Integer
+  FromCT 'T_nat       = Natural
+  FromCT 'T_string    = Text
+  FromCT 'T_bool      = Bool
+  FromCT 'T_bytes     = ByteString
+  FromCT 'T_mutez     = Mutez
+  FromCT 'T_address   = Address
+  FromCT 'T_key_hash  = KeyHash
+  FromCT 'T_timestamp = Timestamp
 
 instance Buildable CT where
   build =
