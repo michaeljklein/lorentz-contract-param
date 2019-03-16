@@ -2,7 +2,8 @@
 -- in the context of polymorphic stack type operations.
 
 module Michelson.Typed.Polymorphic
-  ( EDivOp (..)
+  ( Castable (..)
+  , EDivOp (..)
   , MemOp (..)
   , MapOp (..)
   , IterOp (..)
@@ -23,6 +24,17 @@ import Michelson.Typed.T (CT(..), T(..))
 import Michelson.Typed.Value (Val(..))
 
 import Tezos.Core (divModMutez, divModMutezInt)
+
+class Castable (a :: T) (b :: T) where
+  cast :: Val instr a -> Val instr b
+instance Castable ('T_custom a t) ('T_custom a t) where
+  cast = id
+
+instance Castable ('T_custom a t) t where
+  cast (VAnn v) = v
+
+instance Castable t ('T_custom a t) where
+  cast = VAnn
 
 class MemOp (c :: T) where
   type MemOpKey c :: CT

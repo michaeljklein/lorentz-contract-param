@@ -43,6 +43,10 @@ data Instr (inp :: [T]) (out :: [T]) where
   Nop :: Instr s s
   -- ^ Nop operation. Missing in Michelson spec, added to parse construction
   -- like  `IF {} { SWAP; DROP; }`.
+  Cast :: forall b a s. Castable a b => Instr (a ': s) (b ': s)
+  -- ^ Operation to cast typed annotations presented in @Typed.T@.
+  -- Usage example is `Cast @(T_annotated "kek" ('T_c 'T_int))` or
+  -- `Cast @('T_c 'T_int)`
 
   DROP :: Instr (a ': s) s
   DUP  :: Instr (a ': s) (a ': a ': s)

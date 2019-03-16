@@ -187,6 +187,7 @@ runInstrImpl
     -> EvalOp nop (Rec (Val Instr) out)
 runInstrImpl (Seq i1 i2) r = runInstr i1 r >>= \r' -> runInstr i2 r'
 runInstrImpl Nop r = pure $ r
+runInstrImpl Cast (a :& r) = pure $ cast a :& r
 runInstrImpl DROP (_ :& r) = pure $ r
 runInstrImpl DUP (a :& r) = pure $ a :& a :& r
 runInstrImpl SWAP (a :& b :& r) = pure $ b :& a :& r
@@ -205,7 +206,6 @@ runInstrImpl (IF_LEFT bLeft _) (VOr (Left a) :& r) = runInstr bLeft (a :& r)
 runInstrImpl (IF_LEFT _ bRight) (VOr (Right a) :& r) = runInstr bRight (a :& r)
 runInstrImpl (IF_RIGHT bRight _) (VOr (Right a) :& r) = runInstr bRight (a :& r)
 runInstrImpl (IF_RIGHT _ bLeft) (VOr (Left a) :& r) = runInstr bLeft (a :& r)
--- More here
 runInstrImpl NIL r = pure $ VList [] :& r
 runInstrImpl CONS (a :& VList l :& r) = pure $ VList (a : l) :& r
 runInstrImpl (IF_CONS _ bNil) (VList [] :& r) = runInstr bNil r

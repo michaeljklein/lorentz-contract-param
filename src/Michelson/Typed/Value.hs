@@ -18,6 +18,7 @@ module Michelson.Typed.Value
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
+import GHC.Types (Symbol)
 
 import Michelson.Typed.CValue (CVal(..), FromCVal, ToCVal, fromCVal, toCVal)
 import Michelson.Typed.T (T(..), ToT)
@@ -94,6 +95,9 @@ data Val instr t where
     => instr (inp ': '[]) (out ': '[]) -> Val instr ('T_lambda inp out)
   VMap :: Map (CVal k) (Val instr v) -> Val instr ('T_map k v)
   VBigMap :: Map (CVal k) (Val instr v) -> Val instr ('T_big_map k v)
+  -- Annotated version of Val with 'T_custom type
+  VAnn :: forall (ann :: Symbol) instr t.
+    Val instr t -> Val instr ('T_custom ann t)
 
 deriving instance Show (Val instr t)
 

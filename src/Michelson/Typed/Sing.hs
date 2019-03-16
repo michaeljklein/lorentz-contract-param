@@ -19,6 +19,7 @@ module Michelson.Typed.Sing
 
 import Data.Kind (Type)
 import Data.Singletons (Sing(..), SingI(..))
+import GHC.Types (Symbol)
 
 import Michelson.Typed.T (CT(..), T(..))
 
@@ -58,6 +59,8 @@ data instance Sing :: T -> Type where
                 => Sing a -> Sing b -> Sing ('T_map a b)
   ST_big_map    :: (SingI a, SingI b, Typeable a, Typeable b)
                 => Sing a -> Sing b -> Sing ('T_big_map a b)
+  ST_custom     :: forall (ann :: Symbol) a. (Typeable a)
+                => Sing a -> Sing ('T_custom ann a)
 
 ---------------------------------------------
 -- Singleton-related instances for CT
@@ -159,6 +162,7 @@ fromSingT (ST_or a b) = T_or (fromSingT a) (fromSingT b)
 fromSingT (ST_lambda a b) = T_lambda (fromSingT a) (fromSingT b)
 fromSingT (ST_map a b) = T_map (fromSingCT a) (fromSingT b)
 fromSingT (ST_big_map a b) = T_big_map (fromSingCT a) (fromSingT b)
+fromSingT (ST_custom a) = fromSingT a
 
 -- | Version of 'toSing' which creates 'SomeSingT'.
 toSingT :: T -> SomeSingT
@@ -192,6 +196,9 @@ toSingT (T_big_map l r) =
   withSomeSingCT l $ \lSing ->
   withSomeSingT r $ \rSing ->
     SomeSingT $ ST_big_map lSing rSing
+toSingT (T_custom _ t) =
+  withSomeSingT t $ \tSing ->
+    SomeSingT tSing
 
 instance (SingI t, Typeable t) => SingI ( 'T_c (t :: CT)) where
   sing = ST_c sing
@@ -227,3 +234,6 @@ instance (SingI a, Typeable a, Typeable b, SingI b) =>
 instance (SingI a, Typeable a, Typeable b, SingI b) =>
           SingI ( 'T_big_map a b) where
   sing = ST_big_map sing sing
+instance forall (ann :: Symbol) a. (SingI a, Typeable a) =>
+          SingI ( 'T_custom ann a) where
+  sing = ST_custom @ann sing

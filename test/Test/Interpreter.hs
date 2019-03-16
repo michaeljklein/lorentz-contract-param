@@ -2,6 +2,8 @@ module Test.Interpreter
   ( spec
   ) where
 
+
+import Data.Vinyl (Rec(..))
 import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldBe, shouldSatisfy)
 import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (Property, label, (.&&.), (===))
@@ -113,3 +115,13 @@ _myInstr2 :: Instr a ('T_option ('T_c 'T_int) : a)
 _myInstr2 =
   PUSH (VOption $ Just $ VC $ CvInt 223) #
   Nop
+
+_myAnnInstr ::
+  Instr ('T_custom "kek" ('T_c 'T_int) : s) ('T_custom "bek" ('T_c 'T_int) : s)
+_myAnnInstr =
+  DROP #
+  PUSH (VAnn @"lol" (VC $ CvInt 223)) #
+  Cast @('T_c 'T_int) #
+  PUSH (VC $ CvInt 223) #
+  ADD #
+  Cast @('T_custom "bek" ('T_c 'T_int))

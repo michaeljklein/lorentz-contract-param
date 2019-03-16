@@ -80,6 +80,7 @@ mkUType sing notes = case (sing, notes) of
     mt (Un.T_big_map (mkComp k nk) (mkUType v nv)) tn
   (ST_big_map k v, NStar) ->
     mt (Un.T_big_map (mkComp k na) (mkUType v NStar)) na
+  (ST_custom t, _) -> mkUType t NStar
  where
   mkComp t a = Un.Comparable (fromSingCT t) a
   mt = Un.Type
@@ -150,3 +151,4 @@ toUType t = Un.Type (convert t) Un.noAnn
       Un.T_map (Un.Comparable a Un.noAnn) (toUType b)
     convert (T_big_map a b) =
       Un.T_big_map (Un.Comparable a Un.noAnn) (toUType b)
+    convert (T_custom _ t') = convert t'

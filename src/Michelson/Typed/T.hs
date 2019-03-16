@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-
 -- | Module, providing 'CT' and 'T' data types, representing Michelson
 -- language types without annotations.
 module Michelson.Typed.T
@@ -8,6 +6,8 @@ module Michelson.Typed.T
   , ToCT
   , ToT
   ) where
+
+import GHC.Types (Symbol)
 
 import Michelson.Untyped.Type (CT(..), ToCT)
 import Tezos.Address (Address)
@@ -30,7 +30,12 @@ data T =
   | T_lambda T T
   | T_map CT T
   | T_big_map CT T
+  | T_custom Symbol T
   deriving (Eq, Show)
+
+deriving instance Show Symbol
+
+deriving instance Eq Symbol
 
 -- | Type function that converts a regular Haskell type into a @T@ type.
 -- TODO: what should be done with 'T_big_map'?

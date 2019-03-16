@@ -67,6 +67,7 @@ valToOpOrValue = \case
   VBigMap m ->
     Right $ Un.ValueMap
     (map (\(k, v) -> Un.Elt (cValToValue k) (unsafeValToValue v)) (Map.toList m))
+  VAnn v -> valToOpOrValue v
 
 cValToValue :: CVal t -> Un.Value (Un.Op nop)
 cValToValue cVal = case cVal of
@@ -87,6 +88,7 @@ instrToOps instr = Un.Op <$> handleInstr instr
     handleInstr :: Instr inp out -> [Un.Instr nop]
     handleInstr (Seq i1 i2) = handleInstr i1 <> handleInstr i2
     handleInstr Nop = []
+    handleInstr Cast = []
     handleInstr DROP = [Un.DROP]
     handleInstr DUP = [Un.DUP Un.noAnn]
     handleInstr SWAP = [Un.SWAP]

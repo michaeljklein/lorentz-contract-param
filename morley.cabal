@@ -68,6 +68,7 @@ library
                      , data-default
                      , fmt
                      , formatting
+                     , ghc-prim
                      , hspec
                      , lens
                      , megaparsec >= 7.0.0
