@@ -177,60 +177,68 @@ instance SliceOp ('T_c 'T_bytes) where
         B.drop ((fromIntegral . toInteger) o') $
           B.take ((fromIntegral . toInteger) l') b'
 
-class EDivOp (n :: CT) (m :: CT) where
-  type EDivOpRes n m :: CT
-  type EModOpRes n m :: CT
+class EDivOp (n :: T) (m :: T) where
+  type EDivOpRes n m :: T
+  type EModOpRes n m :: T
   evalEDivOp
-    :: CVal n
-    -> CVal m
-    -> Val instr ('T_option ('T_pair ('T_c (EDivOpRes n m))
-                                     ('T_c (EModOpRes n m))))
+    :: Val instr n
+    -> Val instr m
+    -> Val instr ('T_option ('T_pair ((EDivOpRes n m))
+                                     ((EModOpRes n m))))
 
-instance EDivOp 'T_int 'T_int where
-  type EDivOpRes 'T_int 'T_int = 'T_int
-  type EModOpRes 'T_int 'T_int = 'T_nat
-  evalEDivOp (CvInt i) (CvInt j) =
+instance (EDivOp n m) => EDivOp ('T_custom ann n) ('T_custom ann m) where
+  type EDivOpRes ('T_custom ann n) ('T_custom ann m) = 'T_custom ann (EDivOpRes n m)
+  type EModOpRes ('T_custom ann n) ('T_custom ann m) = 'T_custom ann (EModOpRes n m)
+  evalEDivOp (VAnn i) (VAnn j) =
+    case evalEDivOp i j of
+      VOption (Just (VPair (d, m))) -> (VOption . Just . VPair) (VAnn d, VAnn m) 
+      VOption Nothing -> VOption Nothing
+
+instance EDivOp ('T_c 'T_int) ('T_c 'T_int) where
+  type EDivOpRes ('T_c 'T_int) ('T_c 'T_int) = 'T_c 'T_int
+  type EModOpRes ('T_c 'T_int) ('T_c 'T_int) = 'T_c 'T_nat
+  evalEDivOp (VC (CvInt i)) (VC (CvInt j)) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvInt (div i j), VC $ CvNat $ fromInteger (mod i j))
-instance EDivOp 'T_int 'T_nat where
-  type EDivOpRes 'T_int 'T_nat = 'T_int
-  type EModOpRes 'T_int 'T_nat = 'T_nat
-  evalEDivOp (CvInt i) (CvNat j) =
+instance EDivOp ('T_c 'T_int) ('T_c 'T_nat) where
+  type EDivOpRes ('T_c 'T_int) ('T_c 'T_nat) = 'T_c 'T_int
+  type EModOpRes ('T_c 'T_int) ('T_c 'T_nat) = 'T_c 'T_nat
+  evalEDivOp (VC (CvInt i)) (VC (CvNat j)) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvInt (div i (toInteger j)), VC $ CvNat $ (mod (fromInteger i) j))
-instance EDivOp 'T_nat 'T_int where
-  type EDivOpRes 'T_nat 'T_int = 'T_int
-  type EModOpRes 'T_nat 'T_int = 'T_nat
-  evalEDivOp (CvNat i) (CvInt j) =
+instance EDivOp ('T_c 'T_nat) ('T_c 'T_int) where
+  type EDivOpRes ('T_c 'T_nat) ('T_c 'T_int) = 'T_c 'T_int
+  type EModOpRes ('T_c 'T_nat) ('T_c 'T_int) = 'T_c 'T_nat
+  evalEDivOp (VC (CvNat i)) (VC (CvInt j)) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvInt (div (toInteger i) j), VC $ CvNat $ (mod i (fromInteger j)))
-instance EDivOp 'T_nat 'T_nat where
-  type EDivOpRes 'T_nat 'T_nat = 'T_nat
-  type EModOpRes 'T_nat 'T_nat = 'T_nat
-  evalEDivOp (CvNat i) (CvNat j) =
+instance EDivOp ('T_c 'T_nat) ('T_c 'T_nat) where
+  type EDivOpRes ('T_c 'T_nat) ('T_c 'T_nat) = 'T_c 'T_nat
+  type EModOpRes ('T_c 'T_nat) ('T_c 'T_nat) = 'T_c 'T_nat
+  evalEDivOp (VC (CvNat i)) (VC (CvNat j)) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvNat (div i j), VC $ CvNat $ (mod i j))
-instance EDivOp 'T_mutez 'T_mutez where
-  type EDivOpRes 'T_mutez 'T_mutez = 'T_nat
-  type EModOpRes 'T_mutez 'T_mutez = 'T_mutez
-  evalEDivOp (CvMutez i) (CvMutez j) =
+instance EDivOp ('T_c 'T_mutez) ('T_c 'T_mutez) where
+  type EDivOpRes ('T_c 'T_mutez) ('T_c 'T_mutez) = 'T_c 'T_nat
+  type EModOpRes ('T_c 'T_mutez) ('T_c 'T_mutez) = 'T_c 'T_mutez
+  evalEDivOp (VC (CvMutez i)) (VC (CvMutez j)) =
     VOption $
     i `divModMutez` j <&> \case
       (quotient, remainder) ->
         VPair (VC $ CvNat (fromIntegral quotient), VC $ CvMutez remainder)
 
-instance EDivOp 'T_mutez 'T_nat where
-  type EDivOpRes 'T_mutez 'T_nat = 'T_mutez
-  type EModOpRes 'T_mutez 'T_nat = 'T_mutez
-  evalEDivOp (CvMutez i) (CvNat j) =
+instance EDivOp ('T_c 'T_mutez) ('T_c 'T_nat) where
+  type EDivOpRes ('T_c 'T_mutez) ('T_c 'T_nat) = 'T_c 'T_mutez
+  type EModOpRes ('T_c 'T_mutez) ('T_c 'T_nat) = 'T_c 'T_mutez
+  evalEDivOp (VC (CvMutez i)) (VC (CvNat j)) =
     VOption $
     i `divModMutezInt` j <&> \case
       (quotient, remainder) ->

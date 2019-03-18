@@ -273,10 +273,10 @@ concatImpl i@((c, cn1, _) ::& (_, cn2, _) ::& rs) vn = do
 arithImpl
   :: ( Typeable (ArithRes aop n m)
      , SingI (ArithRes aop n m)
-     , Typeable ('T_c (ArithRes aop n m) ': s)
+     , Typeable (ArithRes aop n m ': s)
      )
-  => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes aop n m) ': s)
-  -> HST ('T_c n ': 'T_c m ': s)
+  => Instr (n ':  m ': s) (ArithRes aop n m ': s)
+  -> HST (n ': m ': s)
   -> VarAnn
   -> Either (TCError nop) SomeInstr
 arithImpl mkInstr i@(_ ::& _ ::& rs) vn =
@@ -318,7 +318,7 @@ edivImplDo
      , SingI (EDivOpRes n m)
      , Typeable (EDivOpRes n m)
      )
-  => HST ('T_c n ': 'T_c m ': s)
+  => HST (n ': m ': s)
   -> VarAnn
   -> Either (TCError nop) SomeInstr
 edivImplDo i@(_ ::& _ ::& rs) vn =
@@ -375,10 +375,10 @@ compareImpl _ _ = \i vn -> typeCheckInstrErr (Un.COMPARE vn) (SomeHST i) ""
 unaryArithImpl
   :: ( Typeable (UnaryArithRes aop n)
      , SingI (UnaryArithRes aop n)
-     , Typeable ('T_c (UnaryArithRes aop n) ': s)
+     , Typeable (UnaryArithRes aop n ': s)
      )
-  => Instr ('T_c n ': s) ('T_c (UnaryArithRes aop n) ': s)
-  -> HST ('T_c n ': s)
+  => Instr (n ': s) (UnaryArithRes aop n ': s)
+  -> HST (n ': s)
   -> VarAnn
   -> Either (TCError nop) SomeInstr
 unaryArithImpl mkInstr i@(_ ::& rs) vn =

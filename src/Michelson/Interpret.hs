@@ -61,7 +61,7 @@ data ContractEnv nop = ContractEnv
 -- value that was on top of the stack when `FAILWITH` was called.
 data MichelsonFailed where
   MichelsonFailedWith :: Val Instr t -> MichelsonFailed
-  MichelsonArithError :: ArithError (CVal n) (CVal m) -> MichelsonFailed
+  MichelsonArithError :: ArithError (Val instr n) (Val instr m) -> MichelsonFailed
   MichelsonGasExhaustion :: MichelsonFailed
 
 deriving instance Show MichelsonFailed
@@ -264,26 +264,26 @@ runInstrImpl ISNAT (VC (CvInt i) :& r) =
   if i < 0
   then pure $ VOption Nothing :& r
   else pure $ VOption (Just $ VC (CvNat $ fromInteger i)) :& r
-runInstrImpl ADD (VC l :& VC r :& rest) =
+runInstrImpl ADD (l :& r :& rest) =
   (:& rest) <$> runArithOp (Proxy @Add) l r
-runInstrImpl SUB (VC l :& VC r :& rest) = (:& rest) <$> runArithOp (Proxy @Sub) l r
-runInstrImpl MUL (VC l :& VC r :& rest) = (:& rest) <$> runArithOp (Proxy @Mul) l r
-runInstrImpl EDIV (VC l :& VC r :& rest) = pure $ evalEDivOp l r :& rest
-runInstrImpl ABS (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Abs) a) :& rest
-runInstrImpl NEG (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Neg) a) :& rest
-runInstrImpl LSL (VC x :& VC s :& rest) = (:& rest) <$> runArithOp (Proxy @Lsl) x s
-runInstrImpl LSR (VC x :& VC s :& rest) = (:& rest) <$> runArithOp (Proxy @Lsr) x s
-runInstrImpl OR (VC l :& VC r :& rest) = (:& rest) <$> runArithOp (Proxy @Or) l r
-runInstrImpl AND (VC l :& VC r :& rest) = (:& rest) <$> runArithOp (Proxy @And) l r
-runInstrImpl XOR (VC l :& VC r :& rest) = (:& rest) <$> runArithOp (Proxy @Xor) l r
-runInstrImpl NOT (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Not) a) :& rest
-runInstrImpl COMPARE (VC l :& VC r :& rest) = (:& rest) <$> runArithOp (Proxy @Compare) l r
-runInstrImpl Typed.EQ (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Eq') a) :& rest
-runInstrImpl NEQ (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Neq) a) :& rest
-runInstrImpl Typed.LT (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Lt) a) :& rest
-runInstrImpl Typed.GT (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Gt) a) :& rest
-runInstrImpl LE (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Le) a) :& rest
-runInstrImpl GE (VC a :& rest) = pure $ VC (evalUnaryArithOp (Proxy @Ge) a) :& rest
+runInstrImpl SUB (l :& r :& rest) = (:& rest) <$> runArithOp (Proxy @Sub) l r
+runInstrImpl MUL (l :& r :& rest) = (:& rest) <$> runArithOp (Proxy @Mul) l r
+runInstrImpl EDIV (l :& r :& rest) = pure $ evalEDivOp l r :& rest
+runInstrImpl ABS (a :& rest) = pure $ evalUnaryArithOp (Proxy @Abs) a :& rest
+runInstrImpl NEG (a :& rest) = pure $ evalUnaryArithOp (Proxy @Neg) a :& rest
+runInstrImpl LSL (x :& s :& rest) = (:& rest) <$> runArithOp (Proxy @Lsl) x s
+runInstrImpl LSR (x :& s :& rest) = (:& rest) <$> runArithOp (Proxy @Lsr) x s
+runInstrImpl OR (l :& r :& rest) = (:& rest) <$> runArithOp (Proxy @Or) l r
+runInstrImpl AND (l :& r :& rest) = (:& rest) <$> runArithOp (Proxy @And) l r
+runInstrImpl XOR (l :& r :& rest) = (:& rest) <$> runArithOp (Proxy @Xor) l r
+runInstrImpl NOT (a :& rest) = pure $ evalUnaryArithOp (Proxy @Not) a :& rest
+runInstrImpl COMPARE (l :& r :& rest) = (:& rest) <$> runArithOp (Proxy @Compare) l r
+runInstrImpl Typed.EQ (a :& rest) = pure $ evalUnaryArithOp (Proxy @Eq') a :& rest
+runInstrImpl NEQ (a :& rest) = pure $ evalUnaryArithOp (Proxy @Neq) a :& rest
+runInstrImpl Typed.LT (a :& rest) = pure $ evalUnaryArithOp (Proxy @Lt) a :& rest
+runInstrImpl Typed.GT (a :& rest) = pure $ evalUnaryArithOp (Proxy @Gt) a :& rest
+runInstrImpl LE (a :& rest) = pure $ evalUnaryArithOp (Proxy @Le) a :& rest
+runInstrImpl GE (a :& rest) = pure $ evalUnaryArithOp (Proxy @Ge) a :& rest
 runInstrImpl INT (VC (CvNat n) :& r) = pure $ VC (CvInt $ toInteger n) :& r
 runInstrImpl SELF r = do
   ContractEnv{..} <- ask
@@ -350,12 +350,12 @@ runInstrImpl ADDRESS (VContract a :& r) = pure $ VC (CvAddress a) :& r
 runArithOp
   :: ArithOp aop n m
   => proxy aop
-  -> CVal n
-  -> CVal m
-  -> EvalOp nop (Val instr ('T_c (ArithRes aop n m)))
+  -> Val instr n
+  -> Val instr m
+  -> EvalOp nop (Val instr (ArithRes aop n m))
 runArithOp op l r = case evalOp op l r of
   Left  err -> throwError (MichelsonArithError err)
-  Right res -> pure (VC res)
+  Right res -> pure res
 
 createOrigOp
   :: (SingI param, SingI store)

@@ -112,63 +112,63 @@ data Instr (inp :: [T]) (out :: [T]) where
   ISNAT :: Instr ('T_c 'T_int ': s) ('T_option ('T_c 'T_nat) ': s)
   ADD
     :: ArithOp Add n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Add n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Add n m ': s)
   SUB
     :: ArithOp Sub n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Sub n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Sub n m ': s)
   MUL
     :: ArithOp Mul n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Mul n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Mul n m ': s)
   EDIV
     :: EDivOp n m
-    => Instr ('T_c n ': 'T_c m ': s)
-                 (('T_option ('T_pair ('T_c (EDivOpRes n m))
-                                      ('T_c (EModOpRes n m)))) ': s)
+    => Instr (n ': m ': s)
+                 (('T_option ('T_pair (EDivOpRes n m)
+                                      (EModOpRes n m))) ': s)
   ABS
     :: UnaryArithOp Abs n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Abs n) ': s)
+    => Instr (n ': s) (UnaryArithRes Abs n ': s)
   NEG
     :: UnaryArithOp Neg n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Neg n) ': s)
+    => Instr (n ': s) (UnaryArithRes Neg n ': s)
   LSL
     :: ArithOp Lsl n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Lsl n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Lsl n m ': s)
   LSR
     :: ArithOp Lsr n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Lsr n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Lsr n m ': s)
   OR
     :: ArithOp Or n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Or n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Or n m ': s)
   AND
     :: ArithOp And n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes And n m) ': s)
+    => Instr (n ': m ': s) (ArithRes And n m ': s)
   XOR
     :: ArithOp Xor n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Xor n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Xor n m ': s)
   NOT
     :: UnaryArithOp Not n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Not n) ': s)
+    => Instr (n ': s) (UnaryArithRes Not n ': s)
   COMPARE
     :: ArithOp Compare n m
-    => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Compare n m) ': s)
+    => Instr (n ': m ': s) (ArithRes Compare n m ': s)
   EQ
     :: UnaryArithOp Eq' n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Eq' n) ': s)
+    => Instr (n ': s) (UnaryArithRes Eq' n ': s)
   NEQ
     :: UnaryArithOp Neq n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Neq n) ': s)
+    => Instr (n ': s) (UnaryArithRes Neq n ': s)
   LT
     :: UnaryArithOp Lt n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Lt n) ': s)
+    => Instr (n ': s) (UnaryArithRes Lt n ': s)
   GT
     :: UnaryArithOp Gt n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Gt n) ': s)
+    => Instr (n ': s) (UnaryArithRes Gt n ': s)
   LE
     :: UnaryArithOp Le n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Le n) ': s)
+    => Instr (n ': s) (UnaryArithRes Le n ': s)
   GE
     :: UnaryArithOp Ge n
-    => Instr ('T_c n ': s) ('T_c (UnaryArithRes Ge n) ': s)
+    => Instr (n ': s) (UnaryArithRes Ge n ': s)
   INT :: Instr ('T_c 'T_nat ': s) ('T_c 'T_int ': s)
   SELF :: forall (cp :: T) s . Instr s ('T_contract cp ': s)
   CONTRACT

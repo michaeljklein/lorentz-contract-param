@@ -119,9 +119,7 @@ _myInstr2 =
 _myAnnInstr ::
   Instr ('T_custom "kek" ('T_c 'T_int) : s) ('T_custom "bek" ('T_c 'T_int) : s)
 _myAnnInstr =
-  DROP #
-  PUSH (VAnn @"lol" (VC $ CvInt 223)) #
-  Cast @('T_c 'T_int) #
-  PUSH (VC $ CvInt 223) #
+  PUSH (VAnn @"kek" (VC $ CvInt 223)) #
   ADD #
+  Cast @('T_c 'T_int) #
   Cast @('T_custom "bek" ('T_c 'T_int))
