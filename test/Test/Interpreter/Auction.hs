@@ -15,12 +15,13 @@ import Test.QuickCheck.Random (mkQCGen)
 import Michelson.Interpret (ContractEnv(..))
 import Michelson.Typed
   (CT(..), CVal(..), Operation(..), ToT, TransferTokens(..), Val(..), fromVal, toVal)
-import Morley.Test (ContractPropValidator, contractProp, midTimestamp, specWithContract)
-import Test.Util.Interpreter (dummyContractEnv)
-import Test.Util.QuickCheck (failedProp)
+import Morley.Test (ContractPropValidator, contractProp, midTimestamp, specWithTypedContract)
+import Morley.Test.Util (failedProp)
 import Tezos.Address (Address(..))
 import Tezos.Core (Mutez, Timestamp, timestampPlusSeconds, unMutez, unsafeMkMutez, unsafeSubMutez)
 import Tezos.Crypto (KeyHash)
+
+import Test.Util.Interpreter (dummyContractEnv)
 
 type Storage = (Timestamp, (Mutez, KeyHash))
 type Param = KeyHash
@@ -34,10 +35,10 @@ type ContractStorage instr = Val instr (ToT Storage)
 auctionSpec :: Spec
 auctionSpec = parallel $ do
   -- Test auction.tz, everything should be fine
-  specWithContract "contracts/auction.tz" $ \contract -> do
+  specWithTypedContract "contracts/auction.tz" $ \contract -> do
     it "Bid after end of auction triggers failure" $
       contractProp contract
-        (\_ _ _ -> (`shouldSatisfy` isLeft))
+        (\_ _ _ -> flip shouldSatisfy (isLeft . fst))
         (env { ceAmount = unsafeMkMutez 1200 })
         (mkParam keyHash2)
         (toVal (aBitBeforeMidTimestamp, (unsafeMkMutez 1000, keyHash1)))
@@ -54,7 +55,7 @@ auctionSpec = parallel $ do
   -- Test slightly modified version of auction.tz, it must fail.
   -- This block is given purely for demonstration of that tests are smart
   -- enough to filter common mistakes.
-  specWithContract "contracts/auction-buggy.tz" $ \contract -> do
+  specWithTypedContract "contracts/auction-buggy.tz" $ \contract -> do
     prop "Random check (dense end of auction)" $
       expectFailure $ qcProp contract denseTime arbitrary
 
@@ -111,7 +112,7 @@ validateAuction
 validateAuction env
     (fromVal -> newKeyHash)
     (fromVal -> (endOfAuction, (amount, keyHash :: KeyHash)))
-    resE
+    (resE, _)
 
   | ceNow env > endOfAuction
       = counterexample "Failure didn't trigger on end of auction" $ isLeft resE

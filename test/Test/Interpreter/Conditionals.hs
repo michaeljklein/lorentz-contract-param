@@ -8,22 +8,27 @@ import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (Property, arbitrary, (===))
 import Test.QuickCheck.Property (forAll, withMaxSuccess)
 
-import Michelson.Interpret (MichelsonFailed)
+import Michelson.Interpret (InterpreterState, MichelsonFailed)
 import Michelson.Typed (CVal(..), ToT, Val(..), toVal)
-import Morley.Test (contractProp, specWithContract)
+import Morley.Test (contractProp, specWithTypedContract)
+import Morley.Test.Util (failedProp)
+import Morley.Types (MorleyLogs)
+
 import Test.Util.Interpreter (dummyContractEnv)
-import Test.Util.QuickCheck (failedProp, qcIsLeft, qcIsRight)
+import Test.Util.QuickCheck (qcIsLeft, qcIsRight)
 
 type Param = Either Text (Maybe Integer)
 type ContractParam instr = Val instr (ToT Param)
 type ContractStorage instr = Val instr (ToT Text)
-type ContractResult x instr = Either MichelsonFailed ([x], ContractStorage instr)
+type ContractResult x instr
+   = ( Either MichelsonFailed ([x], ContractStorage instr)
+     , InterpreterState MorleyLogs)
 
 -- | Spec to test conditionals.tz contract.
 conditionalsSpec :: Spec
 conditionalsSpec = parallel $ do
 
-  specWithContract "contracts/conditionals.tz" $ \contract -> do
+  specWithTypedContract "contracts/conditionals.tz" $ \contract -> do
     it "success 1 test" $
       contractProp' contract $ Left "abc"
 
@@ -45,10 +50,10 @@ conditionalsSpec = parallel $ do
       => Param
       -> ContractResult x instr
       -> Property
-    validate (Left a) (Right ([], VC (CvString b))) = a === b
-    validate (Right Nothing) r = qcIsLeft r
-    validate (Right (Just a)) r | a < 0 = qcIsLeft r
-    validate (Right (Just a)) r | a >= 0 = qcIsRight r
+    validate (Left a) (Right ([], VC (CvString b)), _) = a === b
+    validate (Right Nothing) r = qcIsLeft $ fst r
+    validate (Right (Just a)) r | a < 0 = qcIsLeft $ fst r
+    validate (Right (Just a)) r | a >= 0 = qcIsRight $ fst r
     validate _ res = failedProp $ "Unexpected result: " <> show res
 
     contractProp' contract inputs =
