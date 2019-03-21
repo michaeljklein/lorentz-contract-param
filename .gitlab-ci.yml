@@ -8,6 +8,7 @@ cache:
 
 stages:
   - test
+  - build
 
 variables:
   STACK_ROOT: "$CI_PROJECT_DIR/.stack-root"
@@ -29,3 +30,33 @@ build-and-test:
     - stack $STACK_OPTIONS
         test morley
     - rm -rf "$STACK_ROOT/programs"  # Faster to download them again
+
+build-docker:
+  image: docker:stable
+
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+
+  services:
+    - docker:dind
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+
+  stage: build
+  only:
+    refs:
+      - master
+    changes:
+      - Dockerfile
+      - .dockerignore
+      - morley.cabal
+      - stack.yaml
+      - app/*
+      - src/*
+      - prelude/*
+  script:
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
