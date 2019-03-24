@@ -21,132 +21,114 @@ import qualified Michelson.Untyped as Un
 
 -- | Extracts 'T' type from 'Michelson.Untyped.Type'.
 fromUType :: Un.Type -> T
-fromUType (Un.Type wholeT _) = conv wholeT
-  where
-    conv (Un.T_comparable ct) = T_c ct
-    conv Un.T_key = T_key
-    conv Un.T_unit = T_unit
-    conv Un.T_signature = T_signature
-    conv (Un.T_option _ t) = T_option (fromUType t)
-    conv (Un.T_list t) = T_list (fromUType t)
-    conv (Un.T_set (Un.Comparable ct _)) = T_set ct
-    conv Un.T_operation = T_operation
-    conv (Un.T_contract t) = T_contract (fromUType t)
-    conv (Un.T_pair _ _ lT rT) = T_pair (fromUType lT) (fromUType rT)
-    conv (Un.T_or _ _ lT rT) = T_or (fromUType lT) (fromUType rT)
-    conv (Un.T_lambda lT rT) = T_lambda (fromUType lT) (fromUType rT)
-    conv (Un.T_map (Un.Comparable key _) val) = T_map key (fromUType val)
-    conv (Un.T_big_map (Un.Comparable key _) val) = T_big_map key (fromUType val)
+fromUType (Un.Type wholeT _) = case wholeT of
+  Un.Tc ct                         -> Tc ct
+  Un.TKey                          -> TKey
+  Un.TUnit                         -> TUnit
+  Un.TSignature                    -> TSignature
+  Un.TOption _ t                   -> TOption (fromUType t)
+  Un.TList t                       -> TList (fromUType t)
+  Un.TSet (Un.Comparable ct _)     -> TSet ct
+  Un.TOperation                    -> TOperation
+  Un.TContract t                   -> TContract (fromUType t)
+  Un.TPair _ _ lT rT               -> TPair (fromUType lT) (fromUType rT)
+  Un.TOr _ _ lT rT                 -> TOr (fromUType lT) (fromUType rT)
+  Un.TLambda lT rT                 -> TLambda (fromUType lT) (fromUType rT)
+  Un.TMap (Un.Comparable k _) v    -> TMap k (fromUType v)
+  Un.TBigMap (Un.Comparable k _) v -> TBigMap k (fromUType v)
 
 
 mkUType :: Sing x -> Notes x -> Un.Type
 mkUType sing notes = case (sing, notes) of
-  (ST_c ct, N (NT_c tn))              -> mt (Un.T_comparable (fromSingCT ct)) tn
-  (ST_c ct, NStar)                    -> mt (Un.T_comparable (fromSingCT ct)) na
-  (ST_key, N (NT_key tn))             -> mt Un.T_key tn
-  (ST_key, NStar)                     -> mt Un.T_key na
-  (ST_unit, N (NT_unit tn))           -> mt Un.T_unit tn
-  (ST_unit, NStar)                    -> mt Un.T_unit na
-  (ST_signature, N (NT_signature tn)) -> mt Un.T_signature tn
-  (ST_signature,NStar)                -> mt Un.T_signature na
-  (ST_option t,N (NT_option tn fn n)) -> mt (Un.T_option fn (mkUType t n)) tn
-  ((ST_option t), NStar)              -> mt (Un.T_option na (mkUType t NStar)) na
-  (ST_list t, N (NT_list tn n))       -> mt (Un.T_list (mkUType t n)) tn
-  (ST_list t, NStar)                  -> mt (Un.T_list (mkUType t NStar)) na
-  (ST_set ct, N (NT_set tn n))        -> mt (Un.T_set $ mkComp ct n) tn
-  (ST_set ct, NStar)                  -> mt (Un.T_set $ mkComp ct na) na
-  (ST_operation, N (NT_operation tn)) -> mt Un.T_operation tn
-  (ST_operation, NStar)               -> mt Un.T_operation na
-  (ST_contract t, N (NT_contract tn n)) ->
-    mt (Un.T_contract (mkUType t n)) tn
-  (ST_contract t, NStar)              -> mt (Un.T_contract (mkUType t NStar)) na
-  (ST_pair tl tr, N (NT_pair tn fl fr nl nr)) ->
-    mt (Un.T_pair fl fr (mkUType tl nl) (mkUType tr nr)) tn
-  (ST_pair tl tr, NStar) ->
-    mt (Un.T_pair na na (mkUType tl NStar) (mkUType tr NStar)) na
-  (ST_or tl tr, N (NT_or tn fl fr nl nr)) ->
-    mt (Un.T_or fl fr (mkUType tl nl) (mkUType tr nr)) tn
-  (ST_or tl tr, NStar) ->
-    mt (Un.T_or na na (mkUType tl NStar) (mkUType tr NStar)) na
-  (ST_lambda p q, N (NT_lambda tn np nq)) ->
-    mt (Un.T_lambda (mkUType p np) (mkUType q nq)) tn
-  (ST_lambda p q, NStar) ->
-    mt (Un.T_lambda (mkUType p NStar) (mkUType q NStar)) na
-  (ST_map k v, N (NT_map tn nk nv)) ->
-    mt (Un.T_map (mkComp k nk) (mkUType v nv)) tn
-  (ST_map k v, NStar) ->
-    mt (Un.T_map (mkComp k na) (mkUType v NStar)) na
-  (ST_big_map k v, N (NT_big_map tn nk nv)) ->
-    mt (Un.T_big_map (mkComp k nk) (mkUType v nv)) tn
-  (ST_big_map k v, NStar) ->
-    mt (Un.T_big_map (mkComp k na) (mkUType v NStar)) na
+  (STc ct, N (NTc tn))                -> ut (Un.Tc (fromSingCT ct)) tn
+  (STc ct, NStar)                     -> ut (Un.Tc (fromSingCT ct)) na
+  (STKey, N (NTKey tn))               -> ut Un.TKey tn
+  (STKey, NStar)                      -> ut Un.TKey na
+  (STUnit, N (NTUnit tn))             -> ut Un.TUnit tn
+  (STUnit, NStar)                     -> ut Un.TUnit na
+  (STSignature, N (NTSignature tn))   -> ut Un.TSignature tn
+  (STSignature,NStar)                 -> ut Un.TSignature na
+  (STOption t,N (NTOption tn fn n))   -> ut (Un.TOption fn (mkUType t n)) tn
+  ((STOption t), NStar)               -> ut (Un.TOption na (mkUType t NStar)) na
+  (STList t, N (NTList tn n))         -> ut (Un.TList (mkUType t n)) tn
+  (STList t, NStar)                   -> ut (Un.TList (mkUType t NStar)) na
+  (STSet ct, N (NTSet tn n))          -> ut (Un.TSet $ mkComp ct n) tn
+  (STSet ct, NStar)                   -> ut (Un.TSet $ mkComp ct na) na
+  (STOperation, N (NTOperation tn))   -> ut Un.TOperation tn
+  (STOperation, NStar)                -> ut Un.TOperation na
+  (STContract t, N (NTContract tn n)) -> ut (Un.TContract (mkUType t n)) tn
+  (STContract t, NStar)               -> ut (Un.TContract (mkUType t NStar)) na
+  (STPair tl tr, N (NTPair tn fl fr nl nr)) ->
+    ut (Un.TPair fl fr (mkUType tl nl) (mkUType tr nr)) tn
+  (STPair tl tr, NStar) ->
+    ut (Un.TPair na na (mkUType tl NStar) (mkUType tr NStar)) na
+  (STOr tl tr, N (NTOr tn fl fr nl nr)) ->
+    ut (Un.TOr fl fr (mkUType tl nl) (mkUType tr nr)) tn
+  (STOr tl tr, NStar) ->
+    ut (Un.TOr na na (mkUType tl NStar) (mkUType tr NStar)) na
+  (STLambda p q, N (NTLambda tn np nq)) ->
+    ut (Un.TLambda (mkUType p np) (mkUType q nq)) tn
+  (STLambda p q, NStar) ->
+    ut (Un.TLambda (mkUType p NStar) (mkUType q NStar)) na
+  (STMap k v, N (NTMap tn nk nv)) ->
+    ut (Un.TMap (mkComp k nk) (mkUType v nv)) tn
+  (STMap k v, NStar) ->
+      ut (Un.TMap (mkComp k na) (mkUType v NStar)) na
+  (STBigMap k v, N (NTBigMap tn nk nv)) ->
+    ut (Un.TBigMap (mkComp k nk) (mkUType v nv)) tn
+  (STBigMap k v, NStar) ->
+    ut (Un.TBigMap (mkComp k na) (mkUType v NStar)) na
  where
   mkComp t a = Un.Comparable (fromSingCT t) a
-  mt = Un.Type
+  ut = Un.Type
   na = Un.noAnn
 
 -- | Extracts @Notes t@ type from 'Michelson.Type.Type' and corresponding
 -- singleton.
 extractNotes :: Un.Type -> Sing t -> Either Text (Notes t)
-extractNotes (Un.Type wholeT tn) s = conv wholeT s
-  where
-    conv :: Un.T -> Sing t -> Either Text (Notes t)
-    conv (Un.T_comparable ct) (ST_c cst)
-      | fromSingCT cst == ct = pure $ mkNotes $ NT_c tn
-    conv Un.T_key ST_key = pure $ mkNotes $ NT_key tn
-    conv Un.T_unit ST_unit = pure $ mkNotes $ NT_unit tn
-    conv Un.T_signature ST_signature = pure $ mkNotes $ NT_signature tn
-    conv (Un.T_option fn t) (ST_option st) =
-      mkNotes . NT_option tn fn <$> extractNotes t st
-    conv (Un.T_list t) (ST_list st) = do
-      mkNotes . NT_list tn <$> extractNotes t st
-    conv (Un.T_set (Un.Comparable et sn)) (ST_set est)
-      | fromSingCT est == et = pure $ mkNotes $ NT_set tn sn
-    conv Un.T_operation ST_operation = pure $ mkNotes $ NT_operation tn
-    conv (Un.T_contract t) (ST_contract st) =
-      mkNotes . NT_contract tn <$> extractNotes t st
-    conv (Un.T_pair pf qf pt qt) (ST_pair spt sqt) =
-      liftA2 (mkNotes ... NT_pair tn pf qf)
-             (extractNotes pt spt)
-             (extractNotes qt sqt)
-    conv (Un.T_or pf qf pt qt) (ST_or spt sqt) = do
-      liftA2 (mkNotes ... NT_or tn pf qf)
-             (extractNotes pt spt)
-             (extractNotes qt sqt)
-    conv (Un.T_lambda pt qt) (ST_lambda spt sqt) = do
-      liftA2 (mkNotes ... NT_lambda tn)
-             (extractNotes pt spt)
-             (extractNotes qt sqt)
-    conv (Un.T_map (Un.Comparable kt kn) vt) (ST_map kst svt)
-       | fromSingCT kst == kt = mkNotes . NT_map tn kn  <$> extractNotes vt svt
-    conv (Un.T_big_map (Un.Comparable kt kn) vt) (ST_big_map kst svt)
-      | fromSingCT kst == kt =
-        mkNotes . NT_big_map tn kn  <$> extractNotes vt svt
-    conv a (fromSingT -> b) =
-      Left $ "failed to construct annotation, provided types do not match: "
-                <> show a <> " /= " <> show b
+extractNotes (Un.Type wholeT tn) s = case (wholeT, s) of
+  (Un.Tc ct, STc cst)
+    | fromSingCT cst == ct       -> pure $ mkNotes $ NTc tn
+  (Un.TKey, STKey)               -> pure $ mkNotes $ NTKey tn
+  (Un.TUnit, STUnit)             -> pure $ mkNotes $ NTUnit tn
+  (Un.TSignature, STSignature)   -> pure $ mkNotes $ NTSignature tn
+  (Un.TOption f t, STOption p)   -> mkNotes . NTOption tn f <$> extractNotes t p
+  (Un.TList t, STList st)        -> mkNotes . NTList tn <$> extractNotes t st
+  (Un.TSet (Un.Comparable et sn), STSet est)
+    | fromSingCT est == et       -> pure $ mkNotes $ NTSet tn sn
+  (Un.TOperation, STOperation)   -> pure $ mkNotes $ NTOperation tn
+  (Un.TContract t, STContract p) -> mkNotes . NTContract tn <$> extractNotes t p
+  (Un.TPair l r a b, STPair p q) -> liftA2 (mkNotes ... NTPair tn l r)
+                                    (extractNotes a p)
+                                    (extractNotes b q)
+  (Un.TOr l r a b, STOr p q)     -> liftA2 (mkNotes ... NTOr tn l r)
+                                    (extractNotes a p)
+                                    (extractNotes b q)
+  (Un.TLambda a b, STLambda p q) -> liftA2 (mkNotes ... NTLambda tn)
+                                    (extractNotes a p)
+                                    (extractNotes b q)
+  (Un.TMap (Un.Comparable k kn) v, STMap sk sv)
+     | fromSingCT sk == k        -> mkNotes . NTMap tn kn <$> extractNotes v sv
+  (Un.TBigMap (Un.Comparable k kn) v, STBigMap sk sv)
+    | fromSingCT sk == k         -> mkNotes . NTBigMap tn kn <$> extractNotes v sv
+  (a, fromSingT -> b)            ->
+    Left $ "failed to construct annotation, provided types do not match: "
+              <> show a <> " /= " <> show b
 
 -- | Converts from 'T' to 'Michelson.Type.Type'.
 toUType :: T -> Un.Type
-toUType t = Un.Type (convert t) Un.noAnn
-  where
-    convert :: T -> Un.T
-    convert (T_c a) = Un.T_comparable a
-    convert (T_key) = Un.T_key
-    convert (T_unit) = Un.T_unit
-    convert (T_signature) = Un.T_signature
-    convert (T_option a) = Un.T_option Un.noAnn (toUType a)
-    convert (T_list a) = Un.T_list (toUType a)
-    convert (T_set a) = Un.T_set $ Un.Comparable a Un.noAnn
-    convert (T_operation) = Un.T_operation
-    convert (T_contract a) = Un.T_contract (toUType a)
-    convert (T_pair a b) =
-      Un.T_pair Un.noAnn Un.noAnn (toUType a) (toUType b)
-    convert (T_or a b) =
-      Un.T_or Un.noAnn Un.noAnn (toUType a) (toUType b)
-    convert (T_lambda a b) =
-      Un.T_lambda (toUType a) (toUType b)
-    convert (T_map a b) =
-      Un.T_map (Un.Comparable a Un.noAnn) (toUType b)
-    convert (T_big_map a b) =
-      Un.T_big_map (Un.Comparable a Un.noAnn) (toUType b)
+toUType = (flip Un.Type $ Un.noAnn) . \case
+  Tc a        -> Un.Tc a
+  TKey        -> Un.TKey
+  TUnit       -> Un.TUnit
+  TSignature  -> Un.TSignature
+  TOption a   -> Un.TOption Un.noAnn (toUType a)
+  TList a     -> Un.TList (toUType a)
+  TSet a      -> Un.TSet $ Un.Comparable a Un.noAnn
+  TOperation  -> Un.TOperation
+  TContract a -> Un.TContract (toUType a)
+  TPair a b   -> Un.TPair Un.noAnn Un.noAnn (toUType a) (toUType b)
+  TOr a b     -> Un.TOr Un.noAnn Un.noAnn (toUType a) (toUType b)
+  TLambda a b -> Un.TLambda (toUType a) (toUType b)
+  TMap a b    -> Un.TMap (Un.Comparable a Un.noAnn) (toUType b)
+  TBigMap a b -> Un.TBigMap (Un.Comparable a Un.noAnn) (toUType b)

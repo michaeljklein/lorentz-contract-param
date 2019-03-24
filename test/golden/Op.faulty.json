@@ -1,0 +1,66 @@
+{
+    "seed": -2498050865098810815,
+    "samples": [
+        {
+            "unOp": {
+                "tag": "SLICE",
+                "contents": "\u0012x&fy򢫸ARuKq󂾕O񇆀񛧰g𴮄\u0008\u001b\"\n򽏼\u0002QH񁳟T*"
+            }
+        },
+        {
+            "unOp": {
+                "tag": "EQ",
+                "contents": "򼰨4]𞭬\u001f^񲾒EQtH񊍫򂤑^bCiNcf"
+            }
+        },
+        {
+            "unOp": {
+                "tag": "CREATE_CONTRACT",
+                "contents": [
+                    "񓀸",
+                    "?򡃛򄇃#񭺁_w3$:󳮕K𢯆\u000c<񲅤\u0005𛯍FY\u000b\u001b"
+                ]
+            }
+        },
+        {
+            "unOp": {
+                "tag": "CDR",
+                "contents": [
+                    "𙺐m'n=k򢱮\u001e^z'\u0005󠂙I𩋓3>򁡉\u0017󭼴~~g\u001b\u0006{:;bP",
+                    "ML򘢉󼐇\u0004\thk~3?󡀎\u0012"
+                ]
+            }
+        },
+        {
+            "unOp": {
+                "tag": "IF_NONE",
+                "contents": [
+                    [
+                        {
+                            "unOp": {
+                                "tag": "LAMBDA",
+                                "contents": [
+                                    ";Q񷀦r2󂗘8HJ꠾U\u0002:񅀞󫦊񎽽\u0006􍗒\u00028񸯎I\u0015%e\u001b􍯮",
+                                    [
+                                        {
+                                            "tag": "TSignature"
+                                        },
+                                        "\u0008"
+                                    ],
+                                    [
+                                        {
+                                            "tag": "TOperation"
+                                        },
+                                        "+^󜸸Z\u0018`\u001aC\u0006"
+                                    ],
+                                    []
+                                ]
+                            }
+                        }
+                    ],
+                    []
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,1765 @@
+{
+    "seed": 2304063567663349652,
+    "samples": [
+        {
+            "stor": [
+                {
+                    "tag": "TOption",
+                    "contents": [
+                        "}\u0002\u001e`y񫔗𹱄=",
+                        [
+                            {
+                                "tag": "TOption",
+                                "contents": [
+                                    "뒅󌼈󾏏\u0010\u001dH񀼣x𻏹`\u000fb",
+                                    [
+                                        {
+                                            "tag": "TSignature"
+                                        },
+                                        "<"
+                                    ]
+                                ]
+                            },
+                            "\u0000\u000fa\u0003(R\u0002"
+                        ]
+                    ]
+                },
+                "\u0010񉙯}z)-󇊻󁥧"
+            ],
+            "para": [
+                {
+                    "tag": "TPair",
+                    "contents": [
+                        "e",
+                        "lug𶓱@p򢮙\u0013󒚘M󠳳񀮇H=\u000frfub/񲃏{{[e",
+                        [
+                            {
+                                "tag": "TContract",
+                                "contents": [
+                                    {
+                                        "tag": "TContract",
+                                        "contents": [
+                                            {
+                                                "tag": "TKey"
+                                            },
+                                            "8ྜO%W󮀉򫳸4򏟎"
+                                        ]
+                                    },
+                                    "񌌙󼼋5GP򅊏h𿀳]񂁭m𭥱"
+                                ]
+                            },
+                            "qoK;𿬚qy򏆪(\u0017\u0013\u001a媢\\G񞢪\u0016󕗥-󇢩`"
+                        ],
+                        [
+                            {
+                                "tag": "TBigMap",
+                                "contents": [
+                                    [
+                                        "CInt",
+                                        "\\"
+                                    ],
+                                    [
+                                        {
+                                            "tag": "TMap",
+                                            "contents": [
+                                                [
+                                                    "CBool",
+                                                    "\u0005Z~󗕋V0!`O+'d\u001dM!X0\u001a:["
+                                                ],
+                                                [
+                                                    {
+                                                        "tag": "TOperation"
+                                                    },
+                                                    "򶫋#󼴷0\u001a\u0003񁦋\u0006\u001d\u001b$\u0010񬠢b)򽭒󇒩f"
+                                                ]
+                                            ]
+                                        },
+                                        ";Q"
+                                    ]
+                                ]
+                            },
+                            "S\u0007g5񜑔r*A\u0012=\\1n=񚕕w󞟬~W\u0005󣮽"
+                        ]
+                    ]
+                },
+                "󞪹W5b=+$𵱭/N}\n𵜣񦮾R\u0013"
+            ],
+            "code": [
+                {
+                    "unOp": {
+                        "tag": "ADD",
+                        "contents": "\u000b&Q\u0015t#X𶩑\u0001.h"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LOOP_LEFT",
+                        "contents": []
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LT",
+                        "contents": "T7H\n}\u000c2\u0005􇇻N\u0004j񒦃񮬉Z\u0010XyO\u000cN𳨑"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CAST",
+                        "contents": [
+                            "u\u0018U\"",
+                            [
+                                {
+                                    "tag": "TOr",
+                                    "contents": [
+                                        "𧗝𛷻\u000eE",
+                                        "򘖐s\u0008S'\t\u0004?\u0011I{\u0013𘌤<\u0003;fj",
+                                        [
+                                            {
+                                                "tag": "TLambda",
+                                                "contents": [
+                                                    [
+                                                        {
+                                                            "tag": "TSet",
+                                                            "contents": [
+                                                                "CAddress",
+                                                                "\u0008tV\u0016n򍶰{+G\u000c+y\u0003\u0014󑫆\u0010"
+                                                            ]
+                                                        },
+                                                        "?P󾓧1\u0010򿼿i񋰽򳯩\u0002񏡧󀣮򏄕!_\u0014򗜹\u000c\u00010e󫕒U"
+                                                    ],
+                                                    [
+                                                        {
+                                                            "tag": "TOperation"
+                                                        },
+                                                        "󥼁;I#p󹰎󥩓󻹦򡾐􇹶8"
+                                                    ]
+                                                ]
+                                            },
+                                            "Pg񐒬TYy󗜝lg^V𑞻d\u0002:a\""
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TList",
+                                                "contents": [
+                                                    {
+                                                        "tag": "TOr",
+                                                        "contents": [
+                                                            "]LJ񋑒􃞄XEh\r\u0007i󱻹t",
+                                                            "񶳓",
+                                                            [
+                                                                {
+                                                                    "tag": "TUnit"
+                                                                },
+                                                                "rTy"
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "tag": "TBigMap",
+                                                                    "contents": [
+                                                                        [
+                                                                            "CKeyHash",
+                                                                            "\\tqO8\u0014!p򐄒#:𚠗<,򗐶񒟠N\t򄼳w{򶢖OB\u0018𚩅]\u000f\u0012򛈼"
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "tag": "TLambda",
+                                                                                "contents": [
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "TContract",
+                                                                                            "contents": [
+                                                                                                {
+                                                                                                    "tag": "TOperation"
+                                                                                                },
+                                                                                                "䲓\u0016-s_)#r\u0010lI{\u000b\u0018𘽴8붎XO\u000b"
+                                                                                            ]
+                                                                                        },
+                                                                                        "\\/Hy<\\:󅶩h\u000f)"
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "TUnit"
+                                                                                        },
+                                                                                        "𡲠\u0019?}!󢖛􁳭37$\u0010\t\u001fFD\u0006򷿹Z鏆/\"_򃄸8󟤤"
+                                                                                    ]
+                                                                                ]
+                                                                            },
+                                                                            "bQT&񛥧2=𥚮򨿼񲫫\u001b\u0004Q@!񑈃F6r@l3򘵍"
+                                                                        ]
+                                                                    ]
+                                                                },
+                                                                "c-\u0007\u0007i\u00131ub)#\u0012\u000ct~IU\u000f\u0005*򴈇񆅁"
+                                                            ]
+                                                        ]
+                                                    },
+                                                    "}򱸂\u0004]LT\u0008\u0005d"
+                                                ]
+                                            },
+                                            "_`(5\u001c騺៝󼻲zr𥹋Z􃐪?u"
+                                        ]
+                                    ]
+                                },
+                                "$J\u0011৓uf020\u000c`)D\u0001񋂑$"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "EMPTY_MAP",
+                        "contents": [
+                            "dHG\u0016\u0013:\u0017!A\u000cTX[",
+                            "L򬕧\u001f0)",
+                            [
+                                "CString",
+                                "p\u0004X?\u0017N`d\u000fG\u0018_񭒉<b\u0010\u001eli9~󑼭􂌢񪱲{\u001eg"
+                            ],
+                            [
+                                {
+                                    "tag": "TSet",
+                                    "contents": [
+                                        "CNat",
+                                        ""
+                                    ]
+                                },
+                                "\u00102=𬟋𵙣e>q񷉒\n"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CDR",
+                        "contents": [
+                            "C𕢭2\u0003l76󻗏񩮣cL\u0008o󅯸坐=",
+                            "'d\u0016`?~󛕶\u0017𒖰\\𒈹}󼬳"
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "AND",
+                        "contents": "\u0017E򴸟Y'\"򞹓h񴛘󀎩OS"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SWAP"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SENDER",
+                        "contents": "󨯜\u0010y\u0001*\u00117ࡔ񓭙{cE\u0007\u0005"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "STEPS_TO_QUOTA",
+                        "contents": "\u000c\u001aC\u0001ViE󡭊H]6<\u0017\u0006j=&\u000f\u0010\u0016򽽆n"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UNPACK",
+                        "contents": [
+                            "Ue񓲈FJ-saY\u0001󖷱C\r;쐲𕦙\u0003cVgc񘋡oQ𽇜",
+                            [
+                                {
+                                    "tag": "TOr",
+                                    "contents": [
+                                        "\rN9k㪨A\u000b^\u0014i5\u0018􅯂D\u0003pF\u0013h\u000e7S񤑠/w\u00108R񕮈",
+                                        "狀񘺣E\u0005I𻐐\u001ce1T\u0000V򷑶|CX𜚠􉫪",
+                                        [
+                                            {
+                                                "tag": "TSet",
+                                                "contents": [
+                                                    "CTimestamp",
+                                                    "𑓄"
+                                                ]
+                                            },
+                                            "6\u0011uF\u0004Q\"\u0003\u001f8D6󵬢񄭄(𠁂"
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TOption",
+                                                "contents": [
+                                                    "M^C\u0014jX򒄡U>)񝮬򣣶Xn\u0001\u0015򾩖\u0016[󤙡<񸭳",
+                                                    [
+                                                        {
+                                                            "tag": "TOperation"
+                                                        },
+                                                        "(\t>\u001e(x^򃹉q\u0012\u0013򿕰񓏞#񊳷!򙣱\u0010򓢲<'\u0001\u001f"
+                                                    ]
+                                                ]
+                                            },
+                                            "-Jx\u00032𸗞Y7􊩾𑌡G󴨺m\u0001\"񪯝ix\\񠬯Z"
+                                        ]
+                                    ]
+                                },
+                                "񷆥>񺝚\"7JG!<Jxu\t\t("
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SOME",
+                        "contents": [
+                            "\u001f\u001a_,4't,",
+                            "򐈿򓽢􈀮2󸚴uZ7",
+                            "#1󆳹\u000bQ\u0014򉋰A\u0017L󆫋EK+Z񿞒>"
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "GT",
+                        "contents": "s\u000f\u0016񪓔\u0003y\u0002'y\u0012"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SHA512",
+                        "contents": "I\u0018T\u0003󥧕;}񔜿\u0017J󖌪Rn񒷣-\u0012𳰵󍨱~x}񠹏o𴓶"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "ADDRESS",
+                        "contents": "􏨍C􀣡󖏋[󞑞"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LSR",
+                        "contents": "j󗵮񗥱"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SUB",
+                        "contents": "4\u000c="
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MEM",
+                        "contents": "\u001f\u001a&L\r𒄾%5C`^\u0006CD򅜲!kw󌲂\u0004񯟴e򚘟k!򗐌򏰈E["
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "EXT",
+                        "contents": {
+                            "tag": "STACKTYPE",
+                            "contents": {
+                                "tag": "StkCons",
+                                "contents": [
+                                    {
+                                        "tag": "TyCon",
+                                        "contents": [
+                                            {
+                                                "tag": "TOption",
+                                                "contents": [
+                                                    "\u0019\u0011󄂷i񵣻򺱜&{(}\t>􈈲",
+                                                    [
+                                                        {
+                                                            "tag": "TList",
+                                                            "contents": [
+                                                                {
+                                                                    "tag": "TMap",
+                                                                    "contents": [
+                                                                        [
+                                                                            "CString",
+                                                                            "4񱳦]򵚃F\u0000w򯮢c ඛ󝮢򇝨\u0016\u001ebU4\u001c0𬈜f+\u0019\u0012]򟻢󀖈\u0017N"
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "tag": "TLambda",
+                                                                                "contents": [
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "TKey"
+                                                                                        },
+                                                                                        "["
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "TOperation"
+                                                                                        },
+                                                                                        "󱥯\u00180\u001e\r9r񙃞5󧸗Px󫈡<屩;"
+                                                                                    ]
+                                                                                ]
+                                                                            },
+                                                                            "\u0010🽨o򄫈(\u0008􇢬\u0014󖇟Z\u00009󙝗\u001eg\u0007v\u0008 &Lb+\u000b򹽝h}S\t"
+                                                                        ]
+                                                                    ]
+                                                                },
+                                                                "G􁬸𺷒h+D"
+                                                            ]
+                                                        },
+                                                        "\u000e񟍰U󐊺)m*Z\"9񼿞d񸟵\u001f\u0005;8`n\u0003"
+                                                    ]
+                                                ]
+                                            },
+                                            "\u0015񌒛􇌉W󥳆򽒕8zo_Ts"
+                                        ]
+                                    },
+                                    {
+                                        "tag": "StkCons",
+                                        "contents": [
+                                            {
+                                                "tag": "TyCon",
+                                                "contents": [
+                                                    {
+                                                        "tag": "TSignature"
+                                                    },
+                                                    "񹪫𢃔g b򡼇T,㜤UC:v4򆅇񮆚𜎶𻐊Q􁗘4Koq󜗄"
+                                                ]
+                                            },
+                                            {
+                                                "tag": "StkRest"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IF_CONS",
+                        "contents": [
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "SHA256",
+                                        "contents": "Ps\u0015\u0018"
+                                    }
+                                }
+                            ],
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "ISNAT",
+                                        "contents": "򩢠H113\"M"
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "NONE",
+                                        "contents": [
+                                            "c\\ub=\u001e󀅩󧹩-^𲨞𨺶\u000c\u0016h\tP\"Qcn\u0015􅾌J",
+                                            "\u000c\nXp",
+                                            "",
+                                            [
+                                                {
+                                                    "tag": "TSignature"
+                                                },
+                                                "\u001b\u0007𔴢򁌊_\u0013㬽l0Zi(\u000b9󵶫V󊦢󲭏2킓"
+                                            ]
+                                        ]
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "DIP",
+                        "contents": []
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "BALANCE",
+                        "contents": "_\u001f<"
+                    }
+                }
+            ]
+        },
+        {
+            "stor": [
+                {
+                    "tag": "TOperation"
+                },
+                "{\u0019MpM\u0011f񡎢󁐘`J򆷺V\u0005\nGy񩈺k_}r\u001a"
+            ],
+            "para": [
+                {
+                    "tag": "TKey"
+                },
+                "򤈀"
+            ],
+            "code": [
+                {
+                    "unOp": {
+                        "tag": "NEG"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SWAP"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UNIT",
+                        "contents": [
+                            "g\u001c89󑏷\t;e\\󆍦𤧶l\u0014\u00177'h",
+                            "\u0002&6񕷔9]󺉳4@򾳲󥒙񼼎\\򙁻"
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SET_DELEGATE",
+                        "contents": "\u000b=񪔚򖊝𪏢.Tt8&T􂻂1sPt: \u0011|UF\u0015p\u000c㦆CV"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IMPLICIT_ACCOUNT",
+                        "contents": "\u0018P᧋\u000f󮄾PRV3\u0018򀷺m񯢻,𼿻s񃙉@\u000bMg󂡹\u0017􉽑]"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LT",
+                        "contents": ".󁞸)p\u0005􇪀󎝓"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MAP",
+                        "contents": [
+                            "񉜞Opo󩐽\t󊗄7\u0011*}~W*3\u00107WSU\u00004",
+                            []
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "GE",
+                        "contents": "򰟳b򠀡gzS\u0004,oR\r\u0008_\\8\u0018.\u0008\u001e򅷝񂢾\u001bj\u0016!\u000f"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SHA512",
+                        "contents": "}\u000b\u00084Y\u0001𓘌9\u001b/񀧎񀁋\tbQ\u001ak򲹘𐼂D񆑿󁊫A"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SELF",
+                        "contents": ""
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "NONE",
+                        "contents": [
+                            "g󢺈򿁲ᗟ񤿚}򮫵mB\u0004h^\nh񛃩g􇵂2\u0011{󣣲",
+                            "񊣙`v򩧻?\u0005G)\u0000uK򣷽T񬁿",
+                            "",
+                            [
+                                {
+                                    "tag": "TBigMap",
+                                    "contents": [
+                                        [
+                                            "CBool",
+                                            "\u0015\u0010+񈂉g\u0015Y/\u0018櫲𒾅\u0011g\u0019\")Z"
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TOption",
+                                                "contents": [
+                                                    "n>𸉓\u001bE񆔗\u0016\u000ezk󺍏*𮰤A콩",
+                                                    [
+                                                        {
+                                                            "tag": "TOption",
+                                                            "contents": [
+                                                                "\u001e\u00062󍖏\u0015񦀁[Zqv.H\u0007𩐠c4vzia\u001cAL\u0001󳣝򵑫򢧢񸞰",
+                                                                [
+                                                                    {
+                                                                        "tag": "TContract",
+                                                                        "contents": [
+                                                                            {
+                                                                                "tag": "TMap",
+                                                                                "contents": [
+                                                                                    [
+                                                                                        "CAddress",
+                                                                                        "Ud􆫌@\u0004򗭮n񻺵xWn%&󮊾\u000f\u0013"
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "Tc",
+                                                                                            "contents": "CNat"
+                                                                                        },
+                                                                                        "YP񬸃Kcm\u001d'󯨄}\n\u0015Z\u00031t\u001fM񗿱|𜺼4D0>򴁪"
+                                                                                    ]
+                                                                                ]
+                                                                            },
+                                                                            "x"
+                                                                        ]
+                                                                    },
+                                                                    "\u0000^L\u0002n󒵆lR.#򂩏"
+                                                                ]
+                                                            ]
+                                                        },
+                                                        "&\"?\u000eoFwx\u000c"
+                                                    ]
+                                                ]
+                                            },
+                                            "񝕲񼿞}L웉)\\n󌡖\u001e"
+                                        ]
+                                    ]
+                                },
+                                "o~\u0011,\u0016/v󦔒A,󗝐\u000eZ\u0000\u000f"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SHA256",
+                        "contents": "c\u0004󍂧\u000c񢫧#vZ\t𦆉dy~򨻆Q"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "PUSH",
+                        "contents": [
+                            "9",
+                            [
+                                {
+                                    "tag": "TSignature"
+                                },
+                                "\u0017K\u0000\u000f\u0006M@\u000f"
+                            ],
+                            {
+                                "tag": "ValueNone"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "RENAME",
+                        "contents": "\u0000["
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SUB",
+                        "contents": "\u0005uFT󷮰d\u0017_6𸰿9Pn5*󶀾􍥭]5򤁡\\\r="
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "RENAME",
+                        "contents": "9􅃆򅇘𱛉/񋝕Ca\"􄹞/\u001a󰹎񥣛0"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LE",
+                        "contents": "\u0010\u000f.^!3𵨌`!\"󨮆y]$54򖛑+>D"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SENDER",
+                        "contents": "񝜃󮭬bgN!;󐤪\u0013􌖟w.\u0010O!񖱠\u0010"
+                    }
+                }
+            ]
+        },
+        {
+            "stor": [
+                {
+                    "tag": "TUnit"
+                },
+                ""
+            ],
+            "para": [
+                {
+                    "tag": "TBigMap",
+                    "contents": [
+                        [
+                            "CString",
+                            "=r;\ts"
+                        ],
+                        [
+                            {
+                                "tag": "TSignature"
+                            },
+                            "󵡁"
+                        ]
+                    ]
+                },
+                "񪲨a\u001d}H,p:A񗑍󄍰\u000bT򉖋\u000b𺇼V;"
+            ],
+            "code": [
+                {
+                    "unOp": {
+                        "tag": "LSR",
+                        "contents": "\u0013󫼦u\n򤝪g)[򌰛>񆕜l\r1񘒉A>𓔼&"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SOURCE",
+                        "contents": "򵐛F9r󺰪𬷁f"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LEFT",
+                        "contents": [
+                            "",
+                            "3)36r0K񺓁(\u0018",
+                            "񝆺@?3RV򾃭73򶙓0QC󁫤fl\u0015 ",
+                            "",
+                            [
+                                {
+                                    "tag": "Tc",
+                                    "contents": "CString"
+                                },
+                                "𗵶y=]/I󭴱<9;\u001a񌶤\"󥖶7"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "STEPS_TO_QUOTA",
+                        "contents": "B󾂋q|\u000fKN\u001c\u001fo񭰤@"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SET_DELEGATE",
+                        "contents": "򌾁g󫂃򏩩q\u001bnUf%\r"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CONCAT",
+                        "contents": "\u0006{@\u0013𼐱"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UNPACK",
+                        "contents": [
+                            "q>񬶖\u0004$",
+                            [
+                                {
+                                    "tag": "TContract",
+                                    "contents": [
+                                        {
+                                            "tag": "TKey"
+                                        },
+                                        "R\u001b;􃓅:\t𰋳26\u0010qNm\u0002\u00187"
+                                    ]
+                                },
+                                "/d􌝁4\u0007E(\u0001Nip\u001f;i2}V\u0002"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "EXT",
+                        "contents": {
+                            "tag": "STACKTYPE",
+                            "contents": {
+                                "tag": "StkCons",
+                                "contents": [
+                                    {
+                                        "tag": "VarID",
+                                        "contents": "\"\u0007xo󤨤\u0013>"
+                                    },
+                                    {
+                                        "tag": "StkEmpty"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "GET",
+                        "contents": "\u0012󑃊\u0014S\u0011|𫲗`G񲑨\u0015d<9WlX9\u000cK𔣹󩕥w񅺾\u0019"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LAMBDA",
+                        "contents": [
+                            "\t",
+                            [
+                                {
+                                    "tag": "TContract",
+                                    "contents": [
+                                        {
+                                            "tag": "TContract",
+                                            "contents": [
+                                                {
+                                                    "tag": "TList",
+                                                    "contents": [
+                                                        {
+                                                            "tag": "TList",
+                                                            "contents": [
+                                                                {
+                                                                    "tag": "TMap",
+                                                                    "contents": [
+                                                                        [
+                                                                            "CKeyHash",
+                                                                            "sNk\nF󃥙\u0008x^􌺹󴈏:lvx𴬹񵙾:󄩽p򃻧*%𿮎\u0016z"
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "tag": "TKey"
+                                                                            },
+                                                                            "}\u0008x򆵊J\\xwu񸡰o\"𔼱񀙟A'Li󌤐􃱇򰆍7"
+                                                                        ]
+                                                                    ]
+                                                                },
+                                                                "l;f$>[쒰񣫜𘶰\u000b\u000b~􄅴򡻒\u00166N\u000fD\u0001\u000b"
+                                                            ]
+                                                        },
+                                                        "𹖶P򩙴񤐣\u000bJZ𙸅23\u000cH(l𢡮\u0012\u001c򭾮\u0004!X/\u001e𙒭\u001c\u001c𭍴\u0006"
+                                                    ]
+                                                },
+                                                "\u001c󖤜𣺿\u0017]["
+                                            ]
+                                        },
+                                        "𺚨\u0019?g􆞃翤\u001ch\u001c;󄥓󣘀W"
+                                    ]
+                                },
+                                "𬨾\u001c\u00186𩈍󵏗y=񖃄\u000c}F\u0014CY\u0002𳝔\u000b#Db16N񢻔n?"
+                            ],
+                            [
+                                {
+                                    "tag": "TBigMap",
+                                    "contents": [
+                                        [
+                                            "CInt",
+                                            "\u000bm\u00163\u001d󓎥.\u0004兘򯯰C򴷥1O~\u0006]GF𚾂\u0008C\u0001h>򥫓;"
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TLambda",
+                                                "contents": [
+                                                    [
+                                                        {
+                                                            "tag": "TOption",
+                                                            "contents": [
+                                                                "񫷫:\u000e]DFu^򂎯3\u0011p\"\u001f",
+                                                                [
+                                                                    {
+                                                                        "tag": "TKey"
+                                                                    },
+                                                                    "󄼽򨫂\" 򉱍"
+                                                                ]
+                                                            ]
+                                                        },
+                                                        "_\r\tg\u0005񫰁񏘢>󞲶\u0012YY\nCC(򥐱񛋴3"
+                                                    ],
+                                                    [
+                                                        {
+                                                            "tag": "TSet",
+                                                            "contents": [
+                                                                "CAddress",
+                                                                "L󥣏2\u00019B`r0^"
+                                                            ]
+                                                        },
+                                                        "\u000b𞊹\u0000򢁡!򒢐/풾T7\tv$-S󅚮J!x"
+                                                    ]
+                                                ]
+                                            },
+                                            "𠂜\u000c𙎮􋊐H+򎧮𤸔\u000baS$ᬁ"
+                                        ]
+                                    ]
+                                },
+                                "\u0015"
+                            ],
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "LSR",
+                                        "contents": "=\u0017򲈨򊳢/򃢭\u000fqi>m񎗰%統\u0019"
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UNPACK",
+                        "contents": [
+                            "򼑣u\n𙖂\u00038\tSz񐑬5Ir\u000fJk^",
+                            [
+                                {
+                                    "tag": "TContract",
+                                    "contents": [
+                                        {
+                                            "tag": "TOperation"
+                                        },
+                                        "cT\tv>𑷨\u00112A*\u0004򓙖r"
+                                    ]
+                                },
+                                "\u0010*0\u0000򢴼\u000c:n(𺵁t'񕋊pN}4󕾯:򗦧.P"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SWAP"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "ABS",
+                        "contents": "𦒒_C5\u0015\u000c𜪠|b󤴗󭾄U򢄵<򿓒6?󤎑|l+򇈷񛻥\u001e\u001f􏛂\u0007P"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MUL",
+                        "contents": "񑍢󶞕+󹵵榄e󂿷\u001c"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "ISNAT",
+                        "contents": "\u000fxl󃛈^򪥢\u0005.\u0004"
+                    }
+                }
+            ]
+        },
+        {
+            "stor": [
+                {
+                    "tag": "TList",
+                    "contents": [
+                        {
+                            "tag": "TOperation"
+                        },
+                        "񒠐_"
+                    ]
+                },
+                "Tf\u0013"
+            ],
+            "para": [
+                {
+                    "tag": "TList",
+                    "contents": [
+                        {
+                            "tag": "TSet",
+                            "contents": [
+                                "CMutez",
+                                "򠦂񘫃󌢡"
+                            ]
+                        },
+                        "? 󙕰]󋰋;񰹕,񓺣񳼌\u000bZL󌷉;񇼠{# 6_n񍈎n\u000ckX#3"
+                    ]
+                },
+                "_&\u000c􁳬򗬍'𴎳򢮟%"
+            ],
+            "code": [
+                {
+                    "unOp": {
+                        "tag": "UPDATE"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IF_CONS",
+                        "contents": [
+                            [],
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "HASH_KEY",
+                                        "contents": "񲟕񾴜􇀕~O"
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "HASH_KEY",
+                                        "contents": "<pMw|󇘳5\u0001\u001aH\r\u000e"
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "SENDER",
+                                        "contents": "Cen6eF`q-"
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "NOW",
+                        "contents": "9\\\u001eu𠮦\u0001񢏶>򈨲#E󮜵B񣺙򼜯Y򿎓k*\u000f\u0015\u000b\t\u0002𻷵i7%Ky"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LOOP",
+                        "contents": [
+                            {
+                                "unOp": {
+                                    "tag": "SWAP"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MAP",
+                        "contents": [
+                            "{\u001b񐾨񱪢񞐽󥚆m񳛒!]𾢗",
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "STEPS_TO_QUOTA",
+                                        "contents": ""
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UPDATE"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "EQ",
+                        "contents": "u𯳂d\u0002]􌐬:񼡌`@\t𹥌Z\"񁾴򯨁r 󬟕񇑖v򜐫\u0005"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LE",
+                        "contents": ":𐁐bX\u0010\u000fY/pIh$6\u0006h򻄪v򖲴"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "DUP",
+                        "contents": "\u0007&@\u0016*򲝶0򪔀\u001aE\u0003𞑜0M\u0002V\u0011"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CONTRACT",
+                        "contents": [
+                            "{󺥉䥒㜢v񦄶.[`𤳩1r7^𓤠&K򇫊𥜉!v=\u00160󤲙\u0007h8",
+                            [
+                                {
+                                    "tag": "TPair",
+                                    "contents": [
+                                        "\"\u0001*񹗳\u0005򓲆v\u001d񺆛$<m.򛫖\u000f_;?+J{KKd;wjmed",
+                                        "򸻀񄸐?EU\u0010𖭤*pl\u0013N%Pe",
+                                        [
+                                            {
+                                                "tag": "TOr",
+                                                "contents": [
+                                                    "\u0012\u0012>򍶼W񊾨k򿡐K*b",
+                                                    "\u000f󏏻񕹍`򏰘񸎷Md񽅦񭿯\u000b\u000e𱎶\u001ezXN4򀣜|S\t򥐽(",
+                                                    [
+                                                        {
+                                                            "tag": "TSet",
+                                                            "contents": [
+                                                                "CInt",
+                                                                "}OE󂲐W𪁩\rQ\u0015kA\u0016򤆩K`)"
+                                                            ]
+                                                        },
+                                                        "\u001ed\u0014\u0019Ft􇖁g\u0006eZ!\u0006𚊝𢝆\u00018󢈇\u001aGcI񩄌0󉊐R\u0019"
+                                                    ],
+                                                    [
+                                                        {
+                                                            "tag": "TMap",
+                                                            "contents": [
+                                                                [
+                                                                    "CMutez",
+                                                                    ""
+                                                                ],
+                                                                [
+                                                                    {
+                                                                        "tag": "TMap",
+                                                                        "contents": [
+                                                                            [
+                                                                                "CTimestamp",
+                                                                                "𨅣\u0010󓺡v\u001e󄎈9:Yk7캜󓌆1\u0011\u0003:|tog\u000b\n\u001f}"
+                                                                            ],
+                                                                            [
+                                                                                {
+                                                                                    "tag": "TKey"
+                                                                                },
+                                                                                ",DFၶ\u001c􇬐\\v\\񞴦=KkBiN-jbQ G\u001fxU񓫹"
+                                                                            ]
+                                                                        ]
+                                                                    },
+                                                                    "1+󿝇\\𩉰󙼖)𙼂-\u001f򫹱򾁜Vⶻh\u0001\u000cP"
+                                                                ]
+                                                            ]
+                                                        },
+                                                        "򹴕F\u001e\u0010bh5m/\u001e\u0007𗝰@@w﷞5򸵑\u0001򲬤\u0002\u0017𔢖Ux'𞯗awq"
+                                                    ]
+                                                ]
+                                            },
+                                            "7GMA򚩵\u001bO򄧤\u0016A,"
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TSignature"
+                                            },
+                                            "@H*񅎐\u000b"
+                                        ]
+                                    ]
+                                },
+                                "󝻬"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "DIP",
+                        "contents": [
+                            {
+                                "unOp": {
+                                    "tag": "SELF",
+                                    "contents": "Z_򵄄\u0007􃒉k'|\u0010"
+                                }
+                            },
+                            {
+                                "unOp": {
+                                    "tag": "NEQ",
+                                    "contents": "\u0012A\nA(򁪹Yj㭷M{]"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MUL",
+                        "contents": "\u000b\u000c\u001b"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SELF",
+                        "contents": "8yzjP-tn"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IF",
+                        "contents": [
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "NIL",
+                                        "contents": [
+                                            "󵺦󒉃]򒧉F\u001b0\u0015{q\u0018󀭝\u0007Z\u0015rrvQ\u0012󃒣[L\u0008w񜵉\u0017U\u0017",
+                                            "񔩘\u001b𚻰h&\"$",
+                                            [
+                                                {
+                                                    "tag": "TBigMap",
+                                                    "contents": [
+                                                        [
+                                                            "CAddress",
+                                                            "_tY󶘛\u0010񘝁"
+                                                        ],
+                                                        [
+                                                            {
+                                                                "tag": "Tc",
+                                                                "contents": "CKeyHash"
+                                                            },
+                                                            "𴧭󓩟"
+                                                        ]
+                                                    ]
+                                                },
+                                                " hGX"
+                                            ]
+                                        ]
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "EMPTY_MAP",
+                                        "contents": [
+                                            "Dm𠼎oI񤀷\u000f\rM6\"\u0001xd\u0012L\u0007s)򝙻򼭽󼻍~",
+                                            "򍧖\u0012A󵅵>|1)m(俋\u001b^L󞩬L7b\u0018􀈩",
+                                            [
+                                                "CMutez",
+                                                "U%1yQ\u000fU+Q\u000e74s\u0002𜸓j􏓚PEN򍄍𤃮𞋛"
+                                            ],
+                                            [
+                                                {
+                                                    "tag": "TOperation"
+                                                },
+                                                ",\u001aE𕷝􂫺𰅸b\u000b\u0019󢐐\u0013󂽨`S]󗜉z󛔻~󄞻"
+                                            ]
+                                        ]
+                                    }
+                                }
+                            ],
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "CREATE_ACCOUNT",
+                                        "contents": [
+                                            "\u001f#+򆶎񥠠\u001fbP򤪾󀳤:Z\u0014'C󴻕5^񹰄",
+                                            "\u0019󗹷P9Z\u001cUH\t񕯧-_񱝔\u001eL𖧟,2𴭘k𕓞񽭡wY!E"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "SOME",
+                                        "contents": [
+                                            "H򄮥\u001a\u000b@\u001f7󖅇􅖴Rw_坮",
+                                            "3t\u0018~jv\u0016\u0015C0򷯆",
+                                            "J6]C,(򛙸򤲝5 zf\u0014s󘄁!\u00147\u001f.񠅳u𸗹]S󮺼\u001c"
+                                        ]
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MEM",
+                        "contents": "8b\u0006Rg񕞀𔿅򬠅N7D+1"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "TRANSFER_TOKENS",
+                        "contents": "𞐅"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IF_CONS",
+                        "contents": [
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "BALANCE",
+                                        "contents": "\u000f񐁎`Ke\u001f\u001d󐡢\u0004i7cG\u0012\u0010FVhz񁕘N򪗕"
+                                    }
+                                }
+                            ],
+                            []
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "ADD",
+                        "contents": ":E"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CONCAT",
+                        "contents": "\u0002\u0016\u001biX~7󋝴\u0018\u0008r"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SIZE",
+                        "contents": "𑅳G+\u0002\rN\u000bee4;\u000bepy\u001em{uc~6󓀿򛁧\t\u0008e"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IF_NONE",
+                        "contents": [
+                            [],
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "CONTRACT",
+                                        "contents": [
+                                            "𼭟\u001fR%jm<\u0015\u001c\u001dh򌌮",
+                                            [
+                                                {
+                                                    "tag": "TOr",
+                                                    "contents": [
+                                                        "ই\u001c$󹎃򕿉E",
+                                                        "򜌱r􇆗",
+                                                        [
+                                                            {
+                                                                "tag": "TSet",
+                                                                "contents": [
+                                                                    "CString",
+                                                                    "󜞲i\u0015򕹯󚸹^z\u001d\rG6𮍏f-"
+                                                                ]
+                                                            },
+                                                            ">:\n\u001am🗌7]s|\u00189򗆀󗸛8<]AxEh򊏜"
+                                                        ],
+                                                        [
+                                                            {
+                                                                "tag": "TMap",
+                                                                "contents": [
+                                                                    [
+                                                                        "CAddress",
+                                                                        "B^n\u0008e\u0000򚥢\u001f=T"
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "tag": "TSet",
+                                                                            "contents": [
+                                                                                "CBool",
+                                                                                "\u0008򣗁l\u001c񱯵sBmH\u0000\u000e"
+                                                                            ]
+                                                                        },
+                                                                        "h\u0007n󻚲,⥫񘂍`N\u0004\u0002ZmTb]T+6H.2𬿌2\u001cGY\u0002"
+                                                                    ]
+                                                                ]
+                                                            },
+                                                            "𭘠&GP"
+                                                        ]
+                                                    ]
+                                                },
+                                                "^\u0012[:9;􋄫!0v񳨷𣅱y"
+                                            ]
+                                        ]
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "UPDATE"
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "AND",
+                        "contents": "7񂋚\u0002;UPI/򬅶,򗍺JY𦄽\u0002]u&\u0012\u000f"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "EMPTY_MAP",
+                        "contents": [
+                            "c",
+                            "V񢋃𮇔򷋄\u0004M\r\u0000ZSR򙏥\r󈓹򗤀𷤑\u0001񀢔A7񢹆\u0003<\u000f򧬷W󡳬`L\u0010",
+                            [
+                                "CKeyHash",
+                                "\u0015\u0019\u0010;󡟈8R\u000f𶛅􀉤Jo2󣉡[6&U\u001c\u0010,򃇻󌻵񜊿i\u001d񙥷IW"
+                            ],
+                            [
+                                {
+                                    "tag": "TList",
+                                    "contents": [
+                                        {
+                                            "tag": "TBigMap",
+                                            "contents": [
+                                                [
+                                                    "CMutez",
+                                                    "󃳳򶯩a\u0019󌯜bYo\u000e\u0003V𔒲#pHB\u0002Q;^󺈋"
+                                                ],
+                                                [
+                                                    {
+                                                        "tag": "Tc",
+                                                        "contents": "CTimestamp"
+                                                    },
+                                                    "OHU4𑎲򿟼󧾝(󤑓񁐪򜭆\u0000󉝀Kg"
+                                                ]
+                                            ]
+                                        },
+                                        "(\u0007"
+                                    ]
+                                },
+                                "lY𡿇󄤴7\u0016bY􇋟A}򤼬\u0013񈫝򥀰󞹳"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CREATE_ACCOUNT",
+                        "contents": [
+                            "t稴\u0010?'򮗆C\r𩙸W󗞡IG񻌦\u0001",
+                            ",};@+Z\u000b^񢝮\u000eku\u0015"
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SET_DELEGATE",
+                        "contents": "򿵬p\n\u0016=񖯋2L\u00179"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "DROP"
+                    }
+                }
+            ]
+        },
+        {
+            "stor": [
+                {
+                    "tag": "Tc",
+                    "contents": "CAddress"
+                },
+                "񛉸/\u0003󞧶sM흩"
+            ],
+            "para": [
+                {
+                    "tag": "TBigMap",
+                    "contents": [
+                        [
+                            "CNat",
+                            "R󥂄6+\u0003;􌫾2򊤰\u0001󽀝Q򏱾󪙏\\6󱐽,\t\u000f񜖚\rQ󢆖2\u000e򨕧:M\\"
+                        ],
+                        [
+                            {
+                                "tag": "TOption",
+                                "contents": [
+                                    "",
+                                    [
+                                        {
+                                            "tag": "TOr",
+                                            "contents": [
+                                                "-\u000fDd-'\u001e",
+                                                "v!\n9r\u0017x%󟣃12\\W\u0004\\r",
+                                                [
+                                                    {
+                                                        "tag": "TSet",
+                                                        "contents": [
+                                                            "CInt",
+                                                            "uJ\\\u0013"
+                                                        ]
+                                                    },
+                                                    "񽶱\u000ch~[򂤞(W5񘴆e\u000c<񮏵%󌳤S6邕v%􇦺䧔\u001c"
+                                                ],
+                                                [
+                                                    {
+                                                        "tag": "TKey"
+                                                    },
+                                                    "򪯈0(Mc\u0010\u000fz;J󧴉\\0\u0004򮱢𙕪;!gk"
+                                                ]
+                                            ]
+                                        },
+                                        "^󙳇񪨐U򆸇_OkKbo򥸕:>󸆼qO"
+                                    ]
+                                ]
+                            },
+                            "臱v:𹩁\u0016\u0000&[ᘾIe񪷓"
+                        ]
+                    ]
+                },
+                "!\u000fd񊰦z/\u0019o򣼲\u0016yu󲊩WL\u0019򾵜P(~Z񔃮\u0014񧵄]5F"
+            ],
+            "code": [
+                {
+                    "unOp": {
+                        "tag": "BLAKE2B",
+                        "contents": "p@e"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UPDATE"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SHA512",
+                        "contents": "\u0016M:놙hmi\u001d\u0016{𓗓{\u0016󋍠|񆮞NOR"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CHECK_SIGNATURE",
+                        "contents": "󐣸򅽏𛤉nb{{\u000f𺪦w𻂯\r\u0019񷗥F􄉅&@(L~"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CDR",
+                        "contents": [
+                            "$󚎌󋱟\u000fZ򚔒W5y1@$󸔐yU9",
+                            "h\n񻡐N"
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "MEM",
+                        "contents": "Og]򂳈-󌾑\u001a3򻮬#%"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SHA256",
+                        "contents": "\u000c"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "LOOP",
+                        "contents": []
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "TRANSFER_TOKENS",
+                        "contents": "򗞪"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CONTRACT",
+                        "contents": [
+                            "\u0002z\u0002\u001cA񟑣񎙊\u0000򍬎2",
+                            [
+                                {
+                                    "tag": "TPair",
+                                    "contents": [
+                                        "\u00034\u0002\u0006E!}m\u001d񅗈n2\u0018󻛙\n/񤫙~]':򃭸\u0010>|\u001e\u0012",
+                                        "\u0004󕉑\u0016-H2󪯞􈃦Ko%)d<%\u0000󍝦\r񟡕'Y\u000b)K󸙋",
+                                        [
+                                            {
+                                                "tag": "TKey"
+                                            },
+                                            "󰹊S\u001c@\u0000I𛬢r\u001e':𗾐馞B,"
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TLambda",
+                                                "contents": [
+                                                    [
+                                                        {
+                                                            "tag": "TSignature"
+                                                        },
+                                                        "6O\u0019\u0013\\](𵜌󨇃:*񗑺󂛭4#,x"
+                                                    ],
+                                                    [
+                                                        {
+                                                            "tag": "TKey"
+                                                        },
+                                                        "BNU>\u0010'򼂴\u0002󡴍\\𨿚򨐖"
+                                                    ]
+                                                ]
+                                            },
+                                            "ZNi\u000b򒍦\u0011}%QU{V\u0005fc)󻑝\u001b񌹼񜫈Pb"
+                                        ]
+                                    ]
+                                },
+                                "HCN/ 7V򲈔s"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "NEQ",
+                        "contents": "B󤘑A񧨢񷨆\u000b\u0001P"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "SUB",
+                        "contents": "tZe򬞛}\u0007h4,򗜾|\u000b/\u0002\u0005\u0019\u0011"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CAR",
+                        "contents": [
+                            "󺋗󈀏\u001e򡏣`u󫿟R7񹚝󾜮󫥘񟘎`A>f򯗦\"$󿅹𗟻fr",
+                            "w!\u0011\u001bW\u0006򠝸򯮰q󘯷\u0003>"
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "STEPS_TO_QUOTA",
+                        "contents": "\u00154$t"
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "IF",
+                        "contents": [
+                            [],
+                            [
+                                {
+                                    "unOp": {
+                                        "tag": "CONCAT",
+                                        "contents": "dn\u0005򓒸gjr󔷛\u000fG\\g!/򂮤񔠸2\u0016󏦤𖅢\u0004鷠\u000ezqP񇹸鰖@]"
+                                    }
+                                },
+                                {
+                                    "unOp": {
+                                        "tag": "EXT",
+                                        "contents": {
+                                            "tag": "STACKTYPE",
+                                            "contents": {
+                                                "tag": "StkRest"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "CONTRACT",
+                        "contents": [
+                            "GK\u0006",
+                            [
+                                {
+                                    "tag": "TPair",
+                                    "contents": [
+                                        "蝝􈷠񱶛f\u001e;򑃞\u0012>BC\u0010\u0011(\u0018",
+                                        "",
+                                        [
+                                            {
+                                                "tag": "TUnit"
+                                            },
+                                            "4\u0010𕩮Y󣨤𜺷8d\u0007|R򅁟񄺥Xo𦁂񰭡"
+                                        ],
+                                        [
+                                            {
+                                                "tag": "TMap",
+                                                "contents": [
+                                                    [
+                                                        "CInt",
+                                                        "\u0018YdN򮞅厝\u001fr\u000f6뇸\u0001𧊔\u0008s𪕮;lB𯭽\u0018򾈠Iw\u0010Z\u0003\u0003"
+                                                    ],
+                                                    [
+                                                        {
+                                                            "tag": "TContract",
+                                                            "contents": [
+                                                                {
+                                                                    "tag": "TPair",
+                                                                    "contents": [
+                                                                        "r*p\u0011'T\u0018{gL蹈S򡱿",
+                                                                        "r\rK򔰐",
+                                                                        [
+                                                                            {
+                                                                                "tag": "TBigMap",
+                                                                                "contents": [
+                                                                                    [
+                                                                                        "CKeyHash",
+                                                                                        "!󧪙\u0002\u001c#񳵝x\u001e󜳼o\u0017/?]@\u000e\u0001񾜑\u0017\u0012w}3G"
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "Tc",
+                                                                                            "contents": "CBytes"
+                                                                                        },
+                                                                                        "\u001d\u001eW𹎎6\u0017[Rj"
+                                                                                    ]
+                                                                                ]
+                                                                            },
+                                                                            "^"
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "tag": "TMap",
+                                                                                "contents": [
+                                                                                    [
+                                                                                        "CBool",
+                                                                                        "񃿉𸻸%xN7]_D"
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "tag": "TBigMap",
+                                                                                            "contents": [
+                                                                                                [
+                                                                                                    "CTimestamp",
+                                                                                                    "=%𡉄贗j?E!󃹄%򹹊[󓎉񲽅񷟥󲳉\u0000\t󎭴񦉡󳊉􊥓A"
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "tag": "TKey"
+                                                                                                    },
+                                                                                                    ""
+                                                                                                ]
+                                                                                            ]
+                                                                                        },
+                                                                                        ""
+                                                                                    ]
+                                                                                ]
+                                                                            },
+                                                                            "8z:ZR\u0008\u0015\u0016@\u0002`N\u0018o(\n󳀌򄾻Y3\u0010򁩆_\"T㕶4\u000c"
+                                                                        ]
+                                                                    ]
+                                                                },
+                                                                ":*"
+                                                            ]
+                                                        },
+                                                        "$/`v\u001e)m"
+                                                    ]
+                                                ]
+                                            },
+                                            "砛h𒂣\u001a񛏉w􃮷*󮁙h\u001aZ񔥌Y󝈔𴀜}񰼪1h𢄽󽪶~Kp"
+                                        ]
+                                    ]
+                                },
+                                "񡈝?\u000cseb^v팏+2vm,,񅸚c,"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "UNPACK",
+                        "contents": [
+                            "Fgg켡\u0004K򉆿\u001b🁯\u0007pX",
+                            [
+                                {
+                                    "tag": "Tc",
+                                    "contents": "CKeyHash"
+                                },
+                                "V\u000eo䛨<󜟹J"
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "unOp": {
+                        "tag": "EXEC",
+                        "contents": "v/𡄤𴍍D𶙏󟇽\u000b\r8<x\u000e\n󼔶Z"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -20,44 +20,44 @@ module Michelson.Typed.Sing
 import Data.Kind (Type)
 import Data.Singletons (Sing(..), SingI(..))
 
-import Michelson.Typed.T (CT(..), T(..))
+import Michelson.Typed.T
+  (CAddress, CBool, CBytes, CInt, CKeyHash, CMutez, CNat, CString, CT(..), CTimestamp, T(..),
+  TBigMap, TContract, TKey, TLambda, TList, TMap, TOperation, TOption, TOr, TPair, TSet,
+  TSignature, TUnit, Tc)
 
 -- | Instance of data family 'Sing' for 'CT'.
 data instance Sing :: CT -> Type where
-  ST_int :: Sing  'T_int
-  ST_nat :: Sing  'T_nat
-  ST_string :: Sing  'T_string
-  ST_bytes :: Sing  'T_bytes
-  ST_mutez :: Sing  'T_mutez
-  ST_bool :: Sing  'T_bool
-  ST_key_hash :: Sing  'T_key_hash
-  ST_timestamp :: Sing  'T_timestamp
-  ST_address :: Sing  'T_address
+  SCInt       :: Sing CInt
+  SCNat       :: Sing CNat
+  SCString    :: Sing CString
+  SCBytes     :: Sing CBytes
+  SCMutez     :: Sing CMutez
+  SCBool      :: Sing CBool
+  SCKeyHash   :: Sing CKeyHash
+  SCTimestamp :: Sing CTimestamp
+  SCAddress   :: Sing CAddress
+
+class (SingI a, Typeable a) => SingT a
+instance (SingI a, Typeable a) => SingT a
 
 -- | Instance of data family 'Sing' for 'T'.
 -- Custom instance is implemented in order to inject 'Typeable'
 -- constraint for some of constructors.
 data instance Sing :: T -> Type where
-  ST_c :: (SingI a, Typeable a) => Sing a -> Sing ( 'T_c a)
-  ST_key :: Sing  'T_key
-  ST_unit :: Sing  'T_unit
-  ST_signature :: Sing  'T_signature
-  ST_option :: (SingI a, Typeable a) => Sing a -> Sing ( 'T_option a)
-  ST_list :: (SingI a, Typeable a) => Sing a -> Sing ( 'T_list a )
-  ST_set :: (SingI a, Typeable a) => Sing a -> Sing ( 'T_set a )
-  ST_operation  :: Sing 'T_operation
-  ST_contract   :: (SingI a, Typeable a)
-                => Sing a -> Sing ( 'T_contract a )
-  ST_pair       :: (SingI a, SingI b, Typeable a, Typeable b)
-                => Sing a -> Sing b -> Sing ('T_pair a b)
-  ST_or         :: (SingI a, SingI b, Typeable a, Typeable b)
-                => Sing a -> Sing b -> Sing ('T_or a b)
-  ST_lambda     :: (SingI a, SingI b, Typeable a, Typeable b)
-                => Sing a -> Sing b -> Sing ('T_lambda a b)
-  ST_map        :: (SingI a, SingI b, Typeable a, Typeable b)
-                => Sing a -> Sing b -> Sing ('T_map a b)
-  ST_big_map    :: (SingI a, SingI b, Typeable a, Typeable b)
-                => Sing a -> Sing b -> Sing ('T_big_map a b)
+  STc          :: SingT a => Sing a -> Sing (Tc a)
+  STKey        :: Sing  TKey
+  STUnit       :: Sing  TUnit
+  STSignature  :: Sing  TSignature
+  STOption     :: SingT a => Sing a -> Sing (TOption a)
+  STList       :: SingT a => Sing a -> Sing (TList a )
+  STSet        :: SingT a => Sing a -> Sing (TSet a )
+  STOperation  :: Sing TOperation
+  STContract   :: SingT a => Sing a -> Sing (TContract a )
+  STPair       :: (SingT a, SingT b) => Sing a -> Sing b -> Sing (TPair a b)
+  STOr         :: (SingT a, SingT b) => Sing a -> Sing b -> Sing (TOr a b)
+  STLambda     :: (SingT a, SingT b) => Sing a -> Sing b -> Sing (TLambda a b)
+  STMap        :: (SingT a, SingT b) => Sing a -> Sing b -> Sing (TMap a b)
+  STBigMap     :: (SingT a, SingT b) => Sing a -> Sing b -> Sing (TBigMap a b)
 
 ---------------------------------------------
 -- Singleton-related instances for CT
@@ -66,164 +66,118 @@ data instance Sing :: T -> Type where
 -- | Version of 'SomeSing' with 'Typeable' constraint,
 -- specialized for use with 'CT' kind.
 data SomeSingCT where
-  SomeSingCT :: forall (a :: CT). (SingI a, Typeable a) => Sing a -> SomeSingCT
+  SomeSingCT :: forall (a :: CT). SingT a => Sing a -> SomeSingCT
 
 -- | Version of 'withSomeSing' with 'Typeable' constraint
 -- provided to processing function.
 --
 -- Required for not to erase this useful constraint when doing
 -- conversion from value of type 'CT' to its singleton representation.
-withSomeSingCT
-  :: CT -> (forall (a :: CT). (SingI a, Typeable a) => Sing a -> r) -> r
+withSomeSingCT :: CT -> (forall (a :: CT). SingT a => Sing a -> r) -> r
 withSomeSingCT ct f = (\(SomeSingCT s) -> f s) (toSingCT ct)
 
 fromSingCT :: Sing (a :: CT) -> CT
-fromSingCT ST_int = T_int
-fromSingCT ST_nat = T_nat
-fromSingCT ST_string = T_string
-fromSingCT ST_bytes = T_bytes
-fromSingCT ST_mutez = T_mutez
-fromSingCT ST_bool = T_bool
-fromSingCT ST_key_hash = T_key_hash
-fromSingCT ST_timestamp = T_timestamp
-fromSingCT ST_address = T_address
+fromSingCT SCInt       = CInt
+fromSingCT SCNat       = CNat
+fromSingCT SCString    = CString
+fromSingCT SCBytes     = CBytes
+fromSingCT SCMutez     = CMutez
+fromSingCT SCBool      = CBool
+fromSingCT SCKeyHash   = CKeyHash
+fromSingCT SCTimestamp = CTimestamp
+fromSingCT SCAddress   = CAddress
 
 -- | Version of 'toSing' which creates 'SomeSingCT'.
 toSingCT :: CT -> SomeSingCT
-toSingCT T_int = SomeSingCT ST_int
-toSingCT T_nat = SomeSingCT ST_nat
-toSingCT T_string = SomeSingCT ST_string
-toSingCT T_bytes = SomeSingCT ST_bytes
-toSingCT T_mutez = SomeSingCT ST_mutez
-toSingCT T_bool = SomeSingCT ST_bool
-toSingCT T_key_hash = SomeSingCT ST_key_hash
-toSingCT T_timestamp = SomeSingCT ST_timestamp
-toSingCT T_address = SomeSingCT ST_address
+toSingCT CInt       = SomeSingCT SCInt
+toSingCT CNat       = SomeSingCT SCNat
+toSingCT CString    = SomeSingCT SCString
+toSingCT CBytes     = SomeSingCT SCBytes
+toSingCT CMutez     = SomeSingCT SCMutez
+toSingCT CBool      = SomeSingCT SCBool
+toSingCT CKeyHash   = SomeSingCT SCKeyHash
+toSingCT CTimestamp = SomeSingCT SCTimestamp
+toSingCT CAddress   = SomeSingCT SCAddress
 
-instance SingI  'T_int where
-  sing = ST_int
-instance SingI  'T_nat where
-  sing = ST_nat
-instance SingI  'T_string where
-  sing = ST_string
-instance SingI  'T_bytes where
-  sing = ST_bytes
-instance SingI  'T_mutez where
-  sing = ST_mutez
-instance SingI  'T_bool where
-  sing = ST_bool
-instance SingI  'T_key_hash where
-  sing = ST_key_hash
-instance SingI  'T_timestamp where
-  sing = ST_timestamp
-instance SingI  'T_address where
-  sing = ST_address
+instance SingI CInt       where sing = SCInt
+instance SingI CNat       where sing = SCNat
+instance SingI CString    where sing = SCString
+instance SingI CBytes     where sing = SCBytes
+instance SingI CMutez     where sing = SCMutez
+instance SingI CBool      where sing = SCBool
+instance SingI CKeyHash   where sing = SCKeyHash
+instance SingI CTimestamp where sing = SCTimestamp
+instance SingI CAddress   where sing = SCAddress
 
 ---------------------------------------------
 -- Singleton-related helpers for T
---------------------------------------------
-
-
+-------------------------------------------CT
 -- | Version of 'SomeSing' with 'Typeable' constraint,
 -- specialized for use with 'T' kind.
 data SomeSingT where
-  SomeSingT :: forall (a :: T). (Typeable a, SingI a)
-            => Sing a -> SomeSingT
+  SomeSingT :: forall (a :: T). (SingT a) => Sing a -> SomeSingT
 
 -- | Version of 'withSomeSing' with 'Typeable' constraint
 -- provided to processing function.
 --
 -- Required for not to erase these useful constraints when doing
 -- conversion from value of type 'T' to its singleton representation.
-withSomeSingT
-  :: T
-  -> (forall (a :: T). (Typeable a, SingI a) => Sing a -> r)
-  -> r
+withSomeSingT :: T -> (forall (a :: T). SingT a => Sing a -> r) -> r
 withSomeSingT t f = (\(SomeSingT s) -> f s) (toSingT t)
 
 -- | Version of 'fromSing' specialized for use with
 -- @data instance Sing :: T -> Type@ which requires 'Typeable'
 -- constraint for some of its constructors
 fromSingT :: Sing (a :: T) -> T
-fromSingT (ST_c t) = T_c (fromSingCT t)
-fromSingT ST_key = T_key
-fromSingT ST_unit = T_unit
-fromSingT ST_signature = T_signature
-fromSingT (ST_option t) = T_option (fromSingT t)
-fromSingT (ST_list t) = T_list (fromSingT t)
-fromSingT (ST_set t) = T_set (fromSingCT t)
-fromSingT ST_operation = T_operation
-fromSingT (ST_contract t) = T_contract (fromSingT t)
-fromSingT (ST_pair a b) = T_pair (fromSingT a) (fromSingT b)
-fromSingT (ST_or a b) = T_or (fromSingT a) (fromSingT b)
-fromSingT (ST_lambda a b) = T_lambda (fromSingT a) (fromSingT b)
-fromSingT (ST_map a b) = T_map (fromSingCT a) (fromSingT b)
-fromSingT (ST_big_map a b) = T_big_map (fromSingCT a) (fromSingT b)
+fromSingT (STc t)         = Tc (fromSingCT t)
+fromSingT STKey           = TKey
+fromSingT STUnit          = TUnit
+fromSingT STSignature     = TSignature
+fromSingT (STOption t)    = TOption (fromSingT t)
+fromSingT (STList t)      = TList (fromSingT t)
+fromSingT (STSet t)       = TSet (fromSingCT t)
+fromSingT STOperation     = TOperation
+fromSingT (STContract t)  = TContract (fromSingT t)
+fromSingT (STPair a b)    = TPair (fromSingT a) (fromSingT b)
+fromSingT (STOr a b)      = TOr (fromSingT a) (fromSingT b)
+fromSingT (STLambda a b)  = TLambda (fromSingT a) (fromSingT b)
+fromSingT (STMap a b)     = TMap (fromSingCT a) (fromSingT b)
+fromSingT (STBigMap a b)  = TBigMap (fromSingCT a) (fromSingT b)
 
 -- | Version of 'toSing' which creates 'SomeSingT'.
 toSingT :: T -> SomeSingT
-toSingT (T_c ct) = withSomeSingCT ct $ \ctSing -> SomeSingT $ ST_c ctSing
-toSingT T_key = SomeSingT ST_key
-toSingT T_unit = SomeSingT ST_unit
-toSingT T_signature = SomeSingT ST_signature
-toSingT (T_option t) = withSomeSingT t $ \tSing -> SomeSingT $ ST_option tSing
-toSingT (T_list t) = withSomeSingT t $ \tSing -> SomeSingT $ ST_list tSing
-toSingT (T_set ct) = withSomeSingCT ct $ \ctSing -> SomeSingT $ ST_set ctSing
-toSingT T_operation = SomeSingT ST_operation
-toSingT (T_contract t) =
-  withSomeSingT t $ \tSing -> SomeSingT $ ST_contract tSing
-toSingT (T_pair l r) =
-  withSomeSingT l $ \lSing ->
-  withSomeSingT r $ \rSing ->
-    SomeSingT $ ST_pair lSing rSing
-toSingT (T_or l r) =
-  withSomeSingT l $ \lSing ->
-  withSomeSingT r $ \rSing ->
-    SomeSingT $ ST_or lSing rSing
-toSingT (T_lambda l r) =
-  withSomeSingT l $ \lSing ->
-  withSomeSingT r $ \rSing ->
-    SomeSingT $ ST_lambda lSing rSing
-toSingT (T_map l r) =
-  withSomeSingCT l $ \lSing ->
-  withSomeSingT r $ \rSing ->
-    SomeSingT $ ST_map lSing rSing
-toSingT (T_big_map l r) =
-  withSomeSingCT l $ \lSing ->
-  withSomeSingT r $ \rSing ->
-    SomeSingT $ ST_big_map lSing rSing
+toSingT = \case
+ Tc ct       -> withSomeSingCT ct $ \ctSing -> SomeSingT $ STc ctSing
+ TKey        -> SomeSingT STKey
+ TUnit       -> SomeSingT STUnit
+ TSignature  -> SomeSingT STSignature
+ TOption t   -> withSomeSingT t $ \tSing -> SomeSingT $ STOption tSing
+ TList t     -> withSomeSingT t $ \tSing -> SomeSingT $ STList tSing
+ TSet ct     -> withSomeSingCT ct $ \ctSing -> SomeSingT $ STSet ctSing
+ TOperation  -> SomeSingT STOperation
+ TContract t -> withSomeSingT t $ \tSing -> SomeSingT $ STContract tSing
+ TPair l r   -> withSomeSingT l $ \lSing -> withSomeSingT r $ \rSing ->
+                SomeSingT $ STPair lSing rSing
+ TOr l r     -> withSomeSingT l $ \lSing -> withSomeSingT r $ \rSing ->
+                SomeSingT $ STOr lSing rSing
+ TLambda l r -> withSomeSingT l $ \lSing -> withSomeSingT r $ \rSing ->
+                SomeSingT $ STLambda lSing rSing
+ TMap l r    -> withSomeSingCT l $ \lSing -> withSomeSingT r $ \rSing ->
+                SomeSingT $ STMap lSing rSing
+ TBigMap l r -> withSomeSingCT l $ \lSing -> withSomeSingT r $ \rSing ->
+                SomeSingT $ STBigMap lSing rSing
 
-instance (SingI t, Typeable t) => SingI ( 'T_c (t :: CT)) where
-  sing = ST_c sing
-instance SingI  'T_key where
-  sing = ST_key
-instance SingI  'T_unit where
-  sing = ST_unit
-instance SingI  'T_signature where
-  sing = ST_signature
-instance (SingI a, Typeable a) => SingI ( 'T_option (a :: T)) where
-  sing = ST_option sing
-instance (SingI a, Typeable a) => SingI ( 'T_list (a :: T)) where
-  sing = ST_list sing
-instance (SingI a, Typeable a) => SingI ( 'T_set (a :: CT)) where
-  sing = ST_set sing
-instance SingI 'T_operation where
-  sing = ST_operation
-instance (SingI a, Typeable a) =>
-          SingI ( 'T_contract (a :: T)) where
-  sing = ST_contract sing
-instance (SingI a, Typeable a, Typeable b, SingI b) =>
-          SingI ( 'T_pair a b) where
-  sing = ST_pair sing sing
-instance (SingI a, Typeable a, Typeable b, SingI b) =>
-          SingI ( 'T_or a b) where
-  sing = ST_or sing sing
-instance (SingI a, Typeable a, Typeable b, SingI b) =>
-          SingI ( 'T_lambda a b) where
-  sing = ST_lambda sing sing
-instance (SingI a, Typeable a, Typeable b, SingI b) =>
-          SingI ( 'T_map a b) where
-  sing = ST_map sing sing
-instance (SingI a, Typeable a, Typeable b, SingI b) =>
-          SingI ( 'T_big_map a b) where
-  sing = ST_big_map sing sing
+instance SingT t => SingI (Tc (t :: CT))           where sing = STc sing
+instance SingI TKey                                where sing = STKey
+instance SingI TUnit                               where sing = STUnit
+instance SingI TSignature                          where sing = STSignature
+instance SingT a => SingI (TOption (a :: T))       where sing = STOption sing
+instance SingT a => SingI (TList (a :: T))         where sing = STList sing
+instance SingT a => SingI (TSet (a :: CT))         where sing = STSet sing
+instance SingI TOperation                          where sing = STOperation
+instance SingT a => SingI (TContract (a :: T))     where sing = STContract sing
+instance (SingT a, SingT b) => SingI (TPair a b)   where sing = STPair sing sing
+instance (SingT a, SingT b) => SingI (TOr a b)     where sing = STOr sing sing
+instance (SingT a, SingT b) => SingI (TLambda a b) where sing = STLambda sing sing
+instance (SingT a, SingT b) => SingI (TMap a b)    where sing = STMap sing sing
+instance (SingT a, SingT b) => SingI (TBigMap a b) where sing = STBigMap sing sing

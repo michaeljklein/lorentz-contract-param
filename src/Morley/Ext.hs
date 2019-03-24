@@ -22,9 +22,9 @@ import Michelson.Interpret
 import Michelson.TypeCheck
 import Michelson.TypeCheck.Helpers (convergeHST, eqT')
 import Michelson.TypeCheck.Types (HST)
-import Michelson.Typed (T(..), Val, converge, extractNotes, mkUType)
+import Michelson.Typed (converge, extractNotes, mkUType)
 import qualified Michelson.Typed as T
-import Michelson.Untyped (CT(..), InstrAbstract(..))
+import Michelson.Untyped (InstrAbstract(..))
 import Morley.Types
 
 interpretMorleyUntyped
@@ -39,8 +39,8 @@ interpretMorleyUntyped c v1 v2 cenv =
 interpretMorley
   :: (Typeable cp, Typeable st)
   => T.Contract cp st
-  -> Val T.Instr cp
-  -> Val T.Instr st
+  -> T.Value T.Instr cp
+  -> T.Value T.Instr st
   -> ContractEnv
   -> ContractReturn MorleyLogs st
 interpretMorley c param initSt env =
@@ -64,7 +64,7 @@ typeCheckHandler ext nfs hst@(SomeHST hs) =
         instr ::: (_ :: HST inp, ((_ :: (Sing b, T.Notes b, VarAnn)) ::& (_ :: HST out1))) -> do
           Refl <- liftEither $
                     first (const $ TCOtherError "TEST_ASSERT has to return Bool, but returned something else") $
-                      eqT' @b @('T_c 'T_bool)
+                      eqT' @b @T.TBool
           pure (nfs, Just $ TEST_ASSERT $ TestAssert tassName tassComment instr)
         _ -> thErr "TEST_ASSERT has to return Bool, but the stack is empty"
   where
@@ -93,8 +93,8 @@ interpretHandler (PRINT (PrintComment pc), SomeItStack st) = do
         fromMaybe (error "StackRef " <> show i <> " has to exist in the stack after typechecking, but it doesn't") $
         rat st (fromIntegral i)
   modify (\s -> s {isExtState = MorleyLogs $ mconcat (map getEl pc) : unMorleyLogs (isExtState s)})
-interpretHandler (TEST_ASSERT (TestAssert nm pc (instr :: T.Instr inp1 ('T.T_c 'T.T_bool ': out1) )),
-            SomeItStack (st :: Rec (Val T.Instr) inp2)) = do
+interpretHandler (TEST_ASSERT (TestAssert nm pc (instr :: T.Instr inp1 ('T.Tc 'T.CBool ': out1) )),
+            SomeItStack (st :: Rec (T.Value T.Instr) inp2)) = do
   Refl <- liftEither $ first (error "TEST_ASSERT input stack doesn't match") $ eqT' @inp1 @inp2
   runInstrNoGas instr st >>= \case
     (T.VC (T.CvBool False) :& RNil) -> do
@@ -204,7 +204,7 @@ lengthHST :: HST xs -> Int
 lengthHST (_ ::& xs) = 1 + lengthHST xs
 lengthHST SNil = 0
 
-rat :: Rec (Val T.Instr) xs -> Int -> Maybe Text
+rat :: Rec (T.Value T.Instr) xs -> Int -> Maybe Text
 rat (x :& _) 0 = Just $ show x
 rat (_ :& xs) i = rat xs (i - 1)
 rat RNil _ = Nothing

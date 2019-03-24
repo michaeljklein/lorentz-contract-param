@@ -26,9 +26,10 @@ import Michelson.Interpret
   (ContractEnv(..), InterpretUntypedError(..), InterpretUntypedResult(..), InterpreterState(..),
   RemainingSteps(..))
 import Michelson.Typed
-  (CreateContract(..), Instr, Operation(..), TransferTokens(..), Val(..), convertContract,
-  unsafeValToValue)
-import Michelson.Untyped (Contract(..), Op, OriginationOperation(..), Value, mkContractAddress)
+  (CreateContract(..), Instr, Operation(..), TransferTokens(..), Value(..), convertContract,
+  unsafeUntypeValue)
+import Michelson.Untyped (Contract(..), Op, OriginationOperation(..), mkContractAddress)
+import qualified Michelson.Untyped as U
 import Morley.Aliases (UntypedContract)
 import Morley.Ext (interpretMorleyUntyped)
 import Morley.Runtime.GState
@@ -133,7 +134,7 @@ runContract
     -> Word64
     -> Bool
     -> FilePath
-    -> Value Op
+    -> U.Value Op
     -> Contract Op
     -> TxData
     -> IO ()
@@ -308,7 +309,7 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
                 interpretMorleyUntyped contract (tdParameter txData)
                                  (csStorage cs) contractEnv
         let
-          newValueU = unsafeValToValue newValue
+          newValueU = unsafeUntypeValue newValue
           -- can't overflow if global state is correct (because we can't
           -- create money out of nowhere)
           newBalance = csBalance cs `unsafeAddMutez` tdAmount txData
@@ -354,7 +355,7 @@ convertOp interpretedAddr =
       let txData =
             TxData
               { tdSenderAddress = interpretedAddr
-              , tdParameter = unsafeValToValue (ttContractParameter tt)
+              , tdParameter = unsafeUntypeValue (ttContractParameter tt)
               , tdAmount = ttAmount tt
               }
           VContract destAddress = ttContract tt
@@ -368,7 +369,7 @@ convertOp interpretedAddr =
             , ooSpendable = ccSpendable cc
             , ooDelegatable = ccDelegatable cc
             , ooBalance = ccBalance cc
-            , ooStorage = unsafeValToValue (ccStorageVal cc)
+            , ooStorage = unsafeUntypeValue (ccStorageVal cc)
             , ooContract = convertContract (ccContractCode cc)
             }
        in Just (OriginateOp origination)

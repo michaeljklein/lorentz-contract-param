@@ -34,14 +34,18 @@ import Fmt (Buildable(build), Builder, genericF)
 
 import Michelson.TypeCheck
   (ExtC, SomeContract(..), SomeVal(..), TCError, TcExtHandler, eqT', runTypeCheckT,
-  typeCheckContract, typeCheckVal)
+  typeCheckContract, typeCheckValue)
 import Michelson.Typed
-  (CVal(..), Contract, ConversibleExt, CreateAccount(..), CreateContract(..), Instr(..),
-  Operation(..), SetDelegate(..), Sing(..), T(..), TransferTokens(..), Val(..), fromUType,
-  valToOpOrValue)
+  (CValue(..), Contract, ConvertibleExt, CreateAccount(..), CreateContract(..), Instr, (:+>)(..)
+  , Tc
+  , TPair
+  , TList
+  , TOperation
+  , Operation(..), SetDelegate(..), Sing(..), TransferTokens(..), Value(..), fromUType,
+  untypeValue)
 import qualified Michelson.Typed as T
 import Michelson.Typed.Arith
-import Michelson.Typed.Convert (convertContract, unsafeValToValue)
+import Michelson.Typed.Convert (convertContract, unsafeUntypeValue)
 import Michelson.Typed.Polymorphic
 import qualified Michelson.Untyped as U
 import Tezos.Address (Address(..))
@@ -72,26 +76,26 @@ data ContractEnv = ContractEnv
 -- | Represents `[FAILED]` state of a Michelson program. Contains
 -- value that was on top of the stack when `FAILWITH` was called.
 data MichelsonFailed where
-  MichelsonFailedWith :: Val Instr t -> MichelsonFailed
-  MichelsonArithError :: ArithError (CVal n) (CVal m) -> MichelsonFailed
+  MichelsonFailedWith :: Value Instr t -> MichelsonFailed
+  MichelsonArithError :: ArithError (CValue n) (CValue m) -> MichelsonFailed
   MichelsonGasExhaustion :: MichelsonFailed
   MichelsonFailedOther :: Text -> MichelsonFailed
 
 deriving instance Show MichelsonFailed
 
-instance (ConversibleExt, Buildable U.Instr) => Buildable MichelsonFailed where
+instance (ConvertibleExt, Buildable U.Instr) => Buildable MichelsonFailed where
   build =
     \case
-      MichelsonFailedWith (v :: Val Instr t) ->
+      MichelsonFailedWith (v :: Value Instr t) ->
         "Reached FAILWITH instruction with " <> formatValue v
       MichelsonArithError v -> build v
       MichelsonGasExhaustion ->
         "Gas limit exceeded on contract execution"
       MichelsonFailedOther t -> build t
     where
-      formatValue :: forall t . Val Instr t -> Builder
+      formatValue :: forall t . Value Instr t -> Builder
       formatValue v =
-        case valToOpOrValue v of
+        case untypeValue v of
           Nothing -> "<value with operations>"
           Just untypedV -> build untypedV
 
@@ -106,7 +110,7 @@ data InterpretUntypedError s
 
 deriving instance (Buildable U.Instr, Show s) => Show (InterpretUntypedError s)
 
-instance (ConversibleExt, Buildable U.Instr, Buildable s) => Buildable (InterpretUntypedError s) where
+instance (ConvertibleExt, Buildable U.Instr, Buildable s) => Buildable (InterpretUntypedError s) where
   build = genericF
 
 data InterpretUntypedResult s where
@@ -115,14 +119,14 @@ data InterpretUntypedResult s where
        , SingI st
        )
     => { iurOps :: [ Operation Instr ]
-       , iurNewStorage :: Val Instr st
+       , iurNewStorage :: Value Instr st
        , iurNewState   :: InterpreterState s
        }
     -> InterpretUntypedResult s
 
 -- | Interpret a contract without performing any side effects.
 interpretUntyped
-  :: forall s . (ExtC, Aeson.ToJSON U.InstrExtU, ConversibleExt)
+  :: forall s . (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt)
   => TcExtHandler
   -> U.Contract U.Op
   -> U.Value U.Op
@@ -136,10 +140,10 @@ interpretUntyped typeCheckHandler U.Contract{..} paramU initStU env initState = 
               (U.Contract para stor (U.unOp <$> code))
     paramV :::: ((_ :: Sing cp1), _)
        <- first IllTypedParam $ runTypeCheckT typeCheckHandler para $
-            typeCheckVal paramU (fromUType para)
+            typeCheckValue paramU (fromUType para)
     initStV :::: ((_ :: Sing st1), _)
        <- first IllTypedStorage $ runTypeCheckT typeCheckHandler para $
-            typeCheckVal initStU (fromUType stor)
+            typeCheckValue initStU (fromUType stor)
     Refl <- first UnexpectedStorageType $ eqT' @st @st1
     Refl <- first UnexpectedParamType   $ eqT' @cp @cp1
     bimap RuntimeFailure constructIUR $
@@ -149,7 +153,7 @@ interpretUntyped typeCheckHandler U.Contract{..} paramU initStU env initState = 
 
     constructIUR ::
       (Typeable st, SingI st) =>
-      (([Operation Instr], Val Instr st), InterpreterState s) ->
+      (([Operation Instr], Value Instr st), InterpreterState s) ->
       InterpretUntypedResult s
     constructIUR ((ops, val), st) =
       InterpretUntypedResult
@@ -159,13 +163,13 @@ interpretUntyped typeCheckHandler U.Contract{..} paramU initStU env initState = 
       }
 
 type ContractReturn s st =
-  (Either MichelsonFailed ([Operation Instr], Val Instr st), InterpreterState s)
+  (Either MichelsonFailed ([Operation Instr], Value Instr st), InterpreterState s)
 
 interpret
-  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConversibleExt, Typeable cp, Typeable st)
+  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable cp, Typeable st)
   => Contract cp st
-  -> Val Instr cp
-  -> Val Instr st
+  -> Value Instr cp
+  -> Value Instr st
   -> InterpreterEnv s
   -> s
   -> ContractReturn s st
@@ -176,13 +180,13 @@ interpret instr param initSt env@InterpreterEnv{..} initState = first (fmap toRe
     (InterpreterState initState $ ceMaxSteps ieContractEnv)
   where
     toRes
-      :: (Rec (Val instr) '[ 'T_pair ('T_list 'T_operation) st ])
-      -> ([Operation instr], Val instr st)
+      :: (Rec (Value instr) '[ TPair (TList TOperation) st ])
+      -> ([Operation instr], Value instr st)
     toRes (VPair (VList ops_, newSt) :& RNil) =
       (map (\(VOp op) -> op) ops_, newSt)
 
 data SomeItStack where
-  SomeItStack :: Typeable inp => Rec (Val Instr) inp -> SomeItStack
+  SomeItStack :: Typeable inp => Rec (Value Instr) inp -> SomeItStack
 
 data InterpreterEnv s = InterpreterEnv
   { ieContractEnv :: ContractEnv
@@ -213,10 +217,10 @@ runEvalOp act env initSt =
 
 -- | Function to change amount of remaining steps stored in State monad
 runInstr
-  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConversibleExt, Typeable inp)
+  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable inp)
   => Instr inp out
-  -> Rec (Val Instr) inp
-  -> EvalOp state (Rec (Val Instr) out)
+  -> Rec (Value Instr) inp
+  -> EvalOp state (Rec (Value Instr) out)
 runInstr i@(Seq _i1 _i2) r = runInstrImpl runInstr i r
 runInstr i@Nop r = runInstrImpl runInstr i r
 runInstr i r = do
@@ -229,23 +233,23 @@ runInstr i r = do
 
 runInstrNoGas
   :: forall a b state .
-  (ExtC, Aeson.ToJSON U.InstrExtU, ConversibleExt, Typeable a)
-  => T.Instr a b -> Rec (Val T.Instr) a -> EvalOp state (Rec (Val T.Instr) b)
+  (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable a)
+  => T.Instr a b -> Rec (Value T.Instr) a -> EvalOp state (Rec (Value T.Instr) b)
 runInstrNoGas = runInstrImpl runInstrNoGas
 
 -- | Function to interpret Michelson instruction(s) against given stack.
 runInstrImpl
     :: forall state .
-    (ExtC, Aeson.ToJSON U.InstrExtU, ConversibleExt)
+    (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt)
     => (forall inp1 out1 . Typeable inp1 =>
       Instr inp1 out1
-    -> Rec (Val Instr) inp1
-    -> EvalOp state (Rec (Val Instr) out1)
+    -> Rec (Value Instr) inp1
+    -> EvalOp state (Rec (Value Instr) out1)
     )
     -> (forall inp out . Typeable inp =>
       Instr inp out
-    -> Rec (Val Instr) inp
-    -> EvalOp state (Rec (Val Instr) out)
+    -> Rec (Value Instr) inp
+    -> EvalOp state (Rec (Value Instr) out)
     )
 runInstrImpl runner (Seq i1 i2) r = runner i1 r >>= \r' -> runner i2 r'
 runInstrImpl _ Nop r = pure $ r
@@ -281,10 +285,10 @@ runInstrImpl _ EMPTY_MAP r = pure $ VMap Map.empty :& r
 runInstrImpl runner (MAP ops) (a :& r) =
   case ops of
     (code :: Instr (MapOpInp c ': s) (b ': s)) -> do
-      newList <- mapM (\(val :: Val Instr (MapOpInp c)) -> do
+      newList <- mapM (\(val :: Value Instr (MapOpInp c)) -> do
         res <- runner code (val :& r)
         case res of
-          ((newVal :: Val Instr b) :& _) -> pure newVal)
+          ((newValue :: Value Instr b) :& _) -> pure newValue)
         $ mapOpToList @c @b a
       pure $ mapOpFromList a newList :& r
 runInstrImpl runner (ITER ops) (a :& r) =
@@ -415,20 +419,20 @@ runInstrImpl _ ADDRESS (VContract a :& r) = pure $ VC (CvAddress a) :& r
 runArithOp
   :: ArithOp aop n m
   => proxy aop
-  -> CVal n
-  -> CVal m
-  -> EvalOp s (Val instr ('T_c (ArithRes aop n m)))
+  -> CValue n
+  -> CValue m
+  -> EvalOp s (Value instr (Tc (ArithRes aop n m)))
 runArithOp op l r = case evalOp op l r of
   Left  err -> throwError (MichelsonArithError err)
   Right res -> pure (VC res)
 
 createOrigOp
-  :: (SingI param, SingI store, ConversibleExt)
+  :: (SingI param, SingI store, ConvertibleExt)
   => KeyHash
-  -> Maybe (Val Instr ('T_c 'U.T_key_hash))
+  -> Maybe (Value Instr (Tc U.CKeyHash))
   -> Bool -> Bool -> Mutez
   -> Contract param store
-  -> Val Instr t
+  -> Value Instr t
   -> U.OriginationOperation
 createOrigOp k mbKeyHash delegetable spendable m contract g =
   U.OriginationOperation
@@ -437,10 +441,10 @@ createOrigOp k mbKeyHash delegetable spendable m contract g =
     , ooSpendable = spendable
     , ooDelegatable = delegetable
     , ooBalance = m
-    , ooStorage = unsafeValToValue g
+    , ooStorage = unsafeUntypeValue g
     , ooContract = convertContract contract
     }
 
-unwrapMbKeyHash :: Maybe (Val Instr ('T_c 'U.T_key_hash)) -> Maybe KeyHash
+unwrapMbKeyHash :: Maybe (Value Instr (Tc U.CKeyHash)) -> Maybe KeyHash
 unwrapMbKeyHash (Just (VC (CvKeyHash keyHash))) = Just keyHash
 unwrapMbKeyHash Nothing = Nothing

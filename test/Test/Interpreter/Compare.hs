@@ -9,7 +9,7 @@ import Test.QuickCheck (Property, arbitrary, (===))
 import Test.QuickCheck.Property (forAll, withMaxSuccess)
 
 import Michelson.Interpret (InterpreterState, MichelsonFailed)
-import Michelson.Typed (ToT, Val(..), fromVal, toVal)
+import Michelson.Typed (ToT, Value(..), fromVal, toVal)
 import Morley.Test (contractProp, specWithTypedContract)
 import Morley.Test.Util (failedProp)
 import Morley.Types (MorleyLogs)
@@ -18,7 +18,7 @@ import Tezos.Core (Mutez, unsafeMkMutez)
 import Test.Util.Interpreter (dummyContractEnv)
 
 type Param = (Mutez, Mutez)
-type ContractStorage instr = Val instr (ToT [Bool])
+type ContractStorage instr = Value instr (ToT [Bool])
 type ContractResult x instr
    = ( Either MichelsonFailed ([x], ContractStorage instr)
      , InterpreterState MorleyLogs)

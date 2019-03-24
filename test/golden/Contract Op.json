@@ -4,17 +4,17 @@
         {
             "stor": [
                 {
-                    "tag": "T_option",
+                    "tag": "TOption",
                     "contents": [
                         "}\u0002\u001e`y񫔗𹱄=",
                         [
                             {
-                                "tag": "T_option",
+                                "tag": "TOption",
                                 "contents": [
                                     "뒅󌼈󾏏\u0010\u001dH񀼣x𻏹`\u000fb",
                                     [
                                         {
-                                            "tag": "T_signature"
+                                            "tag": "TSignature"
                                         },
                                         "<"
                                     ]
@@ -28,19 +28,19 @@
             ],
             "para": [
                 {
-                    "tag": "T_pair",
+                    "tag": "TPair",
                     "contents": [
                         "e",
                         "lug𶓱@p򢮙\u0013󒚘M󠳳񀮇H=\u000frfub/񲃏{{[e",
                         [
                             {
-                                "tag": "T_contract",
+                                "tag": "TContract",
                                 "contents": [
                                     {
-                                        "tag": "T_contract",
+                                        "tag": "TContract",
                                         "contents": [
                                             {
-                                                "tag": "T_key"
+                                                "tag": "TKey"
                                             },
                                             "8ྜO%W󮀉򫳸4򏟎"
                                         ]
@@ -52,23 +52,23 @@
                         ],
                         [
                             {
-                                "tag": "T_big_map",
+                                "tag": "TBigMap",
                                 "contents": [
                                     [
-                                        "T_int",
+                                        "CInt",
                                         "\\"
                                     ],
                                     [
                                         {
-                                            "tag": "T_map",
+                                            "tag": "TMap",
                                             "contents": [
                                                 [
-                                                    "T_bool",
+                                                    "CBool",
                                                     "\u0005Z~󗕋V0!`O+'d\u001dM!X0\u001a:["
                                                 ],
                                                 [
                                                     {
-                                                        "tag": "T_operation"
+                                                        "tag": "TOperation"
                                                     },
                                                     "򶫋#󼴷0\u001a\u0003񁦋\u0006\u001d\u001b$\u0010񬠢b)򽭒󇒩f"
                                                 ]
@@ -110,19 +110,19 @@
                             "u\u0018U\"",
                             [
                                 {
-                                    "tag": "T_or",
+                                    "tag": "TOr",
                                     "contents": [
                                         "𧗝𛷻\u000eE",
                                         "򘖐s\u0008S'\t\u0004?\u0011I{\u0013𘌤<\u0003;fj",
                                         [
                                             {
-                                                "tag": "T_lambda",
+                                                "tag": "TLambda",
                                                 "contents": [
                                                     [
                                                         {
-                                                            "tag": "T_set",
+                                                            "tag": "TSet",
                                                             "contents": [
-                                                                "T_address",
+                                                                "CAddress",
                                                                 "\u0008tV\u0016n򍶰{+G\u000c+y\u0003\u0014󑫆\u0010"
                                                             ]
                                                         },
@@ -130,7 +130,7 @@
                                                     ],
                                                     [
                                                         {
-                                                            "tag": "T_operation"
+                                                            "tag": "TOperation"
                                                         },
                                                         "󥼁;I#p󹰎󥩓󻹦򡾐􇹶8"
                                                     ]
@@ -140,37 +140,37 @@
                                         ],
                                         [
                                             {
-                                                "tag": "T_list",
+                                                "tag": "TList",
                                                 "contents": [
                                                     {
-                                                        "tag": "T_or",
+                                                        "tag": "TOr",
                                                         "contents": [
                                                             "]LJ񋑒􃞄XEh\r\u0007i󱻹t",
                                                             "񶳓",
                                                             [
                                                                 {
-                                                                    "tag": "T_unit"
+                                                                    "tag": "TUnit"
                                                                 },
                                                                 "rTy"
                                                             ],
                                                             [
                                                                 {
-                                                                    "tag": "T_big_map",
+                                                                    "tag": "TBigMap",
                                                                     "contents": [
                                                                         [
-                                                                            "T_key_hash",
+                                                                            "TKeyHash",
                                                                             "\\tqO8\u0014!p򐄒#:𚠗<,򗐶񒟠N\t򄼳w{򶢖OB\u0018𚩅]\u000f\u0012򛈼"
                                                                         ],
                                                                         [
                                                                             {
-                                                                                "tag": "T_lambda",
+                                                                                "tag": "TLambda",
                                                                                 "contents": [
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_contract",
+                                                                                            "tag": "TContract",
                                                                                             "contents": [
                                                                                                 {
-                                                                                                    "tag": "T_operation"
+                                                                                                    "tag": "TOperation"
                                                                                                 },
                                                                                                 "䲓\u0016-s_)#r\u0010lI{\u000b\u0018𘽴8붎XO\u000b"
                                                                                             ]
@@ -179,7 +179,7 @@
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_unit"
+                                                                                            "tag": "TUnit"
                                                                                         },
                                                                                         "𡲠\u0019?}!󢖛􁳭37$\u0010\t\u001fFD\u0006򷿹Z鏆/\"_򃄸8󟤤"
                                                                                     ]
@@ -218,7 +218,7 @@
                             "C𕢭2\u0003l76󻗏񩮣cL\u0008o󅯸坐=",
                             [
                                 {
-                                    "tag": "T_signature"
+                                    "tag": "TSignature"
                                 },
                                 "d"
                             ]
@@ -257,7 +257,7 @@
                                                                         "La򬸈d\u0008򾈇9-@|񃅯🀽\u0010󫅱񎸚e)\u001b𵩝 E\u000c/&񉷉C",
                                                                         "\u0002\rq",
                                                                         [
-                                                                            "T_bytes",
+                                                                            "TBytes",
                                                                             "b\"𒁼Ks󖺆P1J󇣗B"
                                                                         ]
                                                                     ]
@@ -286,39 +286,39 @@
                                                                         "𵢙0v-񧋩F''6艩\u0001,vRr}2x5 \u000c򌡠7",
                                                                         [
                                                                             {
-                                                                                "tag": "T_or",
+                                                                                "tag": "TOr",
                                                                                 "contents": [
                                                                                     "W󥕑Y:򐻖;lxi~\"y4\r\u0012_\u0001\u0014i>𖏈",
                                                                                     "𯪋򪭉𤫐yW\u0012\u0010:5\\\u000b񤶓",
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_unit"
+                                                                                            "tag": "TUnit"
                                                                                         },
                                                                                         "򇹨c2"
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_big_map",
+                                                                                            "tag": "TBigMap",
                                                                                             "contents": [
                                                                                                 [
-                                                                                                    "T_mutez",
+                                                                                                    "TMutez",
                                                                                                     "򋭊񾮲BOCn\u0019Om7󬴤򨮩𵜋\u0005Md햹^󍪡DRZ"
                                                                                                 ],
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_or",
+                                                                                                        "tag": "TOr",
                                                                                                         "contents": [
                                                                                                             "\u000b\u0000",
                                                                                                             "q",
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_unit"
+                                                                                                                    "tag": "TUnit"
                                                                                                                 },
                                                                                                                 "򄠞VR\u0012\\z#eZ\u000b<Fe򳣘򗍧3򟛶"
                                                                                                             ],
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_key"
+                                                                                                                    "tag": "TKey"
                                                                                                                 },
                                                                                                                 "_􈢤7sl#񳹔\u001c\u0013\u001c\n$df\u0014\u001d"
                                                                                                             ]
@@ -336,9 +336,9 @@
                                                                         ],
                                                                         [
                                                                             {
-                                                                                "tag": "T_set",
+                                                                                "tag": "TSet",
                                                                                 "contents": [
-                                                                                    "T_mutez",
+                                                                                    "TMutez",
                                                                                     "(PK\u0011\u001f 𾰉cq.c\u0001񡼃=\u000c<齇􊵄V\u000e"
                                                                                 ]
                                                                             },
@@ -355,15 +355,15 @@
                                                                                         "e\u001cI\u0006𚾲aQ\u0018tF\u0010h\"Z1Z+\u0011񽁿󉂉򝲸B#񂟸",
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_map",
+                                                                                                "tag": "TMap",
                                                                                                 "contents": [
                                                                                                     [
-                                                                                                        "T_nat",
+                                                                                                        "CNat",
                                                                                                         "6\u000b1xd\u0008\u001b2 򭸏i򬘄]7t액\tI"
                                                                                                     ],
                                                                                                     [
                                                                                                         {
-                                                                                                            "tag": "T_signature"
+                                                                                                            "tag": "TSignature"
                                                                                                         },
                                                                                                         "v𦕻򽹩󛷭\u0014UO^<𰭋򆍔󑸙=_Y򭽛𢜦񡈹%\u0008o\u001d"
                                                                                                     ]
@@ -389,17 +389,17 @@
                                                                                         "?8>\u0017\u001a\rଧ\u000c𛎠\u001d򾠁\u0001E(𲳑nHB:\u0004\u001f\u0002",
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_lambda",
+                                                                                                "tag": "TLambda",
                                                                                                 "contents": [
                                                                                                     [
                                                                                                         {
-                                                                                                            "tag": "T_signature"
+                                                                                                            "tag": "TSignature"
                                                                                                         },
                                                                                                         "𔞭2\"򯧵񙶔[6Hi\u0010\u000f𯬬􌊵uf`󽿪\u000b\u001f򄮴񔟵񂘛\u001f\u0011\u001e􍃚"
                                                                                                     ],
                                                                                                     [
                                                                                                         {
-                                                                                                            "tag": "T_signature"
+                                                                                                            "tag": "TSignature"
                                                                                                         },
                                                                                                         "\u0010񂌑򕯋򠷏򘏓b󷜛𿃩7?\u000cd󨠱!J>T񖥏X9􍐧UQG􄕊v]󤉂󒋞"
                                                                                                     ]
@@ -435,7 +435,7 @@
                                                         "8(\u0004\u0011򿓙\u0004K\u000c_\u0006|,c\u0014'󨨝%񇢩\u000f\u001e",
                                                         [
                                                             {
-                                                                "tag": "T_unit"
+                                                                "tag": "TUnit"
                                                             },
                                                             "\u000e\u000f 󞻩򹝨k}뽦𿼿󢰥Px&G"
                                                         ]
@@ -497,67 +497,67 @@
                             "\u0018i\u0013j#O88𭻙w􏇃oBn\u0014W𘰪>󴙵𳌞\u0010*8\u001f",
                             [
                                 {
-                                    "tag": "T_or",
+                                    "tag": "TOr",
                                     "contents": [
                                         "?𜇚",
                                         "!񭶟ZvZCI\u00074$vDN󥜷𠩸񜄛~B\u0010\u0013𱨮e]G\u0018B7\\3>",
                                         [
                                             {
-                                                "tag": "T_signature"
+                                                "tag": "TSignature"
                                             },
                                             "`Us4\u001eD񚶞򏜷\u0003񅞜B\u0014E"
                                         ],
                                         [
                                             {
-                                                "tag": "T_contract",
+                                                "tag": "TContract",
                                                 "contents": [
                                                     {
-                                                        "tag": "T_or",
+                                                        "tag": "TOr",
                                                         "contents": [
                                                             "",
                                                             "\u0001\u0010{󋙷+ᖸ",
                                                             [
                                                                 {
-                                                                    "tag": "T_option",
+                                                                    "tag": "TOption",
                                                                     "contents": [
                                                                         "}2KMJ󸰭\u001777\u0002𷳌\u0000𿡈n 𸮘򾍬\u0008N\u0015\n`<\u000fI(5",
                                                                         [
                                                                             {
-                                                                                "tag": "T_or",
+                                                                                "tag": "TOr",
                                                                                 "contents": [
                                                                                     "jiN;Gw^\u0013>7q󛕠󝢘t\t",
                                                                                     "񐑯𲾇b񺱄fH\u0008񝻢~lI񛺉򝿧򦝢x6;Ky\u000c96z%",
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_comparable",
-                                                                                            "contents": "T_timestamp"
+                                                                                            "tag": "TComparable",
+                                                                                            "contents": "CTimestamp"
                                                                                         },
                                                                                         "\t3Zv񛃷ic,\u001ag\u0002\u0013񸦤>|(􎜾!򃴢n3&𷅶覱&Q ,"
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_map",
+                                                                                            "tag": "TMap",
                                                                                             "contents": [
                                                                                                 [
-                                                                                                    "T_timestamp",
+                                                                                                    "CTimestamp",
                                                                                                     "Y-񖗮Q\u001d"
                                                                                                 ],
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_option",
+                                                                                                        "tag": "TOption",
                                                                                                         "contents": [
                                                                                                             "\u00066/f𕅸D+",
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_big_map",
+                                                                                                                    "tag": "TBigMap",
                                                                                                                     "contents": [
                                                                                                                         [
-                                                                                                                            "T_nat",
+                                                                                                                            "CNat",
                                                                                                                             "󪪩\u0014\u0004𙙲B%㬠<\u001a\u000f󭤜򧂜"
                                                                                                                         ],
                                                                                                                         [
                                                                                                                             {
-                                                                                                                                "tag": "T_unit"
+                                                                                                                                "tag": "TUnit"
                                                                                                                             },
                                                                                                                             "\u000f#\u000fGWz󍵍b\u000e"
                                                                                                                         ]
@@ -583,42 +583,42 @@
                                                             ],
                                                             [
                                                                 {
-                                                                    "tag": "T_map",
+                                                                    "tag": "TMap",
                                                                     "contents": [
                                                                         [
-                                                                            "T_nat",
+                                                                            "CNat",
                                                                             "\u0010򔥽_II3򔈐S\u001a{-x\u000b&񾗶C"
                                                                         ],
                                                                         [
                                                                             {
-                                                                                "tag": "T_or",
+                                                                                "tag": "TOr",
                                                                                 "contents": [
                                                                                     "\u0006\u0015򨗌r;\u0010\u001d3C",
                                                                                     "񇰇[",
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_or",
+                                                                                            "tag": "TOr",
                                                                                             "contents": [
                                                                                                 "\u0010{xq#D\u001bC󅆚{S\u0002\u0003\u001c󪤌>S#b",
                                                                                                 "\u0014彗",
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_contract",
+                                                                                                        "tag": "TContract",
                                                                                                         "contents": [
                                                                                                             {
-                                                                                                                "tag": "T_or",
+                                                                                                                "tag": "TOr",
                                                                                                                 "contents": [
                                                                                                                     "\u0013c9cw'Ji󪞡",
                                                                                                                     "h,}󆜊󅓰<HDV\u0003\u001e`򿦉򜘄di\u000155򿝃󑐽\r",
                                                                                                                     [
                                                                                                                         {
-                                                                                                                            "tag": "T_unit"
+                                                                                                                            "tag": "TUnit"
                                                                                                                         },
                                                                                                                         "򙎸5{1󡷿h{z񰠽\u0014Z`𹫽2f꣛𔑩?򶱙Uu.k\u001c{\u001c𞂺[񱳞\u0018"
                                                                                                                     ],
                                                                                                                     [
                                                                                                                         {
-                                                                                                                            "tag": "T_operation"
+                                                                                                                            "tag": "TOperation"
                                                                                                                         },
                                                                                                                         "H십k󴞡N\u001d2=𕦲w^Oc4k\u0012~!􅆫8vk\u0013󷜨\u001b⚜p"
                                                                                                                     ]
@@ -631,20 +631,20 @@
                                                                                                 ],
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_pair",
+                                                                                                        "tag": "TPair",
                                                                                                         "contents": [
                                                                                                             "T󶢧\u00040\u0013O6.\u001b6󕅩b&C]u",
                                                                                                             "𗊽\u000c򤎈G򛝟\u001b|:\u000c3񨊶=\u0002",
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_lambda",
+                                                                                                                    "tag": "TLambda",
                                                                                                                     "contents": [
                                                                                                                         [
                                                                                                                             {
-                                                                                                                                "tag": "T_list",
+                                                                                                                                "tag": "TList",
                                                                                                                                 "contents": [
                                                                                                                                     {
-                                                                                                                                        "tag": "T_operation"
+                                                                                                                                        "tag": "TOperation"
                                                                                                                                     },
                                                                                                                                     "i/󙓬 T󗦤򳗫𸊩:])U󙈫6~\u0003􂚨𧩝\u0002?Sf񉩐𼯴b\u0005"
                                                                                                                                 ]
@@ -653,28 +653,28 @@
                                                                                                                         ],
                                                                                                                         [
                                                                                                                             {
-                                                                                                                                "tag": "T_contract",
+                                                                                                                                "tag": "TContract",
                                                                                                                                 "contents": [
                                                                                                                                     {
-                                                                                                                                        "tag": "T_option",
+                                                                                                                                        "tag": "TOption",
                                                                                                                                         "contents": [
                                                                                                                                             "a-򶰿$",
                                                                                                                                             [
                                                                                                                                                 {
-                                                                                                                                                    "tag": "T_pair",
+                                                                                                                                                    "tag": "TPair",
                                                                                                                                                     "contents": [
                                                                                                                                                         "F\u0006x򉨆򐉆g򵗘3􃂭TL🡔k\n8񬥀񱏒g𒶐r{fu\u000e@\u001e\u0006z",
                                                                                                                                                         "p8򬟏vW\u0007󳓇񯤼\u0008\u001d\u001d;dDTB;\u0015H򽸂\u0014",
                                                                                                                                                         [
                                                                                                                                                             {
-                                                                                                                                                                "tag": "T_key"
+                                                                                                                                                                "tag": "TKey"
                                                                                                                                                             },
                                                                                                                                                             "I\u0010\u0016,\u001c56ib\u0012\u001a9<\u00154=\u001dd󕙙\u0014(Y\u001c󰕇𢶐󙴽E@"
                                                                                                                                                         ],
                                                                                                                                                         [
                                                                                                                                                             {
-                                                                                                                                                                "tag": "T_comparable",
-                                                                                                                                                                "contents": "T_nat"
+                                                                                                                                                                "tag": "TComparable",
+                                                                                                                                                                "contents": "CNat"
                                                                                                                                                             },
                                                                                                                                                             "􈓰nC7T\"\u00152F\u0008𘟚򲄖򃊦\u000f\u0008hw]"
                                                                                                                                                         ]
@@ -695,7 +695,7 @@
                                                                                                             ],
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_operation"
+                                                                                                                    "tag": "TOperation"
                                                                                                                 },
                                                                                                                 "n\n񐜶hd]\u0002\u0004\u0004\r򽽟B\u000c𺡃\u0015\u0018=򯖟\n(𶨝E\u000c'4v7􀞩"
                                                                                                             ]
@@ -709,7 +709,7 @@
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_unit"
+                                                                                            "tag": "TUnit"
                                                                                         },
                                                                                         "\t񕋙\u0002Y}JE\u0016w򱇄\u0008"
                                                                                     ]
@@ -773,10 +773,10 @@
                                             "򊻓N3q􌢪\u0006􊋹\u0017]=B)?H#񾑱𩏱Rc\u0018\u001ak\n<",
                                             [
                                                 {
-                                                    "tag": "T_list",
+                                                    "tag": "TList",
                                                     "contents": [
                                                         {
-                                                            "tag": "T_key"
+                                                            "tag": "TKey"
                                                         },
                                                         "{z/H鯌\u0018C=\n\u0012;:f(cb𼹣𤣫M"
                                                     ]
@@ -841,10 +841,10 @@
                             {
                                 "stor": [
                                     {
-                                        "tag": "T_contract",
+                                        "tag": "TContract",
                                         "contents": [
                                             {
-                                                "tag": "T_unit"
+                                                "tag": "TUnit"
                                             },
                                             "I\u0005n\u000e4SU=\u0008\u0006񼢋Ai06\u0004o"
                                         ]
@@ -853,30 +853,30 @@
                                 ],
                                 "para": [
                                     {
-                                        "tag": "T_contract",
+                                        "tag": "TContract",
                                         "contents": [
                                             {
-                                                "tag": "T_big_map",
+                                                "tag": "TBigMap",
                                                 "contents": [
                                                     [
-                                                        "T_string",
+                                                        "TString",
                                                         ""
                                                     ],
                                                     [
                                                         {
-                                                            "tag": "T_pair",
+                                                            "tag": "TPair",
                                                             "contents": [
                                                                 "U\\󨑉n񂣈򥉅S񟪞6\u0011󑡫1X􈡉!u\r",
                                                                 "7_P򕎳󽁔M󞳜8_Gvn\u0013~o򵑧^",
                                                                 [
                                                                     {
-                                                                        "tag": "T_operation"
+                                                                        "tag": "TOperation"
                                                                     },
                                                                     " 󃒚2W0v󺎊\u000e\u001a\u0018𠂕\u0004򦦡k𲥐,󧁟\u0000<\u0005}"
                                                                 ],
                                                                 [
                                                                     {
-                                                                        "tag": "T_key"
+                                                                        "tag": "TKey"
                                                                     },
                                                                     "J&򻪦񯧵R\u0000򪂸H󙼛󷧢\u000fi@&򐃅"
                                                                 ]
@@ -911,7 +911,7 @@
                                                 "%򃐻󬀼K\u0016\\{\u0014\u00006^򱼊򡧈󽱵\u001f",
                                                 "\u001d򪧒\\J",
                                                 [
-                                                    "T_string",
+                                                    "TString",
                                                     "\u0001􆎧\u0011N򃤋򷻞󢰦.\u000bOO\u0010a򋲟Y+"
                                                 ]
                                             ]
@@ -977,7 +977,7 @@
                                                                                                 "i\u001d9~E\u0007\u0008ꊣ \u0018\u000e<񪙃]",
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_unit"
+                                                                                                        "tag": "TUnit"
                                                                                                     },
                                                                                                     "\u0017&$>􋬿񤥮;U}󫢰%𧦒\u001f9򜵊y"
                                                                                                 ]
@@ -1089,26 +1089,26 @@
                                                                                                                 "󼭐!-",
                                                                                                                 [
                                                                                                                     {
-                                                                                                                        "tag": "T_contract",
+                                                                                                                        "tag": "TContract",
                                                                                                                         "contents": [
                                                                                                                             {
-                                                                                                                                "tag": "T_or",
+                                                                                                                                "tag": "TOr",
                                                                                                                                 "contents": [
                                                                                                                                     "'}<|\u0011\u001a󢬗_𬋅\u0013N𼁆\u001c1:%^*-\u0004􂉄񣁤G#򂯄񅋳\u001b4yh",
                                                                                                                                     "!;񀽡𬏖%g󰜰:z᥍q\u001a|N}󬭝\u001aH=P񵌉\u000c\u001ff󺫭$:>",
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_lambda",
+                                                                                                                                            "tag": "TLambda",
                                                                                                                                             "contents": [
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_signature"
+                                                                                                                                                        "tag": "TSignature"
                                                                                                                                                     },
                                                                                                                                                     "񬺤fyW&H>\u0002򭪛u{0\u0006wj\u0015򚁱&\u001b%*^򗆜.\t'"
                                                                                                                                                 ],
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_operation"
+                                                                                                                                                        "tag": "TOperation"
                                                                                                                                                     },
                                                                                                                                                     "\u000b󴆻E񸤤\u00131"
                                                                                                                                                 ]
@@ -1118,19 +1118,19 @@
                                                                                                                                     ],
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_lambda",
+                                                                                                                                            "tag": "TLambda",
                                                                                                                                             "contents": [
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_operation"
+                                                                                                                                                        "tag": "TOperation"
                                                                                                                                                     },
                                                                                                                                                     "c\u0005񖸉VH򖯄?󔗸\"a󙩹"
                                                                                                                                                 ],
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_set",
+                                                                                                                                                        "tag": "TSet",
                                                                                                                                                         "contents": [
-                                                                                                                                                            "T_nat",
+                                                                                                                                                            "CNat",
                                                                                                                                                             "\u001bv\u0011o𹫍#q\u0012\u0007YjD󕒰=\u0010\u0017L?헉򶥎n(h"
                                                                                                                                                         ]
                                                                                                                                                     },
@@ -1249,13 +1249,13 @@
         {
             "stor": [
                 {
-                    "tag": "T_operation"
+                    "tag": "TOperation"
                 },
                 "{\u0019MpM\u0011f񡎢󁐘`J򆷺V\u0005\nGy񩈺k_}r\u001a"
             ],
             "para": [
                 {
-                    "tag": "T_key"
+                    "tag": "TKey"
                 },
                 "򤈀"
             ],
@@ -1301,13 +1301,13 @@
                                                     {
                                                         "stor": [
                                                             {
-                                                                "tag": "T_operation"
+                                                                "tag": "TOperation"
                                                             },
                                                             "񷪔\u001fh2M\u0017a'iA\u0013/\u001b4\u0014\u001d1񞗖䵒J\n>"
                                                         ],
                                                         "para": [
                                                             {
-                                                                "tag": "T_key"
+                                                                "tag": "TKey"
                                                             },
                                                             "-*}ꖜFqntU㋧\u0012L\u0011=\u000bV󝟄\u001e\u000ee񴔈[r<r𰪾C"
                                                         ],
@@ -1326,53 +1326,53 @@
                                                                         "=\u0013󑦲",
                                                                         [
                                                                             {
-                                                                                "tag": "T_pair",
+                                                                                "tag": "TPair",
                                                                                 "contents": [
                                                                                     "𡺈񭅞\u0011~7\u000f\u001d\u001f2󎞬8\u0015u󂣋􇇘b𨎧󴋰cY\u0006􂏒\u0005񴭉M\\",
                                                                                     "j扝𧎈\u001d",
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_contract",
+                                                                                            "tag": "TContract",
                                                                                             "contents": [
                                                                                                 {
-                                                                                                    "tag": "T_or",
+                                                                                                    "tag": "TOr",
                                                                                                     "contents": [
                                                                                                         "򔵆G\u001c񇧁c\u0005X!vD",
                                                                                                         "m/[\u0000󉃌\u000cUG0\u001a4\"M􉝺앇\u0003𶲄\u0015\t(𽠁H\u0017",
                                                                                                         [
                                                                                                             {
-                                                                                                                "tag": "T_contract",
+                                                                                                                "tag": "TContract",
                                                                                                                 "contents": [
                                                                                                                     {
-                                                                                                                        "tag": "T_big_map",
+                                                                                                                        "tag": "TBigMap",
                                                                                                                         "contents": [
                                                                                                                             [
-                                                                                                                                "T_mutez",
+                                                                                                                                "TMutez",
                                                                                                                                 "\u0019\t\"?I(K\u0011) 򟐧"
                                                                                                                             ],
                                                                                                                             [
                                                                                                                                 {
-                                                                                                                                    "tag": "T_option",
+                                                                                                                                    "tag": "TOption",
                                                                                                                                     "contents": [
                                                                                                                                         "򅅹6򯺮l=l񘹔#򧓆z񝰑jAe}",
                                                                                                                                         [
                                                                                                                                             {
-                                                                                                                                                "tag": "T_option",
+                                                                                                                                                "tag": "TOption",
                                                                                                                                                 "contents": [
                                                                                                                                                     "d36E󇐏{\u001dPȍ󒹌B\u0017ttH@+\u0011𳁧2e~+n(eh𵘚",
                                                                                                                                                     [
                                                                                                                                                         {
-                                                                                                                                                            "tag": "T_lambda",
+                                                                                                                                                            "tag": "TLambda",
                                                                                                                                                             "contents": [
                                                                                                                                                                 [
                                                                                                                                                                     {
-                                                                                                                                                                        "tag": "T_key"
+                                                                                                                                                                        "tag": "TKey"
                                                                                                                                                                     },
                                                                                                                                                                     "1[􌫢O:a:`"
                                                                                                                                                                 ],
                                                                                                                                                                 [
                                                                                                                                                                     {
-                                                                                                                                                                        "tag": "T_operation"
+                                                                                                                                                                        "tag": "TOperation"
                                                                                                                                                                     },
                                                                                                                                                                     "\u0000􋖝e/4Us𰝾"
                                                                                                                                                                 ]
@@ -1397,19 +1397,19 @@
                                                                                                         ],
                                                                                                         [
                                                                                                             {
-                                                                                                                "tag": "T_list",
+                                                                                                                "tag": "TList",
                                                                                                                 "contents": [
                                                                                                                     {
-                                                                                                                        "tag": "T_or",
+                                                                                                                        "tag": "TOr",
                                                                                                                         "contents": [
                                                                                                                             "\u0006b\u0008\u001ak\u000e&g<2\u0002\u00003",
                                                                                                                             "񄵐\u0013\u0003}[\u000f򚵏x{񦓚\r򟔨",
                                                                                                                             [
                                                                                                                                 {
-                                                                                                                                    "tag": "T_list",
+                                                                                                                                    "tag": "TList",
                                                                                                                                     "contents": [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_unit"
+                                                                                                                                            "tag": "TUnit"
                                                                                                                                         },
                                                                                                                                         "򷜺upO\u0015򣵅a󪌥\u0008􀟐~\u0003B=a󗞜+\u001a_QGh5EꟋi"
                                                                                                                                     ]
@@ -1418,24 +1418,24 @@
                                                                                                                             ],
                                                                                                                             [
                                                                                                                                 {
-                                                                                                                                    "tag": "T_or",
+                                                                                                                                    "tag": "TOr",
                                                                                                                                     "contents": [
                                                                                                                                         "+񥅥b)򪬁\u0003Vi$Yf󙍶&E&񉓈{jQ",
                                                                                                                                         "Z5BE-𴋼򂭖𴎪\u000eYX9񏙻\u0016k}񖘯7U#\u001e\u0001񳪌|5򌁵~",
                                                                                                                                         [
                                                                                                                                             {
-                                                                                                                                                "tag": "T_list",
+                                                                                                                                                "tag": "TList",
                                                                                                                                                 "contents": [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_big_map",
+                                                                                                                                                        "tag": "TBigMap",
                                                                                                                                                         "contents": [
                                                                                                                                                             [
-                                                                                                                                                                "T_timestamp",
+                                                                                                                                                                "CTimestamp",
                                                                                                                                                                 ".񇾐#\u0013\u0018\u001a\rEV蜀N}𼯹򇚧,1c򦝶"
                                                                                                                                                             ],
                                                                                                                                                             [
                                                                                                                                                                 {
-                                                                                                                                                                    "tag": "T_key"
+                                                                                                                                                                    "tag": "TKey"
                                                                                                                                                                 },
                                                                                                                                                                 "N򡥧󫆴]􁤺q:򃲲|񗗙򕃝\u0008򢭁k򍖍𙫹𡑯kn"
                                                                                                                                                             ]
@@ -1448,9 +1448,9 @@
                                                                                                                                         ],
                                                                                                                                         [
                                                                                                                                             {
-                                                                                                                                                "tag": "T_set",
+                                                                                                                                                "tag": "TSet",
                                                                                                                                                 "contents": [
-                                                                                                                                                    "T_nat",
+                                                                                                                                                    "CNat",
                                                                                                                                                     "쮚򝗆\u0001򊡮7"
                                                                                                                                                 ]
                                                                                                                                             },
@@ -1476,41 +1476,41 @@
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_or",
+                                                                                            "tag": "TOr",
                                                                                             "contents": [
                                                                                                 "򌅙󈼵񀶜򌁅7𘁳 EH\u0019v􇲗\u001e\u0013?)\u001cv",
                                                                                                 "M\u0003+(#\\Xn◧8󤞝L󾘂p𻩟𥕋;󛠠\u0015l\u0008",
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_key"
+                                                                                                        "tag": "TKey"
                                                                                                     },
                                                                                                     "\u000b|\u0015#򉞭(y\u001fBSwH\u0018[\u0006\u001e>^󡿵3Z}7{򱲊"
                                                                                                 ],
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_or",
+                                                                                                        "tag": "TOr",
                                                                                                         "contents": [
                                                                                                             "p򆥶\u000b\u000fNbl\u0001\u00162𩚢(m񲰗`W*\t󛾀5񦛝8n&<{:6",
                                                                                                             "V?k_kF\\'𒻡񿷁+",
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_big_map",
+                                                                                                                    "tag": "TBigMap",
                                                                                                                     "contents": [
                                                                                                                         [
-                                                                                                                            "T_bytes",
+                                                                                                                            "TBytes",
                                                                                                                             "񌫊g򆜇(\u001d1x+;c31Q􆐚w񚕃O򴺅u"
                                                                                                                         ],
                                                                                                                         [
                                                                                                                             {
-                                                                                                                                "tag": "T_or",
+                                                                                                                                "tag": "TOr",
                                                                                                                                 "contents": [
                                                                                                                                     "@򣫣S\u0007G6",
                                                                                                                                     ":;",
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_set",
+                                                                                                                                            "tag": "TSet",
                                                                                                                                             "contents": [
-                                                                                                                                                "T_string",
+                                                                                                                                                "TString",
                                                                                                                                                 ""
                                                                                                                                             ]
                                                                                                                                         },
@@ -1518,7 +1518,7 @@
                                                                                                                                     ],
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_operation"
+                                                                                                                                            "tag": "TOperation"
                                                                                                                                         },
                                                                                                                                         "Z\\\u0015󇧺񵀀u"
                                                                                                                                     ]
@@ -1532,7 +1532,7 @@
                                                                                                             ],
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_operation"
+                                                                                                                    "tag": "TOperation"
                                                                                                                 },
                                                                                                                 "\u001ctI𳍄񭹄񖸮$lt姬m.hG"
                                                                                                             ]
@@ -1560,9 +1560,9 @@
                                                                         {
                                                                             "stor": [
                                                                                 {
-                                                                                    "tag": "T_set",
+                                                                                    "tag": "TSet",
                                                                                     "contents": [
-                                                                                        "T_bool",
+                                                                                        "CBool",
                                                                                         "1\u0006𲧡\np<\u0003󄙉"
                                                                                     ]
                                                                                 },
@@ -1570,19 +1570,19 @@
                                                                             ],
                                                                             "para": [
                                                                                 {
-                                                                                    "tag": "T_or",
+                                                                                    "tag": "TOr",
                                                                                     "contents": [
                                                                                         "\u0008#[쿭򕄍򚈌񄫌S\u0014y70O",
                                                                                         "\u001d<\u0000\u001e/򜚝\u001b}D+Ttv𛵔9\u0001񼿡𸞍/󘞵",
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_signature"
+                                                                                                "tag": "TSignature"
                                                                                             },
                                                                                             "󥷍pA"
                                                                                         ],
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_key"
+                                                                                                "tag": "TKey"
                                                                                             },
                                                                                             "&o7y𥮂j.3"
                                                                                         ]
@@ -1610,13 +1610,13 @@
                                                                                             "J\u001af\u001dCPj\u0018lC\u0006",
                                                                                             [
                                                                                                 {
-                                                                                                    "tag": "T_contract",
+                                                                                                    "tag": "TContract",
                                                                                                     "contents": [
                                                                                                         {
-                                                                                                            "tag": "T_list",
+                                                                                                            "tag": "TList",
                                                                                                             "contents": [
                                                                                                                 {
-                                                                                                                    "tag": "T_unit"
+                                                                                                                    "tag": "TUnit"
                                                                                                                 },
                                                                                                                 "*^𶺠1\u000b=<"
                                                                                                             ]
@@ -1744,8 +1744,8 @@
                                                                         "",
                                                                         [
                                                                             {
-                                                                                "tag": "T_comparable",
-                                                                                "contents": "T_nat"
+                                                                                "tag": "TComparable",
+                                                                                "contents": "CNat"
                                                                             },
                                                                             "5*򟝿p𨮎q\u0001NW\u0002sc_/񧿀\u0012!8H𔅥w󯫔!I9j"
                                                                         ]
@@ -1792,20 +1792,20 @@
                                                                         "C𪨥񘷽\u001b󻲱񇡺L𪠊񔚑[T}󔪸3~5\u0014\t򷷱`_7\u001csI\u001f񭷵[r",
                                                                         "!𢶴A𜴔\u0000񉥲\u0011D\u0014<},\u0010Y",
                                                                         [
-                                                                            "T_address",
+                                                                            "CAddress",
                                                                             "𗮢#񛘀񢁣xfiD񜭄󏡃U2򬮿\u000ePV営\u0002l6E񀜯\r"
                                                                         ],
                                                                         [
                                                                             {
-                                                                                "tag": "T_big_map",
+                                                                                "tag": "TBigMap",
                                                                                 "contents": [
                                                                                     [
-                                                                                        "T_int",
+                                                                                        "CInt",
                                                                                         "L\u0002kL"
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_operation"
+                                                                                            "tag": "TOperation"
                                                                                         },
                                                                                         "󊒼n,JF􆿽\u0015󱴷\u0004񶫎򺀞:H󒃃򦙲񩧯񒧣b\u000b)[~s󎐇>(𖅄z6O"
                                                                                     ]
@@ -1841,13 +1841,13 @@
                                                                         "\u0007\u0010򻦂\u000f+SL:M򼶠Ruo?򱓇?豍w\u0011",
                                                                         [
                                                                             {
-                                                                                "tag": "T_list",
+                                                                                "tag": "TList",
                                                                                 "contents": [
                                                                                     {
-                                                                                        "tag": "T_contract",
+                                                                                        "tag": "TContract",
                                                                                         "contents": [
                                                                                             {
-                                                                                                "tag": "T_unit"
+                                                                                                "tag": "TUnit"
                                                                                             },
                                                                                             "CyZ'󿎸S\u001a&}󓆺󔎌e􀇅񦾨v"
                                                                                         ]
@@ -1876,7 +1876,7 @@
                                                                         "\r4\u00177Kg",
                                                                         [
                                                                             {
-                                                                                "tag": "T_unit"
+                                                                                "tag": "TUnit"
                                                                             },
                                                                             "I\u001b+f;\u001a񅝮S𺾥0\u0000\u0011\n\u0005h__"
                                                                         ]
@@ -1907,9 +1907,9 @@
                                                                         "!gW'j\u0000pjQ[\u0019\u001fV",
                                                                         [
                                                                             {
-                                                                                "tag": "T_set",
+                                                                                "tag": "TSet",
                                                                                 "contents": [
-                                                                                    "T_key_hash",
+                                                                                    "TKeyHash",
                                                                                     "\u001c򜫏\u0016W?\r񉙶D@\u00168"
                                                                                 ]
                                                                             },
@@ -1937,27 +1937,27 @@
                                                                         "񽊪򬯬\u0018ga\u0018\u00154O#\u0014\u0006\u001cT񓌄\u00112@",
                                                                         [
                                                                             {
-                                                                                "tag": "T_map",
+                                                                                "tag": "TMap",
                                                                                 "contents": [
                                                                                     [
-                                                                                        "T_string",
+                                                                                        "TString",
                                                                                         "Fq 8\u000e𲽪zMj\t𱲮S\u000c\u001b󅑽\u0010󲷢񯴄\r,p\u0008\u001aQl0I􅢲\r"
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_lambda",
+                                                                                            "tag": "TLambda",
                                                                                             "contents": [
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_map",
+                                                                                                        "tag": "TMap",
                                                                                                         "contents": [
                                                                                                             [
-                                                                                                                "T_bytes",
+                                                                                                                "TBytes",
                                                                                                                 "|5H\u0007E\u0006"
                                                                                                             ],
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_key"
+                                                                                                                    "tag": "TKey"
                                                                                                                 },
                                                                                                                 "SZ\u0004|"
                                                                                                             ]
@@ -1967,9 +1967,9 @@
                                                                                                 ],
                                                                                                 [
                                                                                                     {
-                                                                                                        "tag": "T_set",
+                                                                                                        "tag": "TSet",
                                                                                                         "contents": [
-                                                                                                            "T_bool",
+                                                                                                            "CBool",
                                                                                                             "\u0013񙸋SC\r\u0015n~v󇏽"
                                                                                                         ]
                                                                                                     },
@@ -2075,27 +2075,27 @@
                             "uW@BA񀾒z\u001eE\u0000\u0013!Ee",
                             [
                                 {
-                                    "tag": "T_map",
+                                    "tag": "TMap",
                                     "contents": [
                                         [
-                                            "T_nat",
+                                            "CNat",
                                             "񧹏󢡄\u000f􏺹~\u0001򯟈\u0008m/-\u0003;\u000f{\t𚹸R\u00137\u001f\u0014d;z񚛡"
                                         ],
                                         [
                                             {
-                                                "tag": "T_pair",
+                                                "tag": "TPair",
                                                 "contents": [
                                                     "bT\u0008",
                                                     "",
                                                     [
                                                         {
-                                                            "tag": "T_operation"
+                                                            "tag": "TOperation"
                                                         },
                                                         "}S󍮢"
                                                     ],
                                                     [
                                                         {
-                                                            "tag": "T_signature"
+                                                            "tag": "TSignature"
                                                         },
                                                         "5{@򃐕P󀈞Z\u0001'bW\u0006F"
                                                     ]
@@ -2109,30 +2109,30 @@
                             ],
                             [
                                 {
-                                    "tag": "T_pair",
+                                    "tag": "TPair",
                                     "contents": [
                                         "fH@v{1Mh\u0011{Wfk񂫸.{u",
                                         "}N\n~",
                                         [
                                             {
-                                                "tag": "T_signature"
+                                                "tag": "TSignature"
                                             },
                                             "\u001b󢈬R򏏟&3B\u0017E㯫\u0017󶛯*L"
                                         ],
                                         [
                                             {
-                                                "tag": "T_option",
+                                                "tag": "TOption",
                                                 "contents": [
                                                     "\u0016\u000b>\u001fi\u0000`󣚓𞥟{'\u0019O󼥕􂗦t\\0cWC%\u0002*𓠓$",
                                                     [
                                                         {
-                                                            "tag": "T_contract",
+                                                            "tag": "TContract",
                                                             "contents": [
                                                                 {
-                                                                    "tag": "T_list",
+                                                                    "tag": "TList",
                                                                     "contents": [
                                                                         {
-                                                                            "tag": "T_signature"
+                                                                            "tag": "TSignature"
                                                                         },
                                                                         "^/,\u0017wYkd\u001e򃩌\t\u001c񼪽񺙮\u0018"
                                                                     ]
@@ -2166,9 +2166,9 @@
                                                             {
                                                                 "stor": [
                                                                     {
-                                                                        "tag": "T_set",
+                                                                        "tag": "TSet",
                                                                         "contents": [
-                                                                            "T_nat",
+                                                                            "CNat",
                                                                             "񺧹d\n󎰸\u000fp􃁽\u0015:9\u0006򿒛\u0008{:[1\u0012(劉er󯂗"
                                                                         ]
                                                                     },
@@ -2176,60 +2176,60 @@
                                                                 ],
                                                                 "para": [
                                                                     {
-                                                                        "tag": "T_or",
+                                                                        "tag": "TOr",
                                                                         "contents": [
                                                                             "󿽊:\u0004𤊆\u0007>E񵆐\u001c\u0002m3+󈏟",
                                                                             "z.񔞥/\u0015򯈡:cwP\u0000\u0003ﳗ񷊦𩱗3\u0016Fm\u0006}t:^񗼣뷁\u001b",
                                                                             [
                                                                                 {
-                                                                                    "tag": "T_key"
+                                                                                    "tag": "TKey"
                                                                                 },
                                                                                 "sbt򢣓n~\td󣃈*HGx񉭉񺁣HwV\u0017XF}\u0015"
                                                                             ],
                                                                             [
                                                                                 {
-                                                                                    "tag": "T_map",
+                                                                                    "tag": "TMap",
                                                                                     "contents": [
                                                                                         [
-                                                                                            "T_address",
+                                                                                            "CAddress",
                                                                                             "񯹥(0\u0008򗤕L{\u001d\u000bJ󐮪y򜳺񴊜\u0017񕧻q"
                                                                                         ],
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_list",
+                                                                                                "tag": "TList",
                                                                                                 "contents": [
                                                                                                     {
-                                                                                                        "tag": "T_list",
+                                                                                                        "tag": "TList",
                                                                                                         "contents": [
                                                                                                             {
-                                                                                                                "tag": "T_big_map",
+                                                                                                                "tag": "TBigMap",
                                                                                                                 "contents": [
                                                                                                                     [
-                                                                                                                        "T_address",
+                                                                                                                        "CAddress",
                                                                                                                         "6"
                                                                                                                     ],
                                                                                                                     [
                                                                                                                         {
-                                                                                                                            "tag": "T_list",
+                                                                                                                            "tag": "TList",
                                                                                                                             "contents": [
                                                                                                                                 {
-                                                                                                                                    "tag": "T_map",
+                                                                                                                                    "tag": "TMap",
                                                                                                                                     "contents": [
                                                                                                                                         [
-                                                                                                                                            "T_bytes",
+                                                                                                                                            "TBytes",
                                                                                                                                             "\u0005N󆐀3l𔥣\u001cm񹬉WS*im똾󘍜𷄱"
                                                                                                                                         ],
                                                                                                                                         [
                                                                                                                                             {
-                                                                                                                                                "tag": "T_option",
+                                                                                                                                                "tag": "TOption",
                                                                                                                                                 "contents": [
                                                                                                                                                     "y򞳐\u000b{򃊮~\u0002?\u0005n\u0010",
                                                                                                                                                     [
                                                                                                                                                         {
-                                                                                                                                                            "tag": "T_contract",
+                                                                                                                                                            "tag": "TContract",
                                                                                                                                                             "contents": [
                                                                                                                                                                 {
-                                                                                                                                                                    "tag": "T_key"
+                                                                                                                                                                    "tag": "TKey"
                                                                                                                                                                 },
                                                                                                                                                                 ".D\u0011f𐕪Tj𦑌q|f񭯱񿱺]\n5x6y?򗺊N"
                                                                                                                                                             ]
@@ -2285,35 +2285,35 @@
                                                                                 "~𨃷񍃦&򣅯\u0007o\\=[e>+\u001f!򅠤x",
                                                                                 [
                                                                                     {
-                                                                                        "tag": "T_list",
+                                                                                        "tag": "TList",
                                                                                         "contents": [
                                                                                             {
-                                                                                                "tag": "T_or",
+                                                                                                "tag": "TOr",
                                                                                                 "contents": [
                                                                                                     "􋌭\u0014",
                                                                                                     "􇟴~=򂣽񑆳%",
                                                                                                     [
                                                                                                         {
-                                                                                                            "tag": "T_comparable",
-                                                                                                            "contents": "T_mutez"
+                                                                                                            "tag": "TComparable",
+                                                                                                            "contents": "TMutez"
                                                                                                         },
                                                                                                         "/\u0019"
                                                                                                     ],
                                                                                                     [
                                                                                                         {
-                                                                                                            "tag": "T_list",
+                                                                                                            "tag": "TList",
                                                                                                             "contents": [
                                                                                                                 {
-                                                                                                                    "tag": "T_big_map",
+                                                                                                                    "tag": "TBigMap",
                                                                                                                     "contents": [
                                                                                                                         [
-                                                                                                                            "T_int",
+                                                                                                                            "CInt",
                                                                                                                             "\u0018\u001ad򩂳J򜗪󑆐􅷿Z򧥔\u0003^􅕹\u0016M]b󲷌􊉩\u0014󑎅JB񷓊9|T\u0014񽩴4"
                                                                                                                         ],
                                                                                                                         [
                                                                                                                             {
-                                                                                                                                "tag": "T_comparable",
-                                                                                                                                "contents": "T_timestamp"
+                                                                                                                                "tag": "TComparable",
+                                                                                                                                "contents": "CTimestamp"
                                                                                                                             },
                                                                                                                             "􂲢򜥚Ⴒ\u0003%?c9𳒳*,\u001d򲛭8󧎼򲲙󫸝\u001d򽊼*&񣺏L"
                                                                                                                         ]
@@ -2415,15 +2415,15 @@
                                                                                 "\u0005􋘓򘥝7o󢂮H={\u0019L~ut",
                                                                                 "qG",
                                                                                 [
-                                                                                    "T_mutez",
+                                                                                    "TMutez",
                                                                                     "`𕙶\u0014M\u001b\u0014K팓\u0003d\t~4𪾤N`"
                                                                                 ],
                                                                                 [
                                                                                     {
-                                                                                        "tag": "T_contract",
+                                                                                        "tag": "TContract",
                                                                                         "contents": [
                                                                                             {
-                                                                                                "tag": "T_signature"
+                                                                                                "tag": "TSignature"
                                                                                             },
                                                                                             "\u0003򳔣􏲿򨕴 򀓩1􅅯>򒟩]"
                                                                                         ]
@@ -2526,21 +2526,21 @@
         {
             "stor": [
                 {
-                    "tag": "T_unit"
+                    "tag": "TUnit"
                 },
                 ""
             ],
             "para": [
                 {
-                    "tag": "T_big_map",
+                    "tag": "TBigMap",
                     "contents": [
                         [
-                            "T_string",
+                            "TString",
                             "=r;\ts"
                         ],
                         [
                             {
-                                "tag": "T_signature"
+                                "tag": "TSignature"
                             },
                             "󵡁"
                         ]
@@ -2603,7 +2603,7 @@
                             "􉧂}򷭕󰽂BB򓇏M~4\u00023!휽}6=\u000c<\u001fxS򳚳􃂳쏧􊕁",
                             [
                                 {
-                                    "tag": "T_operation"
+                                    "tag": "TOperation"
                                 },
                                 "𑫽)򫀣򀴡\u000fLhi\u001bXU𨏂s+"
                             ]
@@ -2644,40 +2644,40 @@
                                             {
                                                 "stor": [
                                                     {
-                                                        "tag": "T_option",
+                                                        "tag": "TOption",
                                                         "contents": [
                                                             "\u000bT񛶽9Ho\u0010<񵋡U\u0011\u0019\u0002GC&񤰵v[",
                                                             [
                                                                 {
-                                                                    "tag": "T_list",
+                                                                    "tag": "TList",
                                                                     "contents": [
                                                                         {
-                                                                            "tag": "T_list",
+                                                                            "tag": "TList",
                                                                             "contents": [
                                                                                 {
-                                                                                    "tag": "T_big_map",
+                                                                                    "tag": "TBigMap",
                                                                                     "contents": [
                                                                                         [
-                                                                                            "T_timestamp",
+                                                                                            "CTimestamp",
                                                                                             "𿜻4\u001f𪬌򇩨z𣵝/3󪨔<mU\n\u001a\u000ef򋻰&`O󶀤|\u0008"
                                                                                         ],
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_contract",
+                                                                                                "tag": "TContract",
                                                                                                 "contents": [
                                                                                                     {
-                                                                                                        "tag": "T_or",
+                                                                                                        "tag": "TOr",
                                                                                                         "contents": [
                                                                                                             "Q󸗄T?񢹽򶮍@\u000e\rL\u0003􈺏oE\u001b",
                                                                                                             "~𱡤l<h\u000b\u000b󇝶-(,6o\u000f󊑍`:\u0005鮓󴧼#񟬃",
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_contract",
+                                                                                                                    "tag": "TContract",
                                                                                                                     "contents": [
                                                                                                                         {
-                                                                                                                            "tag": "T_set",
+                                                                                                                            "tag": "TSet",
                                                                                                                             "contents": [
-                                                                                                                                "T_bytes",
+                                                                                                                                "TBytes",
                                                                                                                                 "|\u0000Q7i𩦮򰠈\u0007񣯍"
                                                                                                                             ]
                                                                                                                         },
@@ -2688,26 +2688,26 @@
                                                                                                             ],
                                                                                                             [
                                                                                                                 {
-                                                                                                                    "tag": "T_option",
+                                                                                                                    "tag": "TOption",
                                                                                                                     "contents": [
                                                                                                                         "򢰂F𸫸a* _s\u0004󵻫L\r񛨅",
                                                                                                                         [
                                                                                                                             {
-                                                                                                                                "tag": "T_or",
+                                                                                                                                "tag": "TOr",
                                                                                                                                 "contents": [
                                                                                                                                     "K\u001b;󜈝q񩴜𗱈𡸒[򌁶4`6s\u0003:",
                                                                                                                                     "\u0017\u0010aF@\"D\n(",
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_map",
+                                                                                                                                            "tag": "TMap",
                                                                                                                                             "contents": [
                                                                                                                                                 [
-                                                                                                                                                    "T_int",
+                                                                                                                                                    "CInt",
                                                                                                                                                     "󵋏$.C񱀻`=򱛊yqgl\u0006IH91񵦷\r򏁑8𣞠.Tk򦺏\u0001𘡄[r"
                                                                                                                                                 ],
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_unit"
+                                                                                                                                                        "tag": "TUnit"
                                                                                                                                                     },
                                                                                                                                                     "򄔘07\u0013D\tu񬁦+rqsY|V󁺟u5"
                                                                                                                                                 ]
@@ -2717,10 +2717,10 @@
                                                                                                                                     ],
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_contract",
+                                                                                                                                            "tag": "TContract",
                                                                                                                                             "contents": [
                                                                                                                                                 {
-                                                                                                                                                    "tag": "T_signature"
+                                                                                                                                                    "tag": "TSignature"
                                                                                                                                                 },
                                                                                                                                                 "b?\u0012\nnW]\u0010dw󀑃"
                                                                                                                                             ]
@@ -2758,33 +2758,33 @@
                                                 ],
                                                 "para": [
                                                     {
-                                                        "tag": "T_big_map",
+                                                        "tag": "TBigMap",
                                                         "contents": [
                                                             [
-                                                                "T_int",
+                                                                "CInt",
                                                                 "񏲾X+\u0016\t􊕸T𫟋]W-C@\u0018e󤄄\u0007Px\u000e\u0016"
                                                             ],
                                                             [
                                                                 {
-                                                                    "tag": "T_big_map",
+                                                                    "tag": "TBigMap",
                                                                     "contents": [
                                                                         [
-                                                                            "T_timestamp",
+                                                                            "CTimestamp",
                                                                             "9\"񔪷}C:襱(񐔔򠩈:\u0012_.]Q\u0000'󹷾\u0007S^C򻨉󑅘P"
                                                                         ],
                                                                         [
                                                                             {
-                                                                                "tag": "T_map",
+                                                                                "tag": "TMap",
                                                                                 "contents": [
                                                                                     [
-                                                                                        "T_bool",
+                                                                                        "CBool",
                                                                                         "X\u0014#\u0018\u001fO7󇡾AZ"
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "tag": "T_set",
+                                                                                            "tag": "TSet",
                                                                                             "contents": [
-                                                                                                "T_mutez",
+                                                                                                "TMutez",
                                                                                                 "򸙁B"
                                                                                             ]
                                                                                         },
@@ -2889,8 +2889,8 @@
                                                                 "QJ\u001a8㨆󌂃/󤟼q\u0015>\\񓇽w&򬘻WG-AJ\u000c=",
                                                                 [
                                                                     {
-                                                                        "tag": "T_comparable",
-                                                                        "contents": "T_address"
+                                                                        "tag": "TComparable",
+                                                                        "contents": "CAddress"
                                                                     },
                                                                     "mB󮈲/\u0016\u0011"
                                                                 ]
@@ -2968,39 +2968,39 @@
                                                                                                                                     "C󕿭y񌥀geFZ򍡊{v:򗈢1񈠘h\u001f񬷑X󄠯@",
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_map",
+                                                                                                                                            "tag": "TMap",
                                                                                                                                             "contents": [
                                                                                                                                                 [
-                                                                                                                                                    "T_int",
+                                                                                                                                                    "CInt",
                                                                                                                                                     "9WK􌗹\u0016񖾥g>􇈣OI򌉠"
                                                                                                                                                 ],
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_contract",
+                                                                                                                                                        "tag": "TContract",
                                                                                                                                                         "contents": [
                                                                                                                                                             {
-                                                                                                                                                                "tag": "T_list",
+                                                                                                                                                                "tag": "TList",
                                                                                                                                                                 "contents": [
                                                                                                                                                                     {
-                                                                                                                                                                        "tag": "T_lambda",
+                                                                                                                                                                        "tag": "TLambda",
                                                                                                                                                                         "contents": [
                                                                                                                                                                             [
                                                                                                                                                                                 {
-                                                                                                                                                                                    "tag": "T_operation"
+                                                                                                                                                                                    "tag": "TOperation"
                                                                                                                                                                                 },
                                                                                                                                                                                 "\u0005d򎄾U⺣;l򶒉d\u0019<t),WU𣶲򛇞_󢳱[.bsS\u001638h"
                                                                                                                                                                             ],
                                                                                                                                                                             [
                                                                                                                                                                                 {
-                                                                                                                                                                                    "tag": "T_list",
+                                                                                                                                                                                    "tag": "TList",
                                                                                                                                                                                     "contents": [
                                                                                                                                                                                         {
-                                                                                                                                                                                            "tag": "T_contract",
+                                                                                                                                                                                            "tag": "TContract",
                                                                                                                                                                                             "contents": [
                                                                                                                                                                                                 {
-                                                                                                                                                                                                    "tag": "T_set",
+                                                                                                                                                                                                    "tag": "TSet",
                                                                                                                                                                                                     "contents": [
-                                                                                                                                                                                                        "T_nat",
+                                                                                                                                                                                                        "CNat",
                                                                                                                                                                                                         "w\u001faT>\u001cY\n󖉧t'"
                                                                                                                                                                                                     ]
                                                                                                                                                                                                 },
@@ -3028,9 +3028,9 @@
                                                                                                                                     ],
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_set",
+                                                                                                                                            "tag": "TSet",
                                                                                                                                             "contents": [
-                                                                                                                                                "T_key_hash",
+                                                                                                                                                "TKey_hash",
                                                                                                                                                 "񍋶+0𰀔󶜁7\u0014\u0013+>n񟪂p񉕝v"
                                                                                                                                             ]
                                                                                                                                         },
@@ -3057,24 +3057,24 @@
                                                                                                                                     "ऻ􅘖7bP\u001bℏ",
                                                                                                                                     [
                                                                                                                                         {
-                                                                                                                                            "tag": "T_or",
+                                                                                                                                            "tag": "TOr",
                                                                                                                                             "contents": [
                                                                                                                                                 "\u0019`N1fE󵍱\\yO断񷐍\"񹚩}򠩚o𝧌\t\u0001񝘗󄒑j2w󭯃󂄥Oe",
                                                                                                                                                 "󳦵\\򦿰Uy\u0011",
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_key"
+                                                                                                                                                        "tag": "TKey"
                                                                                                                                                     },
                                                                                                                                                     "-Q󢅊!oYV󤦾"
                                                                                                                                                 ],
                                                                                                                                                 [
                                                                                                                                                     {
-                                                                                                                                                        "tag": "T_contract",
+                                                                                                                                                        "tag": "TContract",
                                                                                                                                                         "contents": [
                                                                                                                                                             {
-                                                                                                                                                                "tag": "T_set",
+                                                                                                                                                                "tag": "TSet",
                                                                                                                                                                 "contents": [
-                                                                                                                                                                    "T_bytes",
+                                                                                                                                                                    "TBytes",
                                                                                                                                                                     "b\u0011nb\u0010\u0001n"
                                                                                                                                                                 ]
                                                                                                                                                             },
@@ -3176,7 +3176,7 @@
                             "_i􋎀Y񹩩w\u000eo󋐬\u000c\u001a(\u0004\u0013t",
                             [
                                 {
-                                    "tag": "T_unit"
+                                    "tag": "TUnit"
                                 },
                                 "q>󏎔x\tu|Z\u0014󆇭,~oj񽣋p%\u0018"
                             ],
@@ -3215,10 +3215,10 @@
         {
             "stor": [
                 {
-                    "tag": "T_list",
+                    "tag": "TList",
                     "contents": [
                         {
-                            "tag": "T_operation"
+                            "tag": "TOperation"
                         },
                         "񒠐_"
                     ]
@@ -3227,12 +3227,12 @@
             ],
             "para": [
                 {
-                    "tag": "T_list",
+                    "tag": "TList",
                     "contents": [
                         {
-                            "tag": "T_set",
+                            "tag": "TSet",
                             "contents": [
-                                "T_mutez",
+                                "TMutez",
                                 "򠦂񘫃󌢡"
                             ]
                         },
@@ -3345,7 +3345,7 @@
                             "B",
                             [
                                 {
-                                    "tag": "T_operation"
+                                    "tag": "TOperation"
                                 },
                                 "'b)\u001d"
                             ]
@@ -3367,8 +3367,8 @@
                             "\u0004\u0000\u001eAY\u0002l􆹥Z",
                             [
                                 {
-                                    "tag": "T_comparable",
-                                    "contents": "T_bool"
+                                    "tag": "TComparable",
+                                    "contents": "CBool"
                                 },
                                 ""
                             ]
@@ -3409,7 +3409,7 @@
                             "󽱴",
                             "G\u0015\u0019\u0010;󡟈8R\u000f𶛅􀉤Jo2󣉡",
                             [
-                                "T_key_hash",
+                                "TKeyHash",
                                 "lY𡿇󄤴7\u0016bY􇋟A}򤼬\u0013񈫝򥀰󞹳"
                             ]
                         ]
@@ -3480,35 +3480,35 @@
         {
             "stor": [
                 {
-                    "tag": "T_comparable",
-                    "contents": "T_address"
+                    "tag": "TComparable",
+                    "contents": "CAddress"
                 },
                 "񛉸/\u0003󞧶sM흩"
             ],
             "para": [
                 {
-                    "tag": "T_big_map",
+                    "tag": "TBigMap",
                     "contents": [
                         [
-                            "T_nat",
+                            "CNat",
                             "R󥂄6+\u0003;􌫾2򊤰\u0001󽀝Q򏱾󪙏\\6󱐽,\t\u000f񜖚\rQ󢆖2\u000e򨕧:M\\"
                         ],
                         [
                             {
-                                "tag": "T_option",
+                                "tag": "TOption",
                                 "contents": [
                                     "",
                                     [
                                         {
-                                            "tag": "T_or",
+                                            "tag": "TOr",
                                             "contents": [
                                                 "-\u000fDd-'\u001e",
                                                 "v!\n9r\u0017x%󟣃12\\W\u0004\\r",
                                                 [
                                                     {
-                                                        "tag": "T_set",
+                                                        "tag": "TSet",
                                                         "contents": [
-                                                            "T_int",
+                                                            "CInt",
                                                             "uJ\\\u0013"
                                                         ]
                                                     },
@@ -3516,7 +3516,7 @@
                                                 ],
                                                 [
                                                     {
-                                                        "tag": "T_key"
+                                                        "tag": "TKey"
                                                     },
                                                     "򪯈0(Mc\u0010\u000fz;J󧴉\\0\u0004򮱢𙕪;!gk"
                                                 ]
@@ -3674,22 +3674,22 @@
                             "𔭾V(",
                             [
                                 {
-                                    "tag": "T_contract",
+                                    "tag": "TContract",
                                     "contents": [
                                         {
-                                            "tag": "T_pair",
+                                            "tag": "TPair",
                                             "contents": [
                                                 "",
                                                 "y񩉣v",
                                                 [
                                                     {
-                                                        "tag": "T_unit"
+                                                        "tag": "TUnit"
                                                     },
                                                     "\u000bG/z\u001c󲒴4uvG;󖌻\u001b񁧁\u0006h򲟯"
                                                 ],
                                                 [
                                                     {
-                                                        "tag": "T_key"
+                                                        "tag": "TKey"
                                                     },
                                                     "o,\u000f񩅕\u0011\u00120#^zT񈻨\u0012\u000fl񝥕LW\u0013}򐗃c'񦝒x\u0013\u0007?"
                                                 ]

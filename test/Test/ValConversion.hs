@@ -9,7 +9,7 @@ module Test.ValConversion
 import Test.Hspec (Spec, describe, it, shouldBe)
 import Test.QuickCheck (Arbitrary)
 
-import Michelson.Typed (CVal(..), FromVal, ToT, ToVal, Val(..), fromVal, toVal)
+import Michelson.Typed (CValue(..), ToT, Val, Value(..), fromVal, toVal)
 
 import Test.Util.QuickCheck (roundtripSpec)
 
@@ -47,9 +47,9 @@ spec = do
       roundtrip @(Map Integer Bool)
       roundtrip @(Map Integer (Maybe (Either Bool Bool)))
   where
-    check :: ToVal a => a -> (Val instr (ToT a) -> Bool) -> IO ()
+    check :: Val a => a -> (Value instr (ToT a) -> Bool) -> IO ()
     check v p = p (toVal v) `shouldBe` True
 
     roundtrip :: forall a.
-      (Show a, Eq a, Arbitrary a, Typeable a, ToVal a, FromVal a) => Spec
+      (Show a, Eq a, Arbitrary a, Typeable a, Val a) => Spec
     roundtrip = roundtripSpec @a @_ @Void toVal (Right . fromVal)

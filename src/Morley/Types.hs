@@ -28,6 +28,24 @@ module Morley.Types
   , Comparable (..)
   , T (..)
   , CT (..)
+  , TInt
+  , TNat
+  , TString
+  , TBytes
+  , TMutez
+  , TBool
+  , TKeyHash
+  , TTimestamp
+  , TAddress
+  , pattern TInt
+  , pattern TNat
+  , pattern TString
+  , pattern TBytes
+  , pattern TMutez
+  , pattern TBool
+  , pattern TKeyHash
+  , pattern TTimestamp
+  , pattern TAddress
   , Annotation (..)
   , InternalByteString(..)
   , unInternalByteString
@@ -91,12 +109,15 @@ import Fmt (Buildable(build), Builder, genericF, listF)
 import Text.Megaparsec (ParseErrorBundle, Parsec, ShowErrorComponent(..), errorBundlePretty)
 import qualified Text.Show (show)
 
-import Michelson.Typed (instrToOps)
+import Michelson.Typed (type (&), (:+>), instrToOps)
 import qualified Michelson.Typed as T
 import Michelson.Untyped
   (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), ExtU, FieldAnn, Instr,
-  InstrAbstract(..), InternalByteString(..), Op(..), Parameter, Storage, T(..), Type(..), TypeAnn,
-  Value(..), VarAnn, ann, noAnn, unInternalByteString)
+  InstrAbstract(..), InternalByteString(..), Op(..), Parameter, Storage, T(..), TAddress,
+  pattern TAddress, TBool, pattern TBool, TBytes, pattern TBytes, TInt, pattern TInt, TKeyHash,
+  pattern TKeyHash, TMutez, pattern TMutez, TNat, pattern TNat, TString, pattern TString,
+  TTimestamp, pattern TTimestamp, Type(..), TypeAnn, Value(..), VarAnn, ann, noAnn,
+  unInternalByteString)
 import Morley.Default (Default(..))
 
 -------------------------------------
@@ -225,7 +246,7 @@ data TestAssert where
     :: (Typeable inp, Typeable out)
     => T.Text
     -> PrintComment
-    -> T.Instr inp ('T.T_c 'T_bool ': out)
+    -> inp :+> (T.TBool & out)
     -> TestAssert
 
 deriving instance Show TestAssert
@@ -234,7 +255,7 @@ data ExtInstr
   = TEST_ASSERT TestAssert
   | PRINT PrintComment
 
-instance T.Conversible ExtInstr (UExtInstrAbstract Op) where
+instance T.Convertible ExtInstr (UExtInstrAbstract Op) where
   convert (PRINT pc) = UPRINT pc
   convert (TEST_ASSERT (TestAssert nm pc i)) =
     UTEST_ASSERT $ UTestAssert nm pc (instrToOps i)

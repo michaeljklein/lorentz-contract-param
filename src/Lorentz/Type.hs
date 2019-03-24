@@ -33,10 +33,7 @@ module Lorentz.Type (
   , TBigMap
   ) where
 
-import Michelson.Typed (CT(..), Contract, FromCT, FromT, Instr(..), T(..), ToCT, ToT)
-
--- infix syntax "stack function" syntax
-type (+>) = Instr
+import Michelson.Typed (CT(..), Contract, FromCT, FromT, T(..), ToCT, ToT)
 
 -- Convert a Haskell type @*@ to a Michelson Type @T@, reexporting @ToT@ for
 -- concision in type signatures
@@ -50,12 +47,6 @@ type H t = FromT t
 type Mc t = ToCT t
 type Hc t = FromCT t
 
-infixr 1 +>
-
--- Type-level Heterogenous stack cons
-type (&) (a :: T) (b :: [T]) = a ': b
-
-infixr 2 &
 
 type Tc = 'T_c
 

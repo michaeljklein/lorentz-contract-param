@@ -11,7 +11,7 @@ import Test.Hspec
   specify)
 
 import Michelson.Interpret (ContractEnv(..), InterpretUntypedError(..), InterpretUntypedResult(..))
-import Michelson.Typed (unsafeValToValue)
+import Michelson.Typed (unsafeUntypeValue)
 import Michelson.Untyped
 import Morley.Ext (interpretMorleyUntyped)
 import Morley.Runtime
@@ -63,7 +63,7 @@ updatesStorageValue ca = either throwM handleResult $ do
   (addr,) <$> interpreterPure dummyNow dummyMaxSteps initGState interpreterOps
   where
     toNewStorage :: InterpretUntypedResult MorleyLogs -> Value Op
-    toNewStorage InterpretUntypedResult {..} = unsafeValToValue iurNewStorage
+    toNewStorage InterpretUntypedResult {..} = unsafeUntypeValue iurNewStorage
 
     handleResult :: (Address, InterpreterRes) -> Expectation
     handleResult (addr, ir) = do
@@ -101,11 +101,11 @@ contractAux1 = ContractAux
   where
     contract :: Contract Op
     contract = Contract
-      { para = Type tstring noAnn
-      , stor = Type tbool noAnn
+      { para = Type TString noAnn
+      , stor = Type TBool noAnn
       , code =
         [ Op $ CDR noAnn noAnn
-        , Op $ NIL noAnn noAnn $ Type T_operation noAnn
+        , Op $ NIL noAnn noAnn $ Type TOperation noAnn
         , Op $ PAIR noAnn noAnn noAnn noAnn
         ]
       }
@@ -116,7 +116,7 @@ contractAux2 = contractAux1
     { code =
       [ Op $ CDR noAnn noAnn
       , Op $ NOT noAnn
-      , Op $ NIL noAnn noAnn $ Type T_operation noAnn
+      , Op $ NIL noAnn noAnn $ Type TOperation noAnn
       , Op $ PAIR noAnn noAnn noAnn noAnn
       ]
     }

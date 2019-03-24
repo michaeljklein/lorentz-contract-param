@@ -7,7 +7,8 @@ import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (Property, label, (.&&.), (===))
 
 import Michelson.Interpret (ContractEnv(..), ContractReturn, MichelsonFailed(..), RemainingSteps)
-import Michelson.Typed (CT(..), CVal(..), Instr(..), T(..), Val(..), ( # ))
+import Michelson.Typed
+  ((:+>)(..), CValue(..), Instr, TInt, TList, TNat, TOption, TUnit, Value(..), ( # ))
 import Morley.Ext (interpretMorley)
 import Morley.Test (ContractPropValidator, contractProp, specWithTypedContract)
 import Morley.Types (MorleyLogs)
@@ -73,22 +74,22 @@ spec = describe "Advanced type interpreter tests" $ do
         Left _ -> expectationFailure "expecting another failure reason"
 
 validateBasic1
-  :: ContractPropValidator 'T_unit ('T_list ('T_c 'T_int)) Property
+  :: ContractPropValidator TUnit (TList TInt) Property
 validateBasic1 _env _param input (Right (ops, res), _) =
     (trToList res === [calcSum input + 12, 100])
     .&&.
     (label "returned no ops" $ null ops)
   where
-    calcSum :: Val instr ('T_list ('T_c 'T_int)) -> Integer
+    calcSum :: Value instr (TList TInt) -> Integer
     calcSum (VList l) = sum $ map (\(VC (CvInt i)) -> i) l
 
-    trToList :: Val instr ('T_list ('T_c 'T_int)) -> [Integer]
+    trToList :: Value instr (TList TInt) -> [Integer]
     trToList (VList l) = map (\(VC (CvInt i)) -> i) l
 
 validateBasic1 _ _ _ (Left e, _) = error $ show e
 
 validateStepsToQuotaTest ::
-     ContractReturn MorleyLogs ('T_c 'T_nat) -> RemainingSteps -> Expectation
+     ContractReturn MorleyLogs TNat -> RemainingSteps -> Expectation
 validateStepsToQuotaTest res numOfSteps =
   case fst res of
     Right ([], VC (CvNat x)) ->
@@ -107,7 +108,7 @@ validateStepsToQuotaTest res numOfSteps =
 --    ADD;
 --    PUSH nat 12
 --    ADD;
-_myInstr :: Typeable s => Instr ('T_c 'T_int : s) ('T_c 'T_int : s)
+_myInstr :: Typeable s => Instr (TInt : s) (TInt : s)
 _myInstr =
   PUSH (VC $ CvInt 223) #
   SOME #
@@ -116,7 +117,7 @@ _myInstr =
   PUSH (VC $ CvNat 12) #
   ADD
 
-_myInstr2 :: Typeable a => Instr a ('T_option ('T_c 'T_int) : a)
+_myInstr2 :: Typeable a => Instr a (TOption TInt : a)
 _myInstr2 =
   PUSH (VOption $ Just $ VC $ CvInt 223) #
   Nop

@@ -4,79 +4,79 @@
         {
             "stor": [
                 {
-                    "tag": "T_option",
+                    "tag": "TOption",
                     "contents": [
                         "\u001a\u0001\u000b򁁂3u.󐤔o,\u0014d\u001b\u0014m\u0000p񟈝+P񄴄E3𣱙Zr􋉶`S",
                         [
                             {
-                                "tag": "T_contract",
+                                "tag": "TContract",
                                 "contents": [
                                     {
-                                        "tag": "T_map",
+                                        "tag": "TMap",
                                         "contents": [
                                             [
-                                                "T_bytes",
+                                                "CBytes",
                                                 "HH񸐸w񭐈>\u001a9Sb5\u0010%<l1<(M\u0002\u001cN*"
                                             ],
                                             [
                                                 {
-                                                    "tag": "T_pair",
+                                                    "tag": "TPair",
                                                     "contents": [
                                                         "󙇲򾪀򀱱)𲂞2\u0015N1:􋵑\u00049\u0004􃴖񫛞",
                                                         "i\u0011𠏶J𚲫\u000b_𒓑8 9f",
                                                         [
                                                             {
-                                                                "tag": "T_option",
+                                                                "tag": "TOption",
                                                                 "contents": [
                                                                     "E`2?pV0\u00040򪏜,I\u0008L􆈏]x􄒖\u000e@'PTK]Ql",
                                                                     [
                                                                         {
-                                                                            "tag": "T_list",
+                                                                            "tag": "TList",
                                                                             "contents": [
                                                                                 {
-                                                                                    "tag": "T_pair",
+                                                                                    "tag": "TPair",
                                                                                     "contents": [
                                                                                         "m",
                                                                                         "\u001eG𩹳\u001c􊰔bn-d򃟆QQ;8JB]/&\u0000𪸂d򥙶:v𰙀󖾬𯫒S",
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_key"
+                                                                                                "tag": "TKey"
                                                                                             },
                                                                                             "򾏁1'E񲭉Zkmy5𹩕񈑛\u000c$b񖚏W򟥖p򍜽񫐦]C"
                                                                                         ],
                                                                                         [
                                                                                             {
-                                                                                                "tag": "T_map",
+                                                                                                "tag": "TMap",
                                                                                                 "contents": [
                                                                                                     [
-                                                                                                        "T_bool",
+                                                                                                        "CBool",
                                                                                                         "\u0005򐼮𛵜B\u00141\u0018c"
                                                                                                     ],
                                                                                                     [
                                                                                                         {
-                                                                                                            "tag": "T_map",
+                                                                                                            "tag": "TMap",
                                                                                                             "contents": [
                                                                                                                 [
-                                                                                                                    "T_nat",
+                                                                                                                    "TNat",
                                                                                                                     "$񌜵𐐸󥺿xtQ"
                                                                                                                 ],
                                                                                                                 [
                                                                                                                     {
-                                                                                                                        "tag": "T_pair",
+                                                                                                                        "tag": "TPair",
                                                                                                                         "contents": [
                                                                                                                             "$򾅺𜶦oN\u000c\u0005t􅩄򾫼ZS\u000c񃂈W򺘭\u0017\u0007s񝒥䌐챸g񈗏\u0017",
                                                                                                                             "󭜝:\u001f<>(\u001dK)b6;Y򎕷whD\u001e񧮄?󁣪󪄄%",
                                                                                                                             [
                                                                                                                                 {
-                                                                                                                                    "tag": "T_signature"
+                                                                                                                                    "tag": "TSignature"
                                                                                                                                 },
                                                                                                                                 "2\u0018J󬔴󬁍U\u0004\u0003\tx􎮌򲥊w񝵱\u000b\u0013\u0018C񟑿\u0004񄫓\u0017\u0012*y\u0013N󪵹"
                                                                                                                             ],
                                                                                                                             [
                                                                                                                                 {
-                                                                                                                                    "tag": "T_set",
+                                                                                                                                    "tag": "TSet",
                                                                                                                                     "contents": [
-                                                                                                                                        "T_int",
+                                                                                                                                        "Cint",
                                                                                                                                         "\u0006]K\u0011}]򸓥򁙋\u00056y🽠&򢇄(8;w\u001f\\\u0004\u00003/hd"
                                                                                                                                     ]
                                                                                                                                 },
@@ -180,7 +180,7 @@
         {
             "stor": [
                 {
-                    "tag": "T_list",
+                    "tag": "TList",
                     "contents": [
                         {
                             "tag": "T_key"
@@ -193,7 +193,7 @@
             "para": [
                 {
                     "tag": "T_comparable",
-                    "contents": "T_nat"
+                    "contents": "CNat"
                 },
                 "f񠻃=[5򔘯󶍪򄣲i򛐅*\u00008%\r贆"
             ],
@@ -239,7 +239,7 @@
         {
             "stor": [
                 {
-                    "tag": "T_pair",
+                    "tag": "TPair",
                     "contents": [
                         "\u001d𽱇\u001fI򃀀\u0011R\u000f𛴭*\u0005\u0012\u0018󚁥E~򁨍򔘻 ^{󁌈󆯒",
                         "􄃅9\"9򗨫)j\u001d\u0003'c򒆻򓊙N𬮊xR\u001d󽲾\u001b񦉭",
@@ -288,22 +288,22 @@
         {
             "stor": [
                 {
-                    "tag": "T_operation"
+                    "tag": "TOperation"
                 },
                 "񻣷\u000emzQ\u001d\u0006򡤚SRj"
             ],
             "para": [
                 {
-                    "tag": "T_pair",
+                    "tag": "TPair",
                     "contents": [
                         "~󂇠6",
                         "\u0019g_y3𛓙D\u0001\u0014xe\u0016^#㙢N",
                         [
                             {
-                                "tag": "T_list",
+                                "tag": "TList",
                                 "contents": [
                                     {
-                                        "tag": "T_signature"
+                                        "tag": "TSignature"
                                     },
                                     "\u0007𷱄\u0000"
                                 ]
@@ -320,7 +320,7 @@
                                     ],
                                     [
                                         {
-                                            "tag": "T_set",
+                                            "tag": "TSet",
                                             "contents": [
                                                 "T_nat",
                                                 "sx}OD\u0015񁱤u񏲦򇜙Zs"
@@ -374,11 +374,11 @@
                                         "tag": "T_contract",
                                         "contents": [
                                             {
-                                                "tag": "T_lambda",
+                                                "tag": "TLambda",
                                                 "contents": [
                                                     [
                                                         {
-                                                            "tag": "T_option",
+                                                            "tag": "TOption",
                                                             "contents": [
                                                                 "3\u0018+THB󕢍񾓃򖖈0x\u000e",
                                                                 [
@@ -416,10 +416,10 @@
                     "tag": "T_contract",
                     "contents": [
                         {
-                            "tag": "T_list",
+                            "tag": "TList",
                             "contents": [
                                 {
-                                    "tag": "T_operation"
+                                    "tag": "TOperation"
                                 },
                                 ",P𫉦\t*\n󫿶t񺧎󗟝{󧫮"
                             ]
@@ -446,12 +446,12 @@
                             "\u0007:j񠗫",
                             [
                                 {
-                                    "tag": "T_option",
+                                    "tag": "TOption",
                                     "contents": [
                                         "N*\u001e\u0006@k,\u0019뱒*0򘇠|o0hf9\u0000QY\u0002\u001aW󪬗6𷗣F!",
                                         [
                                             {
-                                                "tag": "T_set",
+                                                "tag": "TSet",
                                                 "contents": [
                                                     "T_nat",
                                                     "`0\u00027\u001b<;𚝥?񦪒HC\u0014𱖝\u0014i\t򢤴`I9"

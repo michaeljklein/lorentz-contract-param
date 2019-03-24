@@ -11,24 +11,47 @@ module Michelson.Untyped.Type
   , CT (..)
   , ToCT
   , FromCT
-  , pattern Tint
-  , pattern Tnat
-  , pattern Tstring
-  , pattern Tbytes
-  , pattern Tmutez
-  , pattern Tbool
-  , pattern Tkey_hash
-  , pattern Ttimestamp
-  , pattern Taddress
-  , tint
-  , tnat
-  , tstring
-  , tbytes
-  , tmutez
-  , tbool
-  , tkeyHash
-  , ttimestamp
-  , taddress
+  , pattern TInt
+  , pattern TNat
+  , pattern TString
+  , pattern TBytes
+  , pattern TMutez
+  , pattern TBool
+  , pattern TKeyHash
+  , pattern TTimestamp
+  , pattern TAddress
+  , CInt
+  , CNat
+  , CString
+  , CBytes
+  , CMutez
+  , CBool
+  , CKeyHash
+  , CTimestamp
+  , CAddress
+  , Tc
+  , TInt
+  , TNat
+  , TString
+  , TBytes
+  , TMutez
+  , TBool
+  , TKeyHash
+  , TTimestamp
+  , TAddress
+  , TKey
+  , TUnit
+  , TSignature
+  , TOption
+  , TList
+  , TSet
+  , TOperation
+  , TContract
+  , TPair
+  , TOr
+  , TLambda
+  , TMap
+  , TBigMap
   , isAtomicType
   , isKey
   , isSignature
@@ -72,51 +95,51 @@ instance Buildable Comparable where
     | otherwise = ct |+ " " +| a |+ ""
 
 compToType :: Comparable -> Type
-compToType (Comparable ct tn) = Type (T_comparable ct) tn
+compToType (Comparable ct tn) = Type (Tc ct) tn
 
 typeToComp :: Type -> Maybe Comparable
-typeToComp (Type (T_comparable ct) tn) = Just $ Comparable ct tn
+typeToComp (Type (Tc ct) tn) = Just $ Comparable ct tn
 typeToComp _ = Nothing
 
 -- Michelson Type
 data T =
-    T_comparable CT
-  | T_key
-  | T_unit
-  | T_signature
-  | T_option FieldAnn Type
-  | T_list Type
-  | T_set Comparable
-  | T_operation
-  | T_contract Type
-  | T_pair FieldAnn FieldAnn Type Type
-  | T_or FieldAnn FieldAnn Type Type
-  | T_lambda Type Type
-  | T_map Comparable Type
-  | T_big_map Comparable Type
+    Tc CT
+  | TKey
+  | TUnit
+  | TSignature
+  | TOption FieldAnn Type
+  | TList Type
+  | TSet Comparable
+  | TOperation
+  | TContract Type
+  | TPair FieldAnn FieldAnn Type Type
+  | TOr FieldAnn FieldAnn Type Type
+  | TLambda Type Type
+  | TMap Comparable Type
+  | TBigMap Comparable Type
   deriving (Eq, Show, Data, Generic)
 
 instance Buildable T where
   build =
     \case
-      T_comparable ct -> build ct
-      T_key -> "key"
-      T_unit -> "unit"
-      T_signature -> "signature"
-      T_option fa t -> "option (" +| t |+ " " +| fa |+ ")"
-      T_list t -> "list (" +| t |+ ")"
-      T_set c -> "set (" +| c |+ ")"
-      T_operation -> "operation"
-      T_contract t -> "contract " +| t |+ ""
-      T_pair fa1 fa2 t1 t2 ->
+      Tc ct -> build ct
+      TKey -> "key"
+      TUnit -> "unit"
+      TSignature -> "signature"
+      TOption fa t -> "option (" +| t |+ " " +| fa |+ ")"
+      TList t -> "list (" +| t |+ ")"
+      TSet c -> "set (" +| c |+ ")"
+      TOperation -> "operation"
+      TContract t -> "contract " +| t |+ ""
+      TPair fa1 fa2 t1 t2 ->
         "pair (" +| t1 |+ " " +| fa1 |+ ")"
          +| " (" +| t2 |+ " " +| fa2 |+ ")"
-      T_or fa1 fa2 t1 t2 ->
+      TOr fa1 fa2 t1 t2 ->
         "or ("   +| t1 |+ " " +| fa1 |+ ")"
          +| " (" +| t2 |+ " " +| fa2 |+ ")"
-      T_lambda t1 t2 -> build2 "lambda" t1 t2
-      T_map t1 t2 -> build2 "map" t1 t2
-      T_big_map t1 t2 -> build2 "big_map" t1 t2
+      TLambda t1 t2 -> build2 "lambda" t1 t2
+      TMap t1 t2 -> build2 "map" t1 t2
+      TBigMap t1 t2 -> build2 "big_map" t1 t2
     where
       -- build something with 2 type parameters
       build2 :: (Buildable t1, Buildable t2) => Builder -> t1 -> t2 -> Builder
@@ -124,109 +147,117 @@ instance Buildable T where
 
 -- Comparable Sub-Type
 data CT =
-    T_int
-  | T_nat
-  | T_string
-  | T_bytes
-  | T_mutez
-  | T_bool
-  | T_key_hash
-  | T_timestamp
-  | T_address
+    CInt
+  | CNat
+  | CString
+  | CBytes
+  | CMutez
+  | CBool
+  | CKeyHash
+  | CTimestamp
+  | CAddress
   deriving (Eq, Ord, Show, Data, Enum, Bounded, Generic)
 
 -- | Type function that converts a regular Haskell type into a comparable type
 -- (which has kind @CT@)
 type family ToCT a :: CT where
-  ToCT Integer    = 'T_int
-  ToCT Int        = 'T_int
-  ToCT Natural    = 'T_nat
-  ToCT Word64     = 'T_nat
-  ToCT Text       = 'T_string
-  ToCT Bool       = 'T_bool
-  ToCT ByteString = 'T_bytes
-  ToCT Mutez      = 'T_mutez
-  ToCT Address    = 'T_address
-  ToCT KeyHash    = 'T_key_hash
-  ToCT Timestamp  = 'T_timestamp
+  ToCT Integer    = 'CInt
+  ToCT Natural    = 'CNat
+  ToCT Text       = 'CString
+  ToCT Bool       = 'CBool
+  ToCT ByteString = 'CBytes
+  ToCT Mutez      = 'CMutez
+  ToCT Address    = 'CAddress
+  ToCT KeyHash    = 'CKeyHash
+  ToCT Timestamp  = 'CTimestamp
 
 type family FromCT (a :: CT) where
-  FromCT 'T_int       = Integer
-  FromCT 'T_nat       = Natural
-  FromCT 'T_string    = Text
-  FromCT 'T_bool      = Bool
-  FromCT 'T_bytes     = ByteString
-  FromCT 'T_mutez     = Mutez
-  FromCT 'T_address   = Address
-  FromCT 'T_key_hash  = KeyHash
-  FromCT 'T_timestamp = Timestamp
+  FromCT 'CInt       = Integer
+  FromCT 'CNat       = Natural
+  FromCT 'CString    = Text
+  FromCT 'CBool      = Bool
+  FromCT 'CBytes     = ByteString
+  FromCT 'CMutez     = Mutez
+  FromCT 'CAddress   = Address
+  FromCT 'CKeyHash   = KeyHash
+  FromCT 'CTimestamp = Timestamp
 
 instance Buildable CT where
   build =
     \case
-      T_int -> "int"
-      T_nat -> "nat"
-      T_string -> "string"
-      T_bytes -> "bytes"
-      T_mutez -> "mutez"
-      T_bool -> "bool"
-      T_key_hash -> "key_hash"
-      T_timestamp -> "timestamp"
-      T_address -> "address"
+      CInt -> "int"
+      CNat -> "nat"
+      CString -> "string"
+      CBytes -> "bytes"
+      CMutez -> "mutez"
+      CBool -> "bool"
+      CKeyHash -> "key_hash"
+      CTimestamp -> "timestamp"
+      CAddress -> "address"
 
-pattern Tint :: T
-pattern Tint <- T_comparable T_int
+type Tc = 'Tc
 
-pattern Tnat :: T
-pattern Tnat <- T_comparable T_nat
+type CInt       = 'CInt
+type CNat       = 'CNat
+type CString    = 'CString
+type CBytes     = 'CBytes
+type CMutez     = 'CMutez
+type CBool      = 'CBool
+type CKeyHash   = 'CKeyHash
+type CTimestamp = 'CTimestamp
+type CAddress   = 'CAddress
 
-pattern Tstring :: T
-pattern Tstring <- T_comparable T_string
+type TInt       = 'Tc 'CInt
+type TNat       = 'Tc 'CNat
+type TString    = 'Tc 'CString
+type TBytes     = 'Tc 'CBytes
+type TMutez     = 'Tc 'CMutez
+type TBool      = 'Tc 'CBool
+type TKeyHash   = 'Tc 'CKeyHash
+type TTimestamp = 'Tc 'CTimestamp
+type TAddress   = 'Tc 'CAddress
 
-pattern Tbytes :: T
-pattern Tbytes <- T_comparable T_bytes
+type TKey       = 'TKey
+type TUnit      = 'TUnit
+type TSignature = 'TSignature
+type TOption    = 'TOption
+type TList      = 'TList
+type TSet       = 'TSet
+type TOperation = 'TOperation
+type TContract  = 'TContract
+type TPair      = 'TPair
+type TOr        = 'TOr
+type TLambda    = 'TLambda
+type TMap       = 'TMap
+type TBigMap    = 'TBigMap
 
-pattern Tmutez :: T
-pattern Tmutez <- T_comparable T_mutez
+pattern TInt :: T
+pattern TInt = Tc CInt
 
-pattern Tbool :: T
-pattern Tbool <- T_comparable T_bool
+pattern TNat :: T
+pattern TNat = Tc CNat
 
-pattern Tkey_hash :: T
-pattern Tkey_hash <- T_comparable T_key_hash
+pattern TString :: T
+pattern TString = Tc CString
 
-pattern Ttimestamp :: T
-pattern Ttimestamp <- T_comparable T_timestamp
+pattern TBytes :: T
+pattern TBytes = Tc CBytes
 
-pattern Taddress :: T
-pattern Taddress <- T_comparable T_address
+pattern TMutez :: T
+pattern TMutez = Tc CMutez
 
-tint :: T
-tint = T_comparable T_int
+pattern TBool :: T
+pattern TBool = Tc CBool
 
-tnat :: T
-tnat = T_comparable T_nat
+pattern TKeyHash :: T
+pattern TKeyHash = Tc CKeyHash
 
-tstring :: T
-tstring = T_comparable T_string
+pattern TTimestamp :: T
+pattern TTimestamp = Tc CTimestamp
 
-tbytes :: T
-tbytes = T_comparable T_bytes
+pattern TAddress :: T
+pattern TAddress = Tc CAddress
 
-tmutez :: T
-tmutez = T_comparable T_mutez
-
-tbool :: T
-tbool = T_comparable T_bool
-
-tkeyHash :: T
-tkeyHash = T_comparable T_key_hash
-
-ttimestamp :: T
-ttimestamp = T_comparable T_timestamp
-
-taddress :: T
-taddress = T_comparable T_address
 
 isAtomicType :: Type -> Bool
 isAtomicType t@(Type _ (Annotation "")) =
@@ -234,58 +265,58 @@ isAtomicType t@(Type _ (Annotation "")) =
 isAtomicType _ = False
 
 isKey :: Type -> Bool
-isKey (Type T_key _) = True
+isKey (Type TKey _) = True
 isKey _              = False
 
 isUnit :: Type -> Bool
-isUnit (Type T_unit _) = True
+isUnit (Type TUnit _) = True
 isUnit _               = False
 
 isSignature :: Type -> Bool
-isSignature (Type T_signature _) = True
+isSignature (Type TSignature _) = True
 isSignature _                    = False
 
 isOperation :: Type -> Bool
-isOperation (Type T_operation _) = True
+isOperation (Type TOperation _) = True
 isOperation _                    = False
 
 isComparable :: Type -> Bool
-isComparable (Type (T_comparable _) _) = True
+isComparable (Type (Tc _) _) = True
 isComparable _ = False
 
 isMutez :: Type -> Bool
-isMutez (Type (T_comparable T_mutez) _) = True
+isMutez (Type TBool _) = True
 isMutez _ = False
 
 isTimestamp :: Type -> Bool
-isTimestamp (Type (T_comparable T_timestamp) _) = True
+isTimestamp (Type TTimestamp _) = True
 isTimestamp _ = False
 
 isKeyHash :: Type -> Bool
-isKeyHash (Type (T_comparable T_key_hash) _) = True
+isKeyHash (Type TKeyHash _) = True
 isKeyHash _ = False
 
 isBool  :: Type -> Bool
-isBool (Type (T_comparable T_bool) _) = True
+isBool (Type TBool _) = True
 isBool _ = False
 
 isString  :: Type -> Bool
-isString (Type (T_comparable T_string) _) = True
+isString (Type TString _) = True
 isString _ = False
 
 isInteger :: Type -> Bool
 isInteger a = isNat a || isInt a || isMutez a || isTimestamp a
 
 isNat  :: Type -> Bool
-isNat (Type (T_comparable T_nat) _) = True
+isNat (Type TNat _) = True
 isNat _ = False
 
 isInt  :: Type -> Bool
-isInt (Type (T_comparable T_int) _) = True
+isInt (Type TInt _) = True
 isInt _ = False
 
 isBytes :: Type -> Bool
-isBytes (Type (T_comparable T_bytes) _) = True
+isBytes (Type TBytes _) = True
 isBytes _ = False
 
 ----------------------------------------------------------------------------

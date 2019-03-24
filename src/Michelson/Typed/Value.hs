@@ -1,17 +1,16 @@
 -- | Module, containing data types for Michelson value.
 
 module Michelson.Typed.Value
-  ( Val (..)
+  ( Value (..)
   , ContractInp
   , ContractOut
   , CreateAccount (..)
   , CreateContract (..)
-  , CVal (..)
+  , CValue (..)
   , Operation (..)
   , SetDelegate (..)
   , TransferTokens (..)
-  , ToVal
-  , FromVal
+  , Val
   , toVal
   , fromVal
   ) where
@@ -20,8 +19,10 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Singletons (SingI)
 
-import Michelson.Typed.CValue (CVal(..), FromCVal, ToCVal, fromCVal, toCVal)
-import Michelson.Typed.T (T(..), ToT)
+import Michelson.Typed.CValue (CVal, CValue(..), fromCVal, toCVal)
+import Michelson.Typed.T
+  (TBigMap, TContract, TKey, TLambda, TList, TMap, TOperation, TOption, TOr, TPair, TSet,
+  TSignature, TUnit, Tc, ToT)
 import Tezos.Address (Address)
 import Tezos.Core (Mutez, Timestamp)
 import Tezos.Crypto (KeyHash, PublicKey, Signature)
@@ -43,9 +44,9 @@ data Operation instr where
 deriving instance Show (Operation instr)
 
 data TransferTokens instr p = TransferTokens
-  { ttContractParameter :: !(Val instr p)
+  { ttContractParameter :: !(Value instr p)
   , ttAmount :: !Mutez
-  , ttContract :: !(Val instr ('T_contract p))
+  , ttContract :: !(Value instr (TContract p))
   } deriving (Show)
 
 data SetDelegate = SetDelegate
@@ -67,38 +68,37 @@ data CreateContract instr t cp st
   , ccSpendable :: !Bool
   , ccDelegatable :: !Bool
   , ccBalance :: !Mutez
-  , ccStorageVal :: !(Val instr t)
+  , ccStorageVal :: !(Value instr t)
   , ccContractCode :: !(instr (ContractInp cp st) (ContractOut st))
   }
 
 deriving instance Show (CreateContract instr t cp st)
 
-type ContractInp param st = '[ 'T_pair param st ]
-type ContractOut st = '[ 'T_pair ('T_list 'T_operation) st ]
+type ContractInp param st = '[ TPair param st ]
+type ContractOut st = '[ TPair (TList TOperation) st ]
 
 -- | Representation of Michelson value.
 --
--- Type parameter @instr@ stands for Michelson instruction
+-- Type parameter @ins@ stands for Michelson instruction
 -- type, i.e. data type to represent an instruction of language.
-data Val instr t where
-  VC :: CVal t -> Val instr ('T_c t)
-  VKey :: PublicKey -> Val instr 'T_key
-  VUnit :: Val instr 'T_unit
-  VSignature :: Signature -> Val instr 'T_signature
-  VOption :: Maybe (Val instr t) -> Val instr ('T_option t)
-  VList :: [Val instr t] -> Val instr ('T_list t)
-  VSet :: Set (CVal t) -> Val instr ('T_set t)
-  VOp :: Operation instr -> Val instr 'T_operation
-  VContract :: Address -> Val instr ('T_contract p)
-  VPair :: (Val instr l, Val instr r) -> Val instr ('T_pair l r)
-  VOr :: Either (Val instr l) (Val instr r) -> Val instr ('T_or l r)
-  VLam
-    :: Show (instr '[inp] '[out])
-    => instr (inp ': '[]) (out ': '[]) -> Val instr ('T_lambda inp out)
-  VMap :: Map (CVal k) (Val instr v) -> Val instr ('T_map k v)
-  VBigMap :: Map (CVal k) (Val instr v) -> Val instr ('T_big_map k v)
+data Value ins t where
+  VC         :: CValue t -> Value ins (Tc t)
+  VKey       :: PublicKey -> Value ins TKey
+  VUnit      :: Value ins TUnit
+  VSignature :: Signature -> Value ins TSignature
+  VOption    :: Maybe (Value ins t) -> Value ins (TOption t)
+  VList      :: [Value ins t] -> Value ins (TList t)
+  VSet       :: Set (CValue t) -> Value ins (TSet t)
+  VOp        :: Operation ins -> Value ins TOperation
+  VContract  :: Address -> Value ins (TContract p)
+  VPair      :: (Value ins l, Value ins r) -> Value ins (TPair l r)
+  VOr        :: Either (Value ins l) (Value ins r) -> Value ins (TOr l r)
+  VLam       :: Show (ins '[inp] '[out])
+             => ins (inp ': '[]) (out ': '[]) -> Value ins (TLambda inp out)
+  VMap       :: Map (CValue k) (Value ins v) -> Value ins (TMap k v)
+  VBigMap    :: Map (CValue k) (Value ins v) -> Value ins (TBigMap k v)
 
-deriving instance Show (Val instr t)
+deriving instance Show (Value instr t)
 
 -- TODO: actually we should handle big maps with something close
 -- to following:
@@ -114,127 +114,75 @@ deriving instance Show (Val instr t)
 -- data BigMap op ref k v = BigMap
 --  { bmRef :: ref k v, bmChanges :: Map (CVal k) (ValueOp (Val cp v)) }
 
+-- | Converts a complex Haskell structure into @Val@ representation and back
+class Val a where
+  toVal :: a -> Value instr (ToT a)
+  fromVal :: Value instr (ToT a) -> a
 
--- | Converts a complex Haskell structure into @Val@ representation.
-class ToVal a where
-  toVal :: a -> Val instr (ToT a)
-
--- | Converts a @Val@ value into complex Haskell type.
-class FromVal t where
-  fromVal :: Val instr (ToT t) -> t
-
--- ToVal / FromVal instances
-
--- @gromak: we can write the following code instead of these
--- instances below, but I am not sure whether it's a good idea.
--- Note: if it breaks compilation for you, try to clean and
--- rebuild from scratch. It seems to compile fine.
--- instance {-# OVERLAPPABLE #-} ('T_c (ToCT t) ~ ToT t, FromCVal t) => FromVal t where
---   fromVal (VC cval) = fromCVal cval
-
-instance FromVal Integer where
+instance Val Integer where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal Natural where
+instance Val Natural where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal Text where
+instance Val Text where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal Bool where
+instance Val Bool where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal ByteString where
+instance Val ByteString where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal Mutez where
+instance Val Mutez where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal KeyHash where
+instance Val KeyHash where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal Timestamp where
+instance Val Timestamp where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal Address where
+instance Val Address where
+  toVal = VC . toCVal
   fromVal (VC cval) = fromCVal cval
 
-instance FromVal () where
+instance Val () where
+  toVal () = VUnit
   fromVal VUnit = ()
 
-instance FromVal a => FromVal [a] where
-  fromVal (VList lVals) = map fromVal lVals
-
-instance FromVal a => FromVal (Maybe a) where
+instance Val a => Val (Maybe a) where
+  toVal Nothing = VOption Nothing
+  toVal (Just a) = VOption (Just $ toVal a)
   fromVal (VOption Nothing) = Nothing
   fromVal (VOption (Just val)) = Just $ fromVal val
 
-instance (FromVal a, FromVal b) => FromVal (Either a b) where
+instance (Val a, Val b) => Val (Either a b) where
+  toVal (Left l) = VOr $ Left $ toVal l
+  toVal (Right r) = VOr $ Right $ toVal r
   fromVal (VOr (Left l)) = Left $ fromVal l
   fromVal (VOr (Right r)) = Right $ fromVal r
 
-instance (FromVal a, FromVal b) => FromVal (a, b) where
+instance (Val a, Val b) => Val (a, b) where
+  toVal (l, r) = VPair (toVal l, toVal r)
   fromVal (VPair (a, b)) = (fromVal a, fromVal b)
 
-instance (Ord k, FromCVal k) => FromVal (Set k) where
+instance Val a => Val [a] where
+  toVal = VList . map toVal
+  fromVal (VList lVals) = map fromVal lVals
+
+instance CVal k => Val (Set k) where
+  toVal = VSet . Set.map toCVal
   fromVal (VSet s) = Set.map fromCVal s
 
-instance (Ord k, FromCVal k, FromVal a) => FromVal (Map k a) where
-  fromVal (VMap m) = Map.map fromVal $ Map.mapKeys fromCVal m
-
-instance ToVal () where
-  toVal _ = VUnit
-
-instance ToVal Integer where
-  toVal = VC . toCVal
-
-instance ToVal Int where
-  toVal = VC . toCVal
-
-instance ToVal Word64 where
-  toVal = VC . toCVal
-
-instance ToVal Natural where
-  toVal = VC . toCVal
-
-instance ToVal Text where
-  toVal = VC . toCVal
-
-instance ToVal ByteString where
-  toVal = VC . toCVal
-
-instance ToVal Bool where
-  toVal = VC . toCVal
-
-instance ToVal Mutez where
-  toVal = VC . toCVal
-
-instance ToVal KeyHash where
-  toVal = VC . toCVal
-
-instance ToVal Timestamp where
-  toVal = VC . toCVal
-
-instance ToVal Address where
-  toVal = VC . toCVal
-
-instance ToVal a => ToVal (Maybe a) where
-  toVal Nothing = VOption Nothing
-  toVal (Just a) = VOption (Just $ toVal a)
-
-instance (ToVal a, ToVal b) => ToVal (Either a b) where
-  toVal (Left l) = VOr $ Left $ toVal l
-  toVal (Right r) = VOr $ Right $ toVal r
-
-instance (ToVal a, ToVal b) => ToVal (a, b) where
-  toVal (l, r) = VPair (toVal l, toVal r)
-
-instance ToVal x => ToVal [x] where
-  toVal = VList . map toVal
-
-instance ToCVal k => ToVal (Set k) where
-  toVal = VSet . Set.map toCVal
-
--- Note: the instance produces Map not BigMap
-instance (ToCVal k, ToVal a) => ToVal (Map k a) where
+instance (CVal k, Val a) => Val (Map k a) where
   toVal = VMap . Map.mapKeys toCVal . Map.map toVal
+  fromVal (VMap m) = Map.map fromVal $ Map.mapKeys fromCVal m

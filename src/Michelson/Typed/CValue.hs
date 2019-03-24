@@ -2,14 +2,14 @@
 -- which represents Michelson comparable values.
 
 module Michelson.Typed.CValue
-  ( CVal (..)
-  , ToCVal
-  , FromCVal
+  ( CValue (..)
+  , CVal
   , toCVal
   , fromCVal
   ) where
 
-import Michelson.Typed.T (CT(..), ToCT)
+import Michelson.Typed.T
+  (CAddress, CBool, CBytes, CInt, CKeyHash, CMutez, CNat, CString, CTimestamp, ToCT)
 import Tezos.Address (Address)
 import Tezos.Core (Mutez, Timestamp)
 import Tezos.Crypto (KeyHash)
@@ -23,87 +23,62 @@ import Tezos.Crypto (KeyHash)
 --
 -- Only these values can be used as map keys
 -- or set elements.
-data CVal t where
-  CvInt       :: Integer -> CVal 'T_int
-  CvNat       :: Natural -> CVal 'T_nat
-  CvString    :: Text -> CVal 'T_string
-  CvBytes     :: ByteString -> CVal 'T_bytes
-  CvMutez     :: Mutez -> CVal 'T_mutez
-  CvBool      :: Bool -> CVal 'T_bool
-  CvKeyHash   :: KeyHash -> CVal 'T_key_hash
-  CvTimestamp :: Timestamp -> CVal 'T_timestamp
-  CvAddress   :: Address -> CVal 'T_address
+data CValue t where
+  CvInt       :: Integer -> CValue CInt
+  CvNat       :: Natural -> CValue CNat
+  CvString    :: Text -> CValue CString
+  CvBytes     :: ByteString -> CValue CBytes
+  CvMutez     :: Mutez -> CValue CMutez
+  CvBool      :: Bool -> CValue CBool
+  CvKeyHash   :: KeyHash -> CValue CKeyHash
+  CvTimestamp :: Timestamp -> CValue CTimestamp
+  CvAddress   :: Address -> CValue CAddress
 
-deriving instance Show (CVal t)
-deriving instance Eq (CVal t)
-deriving instance Ord (CVal t)
+deriving instance Show (CValue t)
+deriving instance Eq (CValue t)
+deriving instance Ord (CValue t)
 
--- | Converts a single Haskell value into @CVal@ representation.
-class ToCVal a where
-  toCVal :: a -> CVal (ToCT a)
+-- | Converts a single Haskell value into @CVal@ representation and back
+class Ord a => CVal a where
+  toCVal   :: a -> CValue (ToCT a)
+  fromCVal :: CValue (ToCT a) -> a
 
--- | Converts a @CVal@ value into a single Haskell value.
-class FromCVal t where
-  fromCVal :: CVal (ToCT t) -> t
-
--- ToCVal, FromCVal instances
-
-instance FromCVal Integer where
+-- CVal instances
+instance CVal Integer where
+  toCVal = CvInt
   fromCVal (CvInt i) = i
 
-instance FromCVal Natural where
+instance CVal Natural where
+  toCVal = CvNat
   fromCVal (CvNat i) = i
 
-instance FromCVal Text where
+instance CVal Text where
+  toCVal = CvString
   fromCVal (CvString s) = s
 
-instance FromCVal Bool where
+instance CVal Bool where
+  toCVal = CvBool
   fromCVal (CvBool b) = b
 
-instance FromCVal ByteString where
+instance CVal ByteString where
+  toCVal = CvBytes
   fromCVal (CvBytes b) = b
 
-instance FromCVal Mutez where
+instance CVal Mutez where
+  toCVal = CvMutez
   fromCVal (CvMutez m) = m
 
-instance FromCVal KeyHash where
+instance CVal KeyHash where
+  toCVal = CvKeyHash
   fromCVal (CvKeyHash k) = k
 
-instance FromCVal Timestamp where
+instance CVal Timestamp where
+  toCVal = CvTimestamp
   fromCVal (CvTimestamp t) = t
 
-instance FromCVal Address where
+instance CVal Address where
+  toCVal = CvAddress
   fromCVal (CvAddress a) = a
 
-instance ToCVal Integer where
-  toCVal = CvInt
 
-instance ToCVal Int where
-  toCVal = CvInt . fromIntegral
 
-instance ToCVal Word64 where
-  toCVal = CvNat . fromIntegral
-
-instance ToCVal Natural where
-  toCVal = CvNat
-
-instance ToCVal Text where
-  toCVal = CvString
-
-instance ToCVal ByteString where
-  toCVal = CvBytes
-
-instance ToCVal Bool where
-  toCVal = CvBool
-
-instance ToCVal Mutez where
-  toCVal = CvMutez
-
-instance ToCVal KeyHash where
-  toCVal = CvKeyHash
-
-instance ToCVal Timestamp where
-  toCVal = CvTimestamp
-
-instance ToCVal Address where
-  toCVal = CvAddress
