@@ -217,7 +217,7 @@ runEvalOp act env initSt =
 
 -- | Function to change amount of remaining steps stored in State monad
 runInstr
-  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable inp)
+  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable inp, Typeable out)
   => Instr inp out
   -> Rec (Value Instr) inp
   -> EvalOp state (Rec (Value Instr) out)
@@ -233,7 +233,7 @@ runInstr i r = do
 
 runInstrNoGas
   :: forall a b state .
-  (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable a)
+  (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable a, Typeable b)
   => T.Instr a b -> Rec (Value T.Instr) a -> EvalOp state (Rec (Value T.Instr) b)
 runInstrNoGas = runInstrImpl runInstrNoGas
 
@@ -241,16 +241,16 @@ runInstrNoGas = runInstrImpl runInstrNoGas
 runInstrImpl
     :: forall state .
     (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt)
-    => (forall inp1 out1 . Typeable inp1 =>
-      Instr inp1 out1
-    -> Rec (Value Instr) inp1
-    -> EvalOp state (Rec (Value Instr) out1)
-    )
-    -> (forall inp out . Typeable inp =>
-      Instr inp out
-    -> Rec (Value Instr) inp
-    -> EvalOp state (Rec (Value Instr) out)
-    )
+    => (forall inp1 out1 . (Typeable inp1, Typeable out1) 
+        => Instr inp1 out1
+        -> Rec (Value Instr) inp1
+        -> EvalOp state (Rec (Value Instr) out1)
+       )
+    -> (forall inp out . (Typeable inp, Typeable out) 
+        => Instr inp out
+        -> Rec (Value Instr) inp
+        -> EvalOp state (Rec (Value Instr) out)
+       )
 runInstrImpl runner (Seq i1 i2) r = runner i1 r >>= \r' -> runner i2 r'
 runInstrImpl _ Nop r = pure $ r
 runInstrImpl _ (Ext nop) r = do

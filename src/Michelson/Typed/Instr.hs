@@ -25,7 +25,7 @@ import Michelson.Typed.Value (ContractInp, ContractOut, Value(..))
 --
 -- One can represent sequence of Michelson opertaions as follows:
 -- @SWAP; DROP; DUP;@ -> @SWAP # DROP # DUP@.
-(#) :: Typeable b => (:+>) a b -> (:+>) b c -> (:+>) a c
+(#) :: (:+>) a b -> (:+>) b c -> (:+>) a c
 (#) = Seq
 
 infixr 0 #
@@ -62,7 +62,7 @@ type Value' = Value (:+>)
 -- Maybe it makes sense to think how to eliminate them
 -- if they break something
 data (:+>) (inp :: [T]) (out :: [T]) where
-  Seq :: Typeable b => a :+> b -> b :+> c -> a :+> c
+  Seq :: a :+> b -> b :+> c -> a :+> c
   -- | Nop operation. Missing in Michelson spec, added to parse construction
   -- like  `IF {} { SWAP; DROP; }`.
   Nop :: s :+> s
