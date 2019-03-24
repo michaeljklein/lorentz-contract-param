@@ -3,7 +3,8 @@ module Lorentz.Type (
   , T
   , Contract
   , type ( & )
-  , (:+>)(..)
+  , ( # )
+  , (:+>)
   , M
   , Mc
   , H

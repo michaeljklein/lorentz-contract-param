@@ -22,7 +22,7 @@ import Michelson.Interpret
 import Michelson.TypeCheck
 import Michelson.TypeCheck.Helpers (convergeHST, eqT')
 import Michelson.TypeCheck.Types (HST)
-import Michelson.Typed (converge, extractNotes, mkUType)
+import Michelson.Typed (type (&), (:+>), converge, extractNotes, mkUType)
 import qualified Michelson.Typed as T
 import Michelson.Untyped (InstrAbstract(..))
 import Morley.Types
@@ -93,14 +93,18 @@ interpretHandler (PRINT (PrintComment pc), SomeItStack st) = do
         fromMaybe (error "StackRef " <> show i <> " has to exist in the stack after typechecking, but it doesn't") $
         rat st (fromIntegral i)
   modify (\s -> s {isExtState = MorleyLogs $ mconcat (map getEl pc) : unMorleyLogs (isExtState s)})
-interpretHandler (TEST_ASSERT (TestAssert nm pc (instr :: T.Instr inp1 ('T.Tc 'T.CBool ': out1) )),
-            SomeItStack (st :: Rec (T.Value T.Instr) inp2)) = do
-  Refl <- liftEither $ first (error "TEST_ASSERT input stack doesn't match") $ eqT' @inp1 @inp2
+interpretHandler (TEST_ASSERT (TestAssert nm pc instr), SomeItStack st) = do
+  Refl <- liftEither $ first (error "TEST_ASSERT input stack doesn't match") $ eqInstr instr st
   runInstrNoGas instr st >>= \case
     (T.VC (T.CvBool False) :& RNil) -> do
       interpretHandler (PRINT pc, SomeItStack st)
       throwError $ MichelsonFailedOther $ "TEST_ASSERT " <> nm <> " failed"
     _  -> pass
+
+eqInstr :: (Typeable a, Typeable b)
+        => (a :+> T.TBool & out) -> Rec (T.Value T.Instr) b -> Either Text (a :~: b)
+eqInstr (instr :: a :+> T.TBool & out) (st :: Rec (T.Value T.Instr) b) =
+  eqT' @a @b
 
 -- | Various type errors possible when checking a @NopInstr@ with the
 -- @nopHandler@

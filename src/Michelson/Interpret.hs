@@ -166,7 +166,7 @@ type ContractReturn s st =
   (Either MichelsonFailed ([Operation Instr], Value Instr st), InterpreterState s)
 
 interpret
-  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable cp, Typeable st)
+  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt)
   => Contract cp st
   -> Value Instr cp
   -> Value Instr st
@@ -186,7 +186,7 @@ interpret instr param initSt env@InterpreterEnv{..} initState = first (fmap toRe
       (map (\(VOp op) -> op) ops_, newSt)
 
 data SomeItStack where
-  SomeItStack :: Typeable inp => Rec (Value Instr) inp -> SomeItStack
+  SomeItStack :: Rec (Value Instr) inp -> SomeItStack
 
 data InterpreterEnv s = InterpreterEnv
   { ieContractEnv :: ContractEnv
@@ -217,7 +217,7 @@ runEvalOp act env initSt =
 
 -- | Function to change amount of remaining steps stored in State monad
 runInstr
-  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable inp, Typeable out)
+  :: (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt) 
   => Instr inp out
   -> Rec (Value Instr) inp
   -> EvalOp state (Rec (Value Instr) out)
@@ -233,21 +233,19 @@ runInstr i r = do
 
 runInstrNoGas
   :: forall a b state .
-  (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt, Typeable a, Typeable b)
-  => T.Instr a b -> Rec (Value T.Instr) a -> EvalOp state (Rec (Value T.Instr) b)
+  (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt) 
+  => Instr a b -> Rec (Value Instr) a -> EvalOp state (Rec (Value Instr) b)
 runInstrNoGas = runInstrImpl runInstrNoGas
 
 -- | Function to interpret Michelson instruction(s) against given stack.
 runInstrImpl
     :: forall state .
     (ExtC, Aeson.ToJSON U.InstrExtU, ConvertibleExt)
-    => (forall inp1 out1 . (Typeable inp1, Typeable out1) 
-        => Instr inp1 out1
+    => (forall inp1 out1 . Instr inp1 out1
         -> Rec (Value Instr) inp1
         -> EvalOp state (Rec (Value Instr) out1)
        )
-    -> (forall inp out . (Typeable inp, Typeable out) 
-        => Instr inp out
+    -> (forall inp out . Instr inp out
         -> Rec (Value Instr) inp
         -> EvalOp state (Rec (Value Instr) out)
        )
