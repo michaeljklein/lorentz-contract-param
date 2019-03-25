@@ -74,70 +74,70 @@ typeCheckValImpl
   -> Un.Value Un.Op
   -> T
   -> TypeCheckT SomeVal
-typeCheckValImpl _ mv t@(T_c ct) =
+typeCheckValImpl _ mv t@(Tc ct) =
   maybe (throwError $ TCFailedOnValue mv t "")
-        (\(v :--: cst) -> pure $ VC v :::: (ST_c cst, NStar))
+        (\(v :--: cst) -> pure $ VC v :::: (STc cst, NStar))
         (typeCheckCVal mv ct)
-typeCheckValImpl _ (Un.ValueString (parsePublicKey -> Right s)) T_key =
-  pure $ VKey s :::: (ST_key, NStar)
+typeCheckValImpl _ (Un.ValueString (parsePublicKey -> Right s)) TKey =
+  pure $ VKey s :::: (STKey, NStar)
 
-typeCheckValImpl _ (Un.ValueString (parseSignature -> Right s)) T_signature =
-  pure $ VSignature s :::: (ST_signature, NStar)
+typeCheckValImpl _ (Un.ValueString (parseSignature -> Right s)) TSignature =
+  pure $ VSignature s :::: (STSignature, NStar)
 
-typeCheckValImpl _ (Un.ValueString (parseAddress -> Right s)) (T_contract pt) =
+typeCheckValImpl _ (Un.ValueString (parseAddress -> Right s)) (TContract pt) =
   withSomeSingT pt $ \p ->
-    pure $ VContract s :::: (ST_contract p, NStar)
-typeCheckValImpl _ Un.ValueUnit T_unit = pure $ VUnit :::: (ST_unit, NStar)
-typeCheckValImpl tcDo (Un.ValuePair ml mr) (T_pair lt rt) = do
+    pure $ VContract s :::: (STContract p, NStar)
+typeCheckValImpl _ Un.ValueUnit TUnit = pure $ VUnit :::: (STUnit, NStar)
+typeCheckValImpl tcDo (Un.ValuePair ml mr) (TPair lt rt) = do
   l :::: (lst, ln) <- typeCheckValImpl tcDo ml lt
   r :::: (rst, rn) <- typeCheckValImpl tcDo mr rt
-  let ns = mkNotes $ NT_pair def def def ln rn
-  pure $ VPair (l, r) :::: (ST_pair lst rst, ns)
-typeCheckValImpl tcDo (Un.ValueLeft ml) (T_or lt rt) = do
+  let ns = mkNotes $ NTPair def def def ln rn
+  pure $ VPair (l, r) :::: (STPair lst rst, ns)
+typeCheckValImpl tcDo (Un.ValueLeft ml) (TOr lt rt) = do
   l :::: (lst, ln) <- typeCheckValImpl tcDo ml lt
   withSomeSingT rt $ \rst ->
-    pure $ VOr (Left l) :::: ( ST_or lst rst
-                             , mkNotes $ NT_or def def def ln NStar )
-typeCheckValImpl tcDo (Un.ValueRight mr) (T_or lt rt) = do
+    pure $ VOr (Left l) :::: ( STOr lst rst
+                             , mkNotes $ NTOr def def def ln NStar )
+typeCheckValImpl tcDo (Un.ValueRight mr) (TOr lt rt) = do
   r :::: (rst, rn) <- typeCheckValImpl tcDo mr rt
   withSomeSingT lt $ \lst ->
-    pure $ VOr (Right r) :::: ( ST_or lst rst
-                              , mkNotes $ NT_or def def def NStar rn )
-typeCheckValImpl tcDo (Un.ValueSome mv) (T_option vt) = do
+    pure $ VOr (Right r) :::: ( STOr lst rst
+                              , mkNotes $ NTOr def def def NStar rn )
+typeCheckValImpl tcDo (Un.ValueSome mv) (TOption vt) = do
   v :::: (vst, vns) <- typeCheckValImpl tcDo mv vt
-  let ns = mkNotes $ NT_option def def vns
-  pure $ VOption (Just v) :::: (ST_option vst, ns)
-typeCheckValImpl _ Un.ValueNone (T_option vt) =
+  let ns = mkNotes $ NTOption def def vns
+  pure $ VOption (Just v) :::: (STOption vst, ns)
+typeCheckValImpl _ Un.ValueNone (TOption vt) =
   withSomeSingT vt $ \vst ->
-    pure $ VOption Nothing :::: (ST_option vst, NStar)
+    pure $ VOption Nothing :::: (STOption vst, NStar)
 
-typeCheckValImpl tcDo (Un.ValueSeq mels) (T_list vt) =
+typeCheckValImpl tcDo (Un.ValueSeq mels) (TList vt) =
   withSomeSingT vt $ \vst -> do
     (els, ns) <- typeCheckValsImpl tcDo mels vt
-    pure $ VList els :::: (ST_list vst, mkNotes $ NT_list def ns)
+    pure $ VList els :::: (STList vst, mkNotes $ NTList def ns)
 
-typeCheckValImpl _ (Un.ValueSeq mels) (T_set vt) =
+typeCheckValImpl _ (Un.ValueSeq mels) (TSet vt) =
   withSomeSingCT vt $ \vst -> do
     els <- liftEither $ typeCheckCVals mels vt
-            `onLeft` \(cv, err) -> TCFailedOnValue cv (T_c vt) $
+            `onLeft` \(cv, err) -> TCFailedOnValue cv (Tc vt) $
                                       "wrong type of set element: " <> err
-    pure $ VSet (S.fromList els) :::: (ST_set vst, NStar)
+    pure $ VSet (S.fromList els) :::: (STSet vst, NStar)
 
-typeCheckValImpl tcDo (Un.ValueMap mels) (T_map kt vt) =
+typeCheckValImpl tcDo (Un.ValueMap mels) (TMap kt vt) =
   withSomeSingT vt $ \vst ->
   withSomeSingCT kt $ \kst -> do
     ks <- liftEither $  typeCheckCVals (map (\(Un.Elt k _) -> k) mels) kt
-            `onLeft` \(cv, err) -> TCFailedOnValue cv (T_c kt) $
+            `onLeft` \(cv, err) -> TCFailedOnValue cv (Tc kt) $
                                       "wrong type of map key: " <> err
     (vals, vns) <- typeCheckValsImpl tcDo (map (\(Un.Elt _ v) -> v) mels) vt
-    let ns = mkNotes $ NT_map def def vns
-    pure $ VMap (M.fromList $ zip ks vals) :::: (ST_map kst vst, ns)
+    let ns = mkNotes $ NTMap def def vns
+    pure $ VMap (M.fromList $ zip ks vals) :::: (STMap kst vst, ns)
 
-typeCheckValImpl tcDo v@(Un.ValueLambda (fmap Un.unOp -> mp)) t@(T_lambda mi mo) =
+typeCheckValImpl tcDo v@(Un.ValueLambda (fmap Un.unOp -> mp)) t@(TLambda mi mo) =
   withSomeSingT mi $ \(it :: Sing it) ->
   withSomeSingT mo $ \(ot :: Sing ot) ->
     typeCheckImpl tcDo mp (SomeHST $ (it, NStar, def) ::& SNil) >>= \case
-      SiFail -> pure $ VLam FAILWITH :::: (ST_lambda it ot, NStar)
+      SiFail -> pure $ VLam FAILWITH :::: (STLambda it ot, NStar)
       lam ::: ((li :: HST li), (lo :: HST lo)) -> do
         Refl <- liftEither $ eqT' @li @'[ it ] `onLeft` unexpectedErr
         case (eqT' @'[ ot ] @lo, SomeHST lo, SomeHST li) of
@@ -146,8 +146,8 @@ typeCheckValImpl tcDo v@(Un.ValueLambda (fmap Un.unOp -> mp)) t@(T_lambda mi mo)
            SomeHST ((_, ins, _) ::& SNil :: HST li')) -> do
             Refl <- liftEither $ eqT' @lo @lo' `onLeft` unexpectedErr
             Refl <- liftEither $ eqT' @li @li' `onLeft` unexpectedErr
-            let ns = mkNotes $ NT_lambda def ins ons
-            pure $ VLam lam :::: (ST_lambda it ot, ns)
+            let ns = mkNotes $ NTLambda def ins ons
+            pure $ VLam lam :::: (STLambda it ot, ns)
           (Right _, _, _) ->
             throwError $ TCFailedOnValue v t
                     "wrong output type of lambda's value (wrong stack size)"

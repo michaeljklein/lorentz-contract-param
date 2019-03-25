@@ -52,8 +52,8 @@ genFixture =
     minGas = 0
     maxGas = gasForOneExecution * maxCalls
 
-type Parameter = 'T_c 'CInt
-type Storage = 'T_c 'CNat
+type Parameter = 'Tc 'CInt
+type Storage = 'Tc 'CNat
 
 specImpl ::
      (UntypedContract, Contract Parameter Storage)

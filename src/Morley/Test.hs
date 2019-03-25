@@ -150,14 +150,14 @@ instance Arbitrary (CVal 'CMutez) where
   arbitrary = CvMutez <$> arbitrary
 instance Arbitrary (CVal 'CInt) where
   arbitrary = CvInt <$> arbitrary
-instance Arbitrary (CVal a) => Arbitrary (Val instr ('T_c a)) where
+instance Arbitrary (CVal a) => Arbitrary (Val instr ('Tc a)) where
   arbitrary = VC <$> arbitrary
-instance Arbitrary (Val instr a) => Arbitrary (Val instr ('T_list a)) where
+instance Arbitrary (Val instr a) => Arbitrary (Val instr ('TList a)) where
   arbitrary = VList <$> arbitrary
-instance Arbitrary (Val instr 'T_unit) where
+instance Arbitrary (Val instr 'TUnit) where
   arbitrary = pure VUnit
 instance (Arbitrary (Val instr a), Arbitrary (Val instr b))
-    => Arbitrary (Val instr ('T_pair a b)) where
+    => Arbitrary (Val instr ('TPair a b)) where
   arbitrary = VPair ... (,) <$> arbitrary <*> arbitrary
 
 minDay :: Day

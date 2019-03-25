@@ -89,7 +89,7 @@ pairTypeParserTest = do
   where
     unitPair :: Mo.Type
     unitPair =
-      Mo.Type (Mo.T_pair noAnn noAnn (Mo.Type Mo.T_unit noAnn) (Mo.Type Mo.T_unit noAnn)) noAnn
+      Mo.Type (Mo.TPair noAnn noAnn (Mo.Type Mo.TUnit noAnn) (Mo.Type Mo.TUnit noAnn)) noAnn
 
 orTypeParserTest :: Expectation
 orTypeParserTest = do
@@ -98,7 +98,7 @@ orTypeParserTest = do
   where
     unitOr :: Mo.Type
     unitOr =
-      Mo.Type (Mo.T_or noAnn noAnn (Mo.Type Mo.T_unit noAnn) (Mo.Type Mo.T_unit noAnn)) noAnn
+      Mo.Type (Mo.TOr noAnn noAnn (Mo.Type Mo.TUnit noAnn) (Mo.Type Mo.TUnit noAnn)) noAnn
 
 lambdaTypeParserTest :: Expectation
 lambdaTypeParserTest = do
@@ -107,7 +107,7 @@ lambdaTypeParserTest = do
   where
     lambdaUnitUnit :: Mo.Type
     lambdaUnitUnit =
-      Mo.Type (Mo.T_lambda (Mo.Type Mo.T_unit noAnn) (Mo.Type Mo.T_unit noAnn)) noAnn
+      Mo.Type (Mo.TLambda (Mo.Type Mo.TUnit noAnn) (Mo.Type Mo.TUnit noAnn)) noAnn
 
 listTypeParserTest :: Expectation
 listTypeParserTest = do
@@ -116,7 +116,7 @@ listTypeParserTest = do
   where
     unitList :: Mo.Type
     unitList =
-      Mo.Type (Mo.T_list (Mo.Type Mo.T_unit noAnn)) noAnn
+      Mo.Type (Mo.TList (Mo.Type Mo.TUnit noAnn)) noAnn
 
 setTypeParserTest :: Expectation
 setTypeParserTest = do
@@ -125,7 +125,7 @@ setTypeParserTest = do
   where
     intSet :: Mo.Type
     intSet =
-      Mo.Type (Mo.T_set (Mo.Comparable Mo.CInt noAnn)) noAnn
+      Mo.Type (Mo.TSet (Mo.Comparable Mo.CInt noAnn)) noAnn
 
 pairTest :: Expectation
 pairTest = do

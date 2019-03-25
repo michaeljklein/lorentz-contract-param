@@ -19,18 +19,18 @@ pp_Code (Code s) = T.concat ["code ", pp_ISeq s, ";"]
 
 pp_T :: T -> T.Text
 pp_T (T_comparable ct) = pp_CT ct
-pp_T T_key             = "key"
-pp_T T_unit            = "unit"
-pp_T T_signature       = "signature"
-pp_T (T_option x)      = T.concat ["option ", pp_T x]
-pp_T (T_list x)        = T.concat ["list ", pp_T x]
-pp_T (T_set x)         = T.concat ["set ", pp_CT x]
-pp_T (T_contract x)    = T.concat ["contract ", pp_T x]
-pp_T (T_pair x y)      = T.concat ["pair ", pp_T x, " ", ppT y]
-pp_T (T_or x y)        = T.concat ["or ", pp_T x, " ", ppT y]
-pp_T (T_lambda x y)    = T.concat ["pair ", pp_T x, " ", ppT y]
-pp_T (T_map x y)       = T.concat ["map ", pp_CT x, " ", ppT y]
-pp_T (T_big_map x y)   = T.concat ["big_map ", pp_CT x, " ", ppT y]
+pp_T TKey             = "key"
+pp_T TUnit            = "unit"
+pp_T TSignature       = "signature"
+pp_T (TOption x)      = T.concat ["option ", pp_T x]
+pp_T (TList x)        = T.concat ["list ", pp_T x]
+pp_T (TSet x)         = T.concat ["set ", pp_CT x]
+pp_T (TContract x)    = T.concat ["contract ", pp_T x]
+pp_T (TPair x y)      = T.concat ["pair ", pp_T x, " ", ppT y]
+pp_T (TOr x y)        = T.concat ["or ", pp_T x, " ", ppT y]
+pp_T (TLambda x y)    = T.concat ["pair ", pp_T x, " ", ppT y]
+pp_T (TMap x y)       = T.concat ["map ", pp_CT x, " ", ppT y]
+pp_T (TBigMap x y)   = T.concat ["big_map ", pp_CT x, " ", ppT y]
 
 pp_CT :: Un.CT -> T.Text
 pp_CT CInt       = "int"

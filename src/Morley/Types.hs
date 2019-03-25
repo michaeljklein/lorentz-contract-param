@@ -225,7 +225,7 @@ data TestAssert where
     :: (Typeable inp, Typeable out)
     => T.Text
     -> PrintComment
-    -> T.Instr inp ('T.T_c 'CBool ': out)
+    -> T.Instr inp ('T.Tc 'CBool ': out)
     -> TestAssert
 
 deriving instance Show TestAssert

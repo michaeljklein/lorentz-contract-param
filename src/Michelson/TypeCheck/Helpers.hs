@@ -94,11 +94,11 @@ deriveVN suffix vn = bool (suffix <> vn) def (vn == def)
 --
 -- It extracts field/type annotations and also auto-generates variable
 -- annotations if variable annotation is not provided as second argument.
-deriveNsOr :: Notes ('T_or a b) -> VarAnn -> (Notes a, Notes b, VarAnn, VarAnn)
+deriveNsOr :: Notes ('TOr a b) -> VarAnn -> (Notes a, Notes b, VarAnn, VarAnn)
 deriveNsOr ons ovn =
   let (an, bn, afn, bfn) =
         notesCase (NStar, NStar, def, def)
-          (\(NT_or _ afn_ bfn_ an_ bn_) -> (an_, bn_, afn_, bfn_)) ons
+          (\(NTOr _ afn_ bfn_ an_ bn_) -> (an_, bn_, afn_, bfn_)) ons
       avn = deriveVN (Un.convAnn afn `orAnn` "left") ovn
       bvn = deriveVN (Un.convAnn bfn `orAnn` "right") ovn
    in (an, bn, avn, bvn)
@@ -107,10 +107,10 @@ deriveNsOr ons ovn =
 --
 -- It extracts field/type annotations and also auto-generates variable
 -- annotation for @Some@ case if it is not provided as second argument.
-deriveNsOption :: Notes ('T_option a) -> VarAnn -> (Notes a, VarAnn)
+deriveNsOption :: Notes ('TOption a) -> VarAnn -> (Notes a, VarAnn)
 deriveNsOption ons ovn =
   let (an, fn) = notesCase (NStar, def)
-                    (\(NT_option _ fn_ an_) -> (an_, fn_)) ons
+                    (\(NTOption _ fn_ an_) -> (an_, fn_)) ons
       avn = deriveVN (Un.convAnn fn `orAnn` "some") ovn
    in (an, avn)
 
@@ -195,12 +195,12 @@ memImpl
   :: forall (q :: CT) (c :: T) ts .
     (Typeable ts, Typeable q, Typeable (MemOpKey c), MemOp c)
   => Un.Instr
-  -> HST ('T_c q ': c ': ts)
+  -> HST ('Tc q ': c ': ts)
   -> VarAnn
   -> TcResult
 memImpl instr i@(_ ::& _ ::& rs) vn =
   case eqT' @q @(MemOpKey c) of
-    Right Refl -> pure (MEM ::: (i, (ST_c SCBool, NStar, vn) ::& rs))
+    Right Refl -> pure (MEM ::: (i, (STc SCBool, NStar, vn) ::& rs))
     Left m     -> typeCheckInstrErr instr (SomeHST i) $
                 "query element type is not equal to set's element type: " <> m
 
@@ -217,10 +217,10 @@ getImpl
   -> VarAnn
   -> TcResult
 getImpl instr i@(_ ::& _ ::& rs) rt vns vn = do
-  case eqT' @getKey @('T_c (GetOpKey c)) of
+  case eqT' @getKey @('Tc (GetOpKey c)) of
     Right Refl -> do
-      let rn = mkNotes $ NT_option def def vns
-      pure $ GET ::: (i, (ST_option rt, rn, vn) ::& rs)
+      let rn = mkNotes $ NTOption def def vns
+      pure $ GET ::: (i, (STOption rt, rn, vn) ::& rs)
     Left m -> typeCheckInstrErr instr (SomeHST i) $
                     "wrong key stack type" <> m
 
@@ -231,7 +231,7 @@ updImpl
   -> HST (updKey ': updParams ': c ': rs)
   -> TcResult
 updImpl instr i@(_ ::& _ ::& crs) = do
-  case (eqT' @updKey @('T_c (UpdOpKey c)), eqT' @updParams @(UpdOpParams c)) of
+  case (eqT' @updKey @('Tc (UpdOpKey c)), eqT' @updParams @(UpdOpParams c)) of
     (Right Refl, Right Refl) -> pure $ UPDATE ::: (i, crs)
     (Left m, _) -> typeCheckInstrErr instr (SomeHST i) $
                       "wrong key stack type" <> m
@@ -244,25 +244,25 @@ sizeImpl
   -> VarAnn
   -> TcResult
 sizeImpl i@(_ ::& rs) vn =
-  pure $ SIZE ::: (i, (ST_c SCNat, NStar, vn) ::& rs)
+  pure $ SIZE ::: (i, (STc SCNat, NStar, vn) ::& rs)
 
 sliceImpl
   :: (SliceOp c, Typeable c)
-  => HST ('T_c 'CNat : 'T_c 'CNat : c : rs)
+  => HST ('Tc 'CNat : 'Tc 'CNat : c : rs)
   -> Un.VarAnn
   -> TcResult
 sliceImpl i@(_ ::& _ ::& (c, cn, cvn) ::& rs) vn = do
   let vn' = vn `orAnn` deriveVN "slice" cvn
-      rn = mkNotes $ NT_option def def cn
-  pure $ SLICE ::: (i, (ST_option c, rn, vn') ::& rs)
+      rn = mkNotes $ NTOption def def cn
+  pure $ SLICE ::: (i, (STOption c, rn, vn') ::& rs)
 
 concatImpl'
   :: (ConcatOp c, Typeable c)
-  => HST ('T_list c : rs)
+  => HST ('TList c : rs)
   -> Un.VarAnn
   -> TcResult
-concatImpl' i@((ST_list c, ln, _) ::& rs) vn = do
-  let cn = notesCase NStar (\(NT_list _ n) -> n) ln
+concatImpl' i@((STList c, ln, _) ::& rs) vn = do
+  let cn = notesCase NStar (\(NTList _ n) -> n) ln
   pure $ CONCAT' ::: (i, (c, cn, vn) ::& rs)
 
 concatImpl
@@ -279,10 +279,10 @@ concatImpl i@((c, cn1, _) ::& (_, cn2, _) ::& rs) vn = do
 arithImpl
   :: ( Typeable (ArithRes aop n m)
      , SingI (ArithRes aop n m)
-     , Typeable ('T_c (ArithRes aop n m) ': s)
+     , Typeable ('Tc (ArithRes aop n m) ': s)
      )
-  => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes aop n m) ': s)
-  -> HST ('T_c n ': 'T_c m ': s)
+  => Instr ('Tc n ': 'Tc m ': s) ('Tc (ArithRes aop n m) ': s)
+  -> HST ('Tc n ': 'Tc m ': s)
   -> VarAnn
   -> TcResult
 arithImpl mkInstr i@(_ ::& _ ::& rs) vn =
@@ -291,7 +291,7 @@ arithImpl mkInstr i@(_ ::& _ ::& rs) vn =
 addImpl
   :: (Typeable rs, Typeable a, Typeable b)
   => Sing a -> Sing b
-  -> HST ('T_c a ': 'T_c b ': rs)
+  -> HST ('Tc a ': 'Tc b ': rs)
   -> VarAnn
   -> TcResult
 addImpl SCInt SCInt = arithImpl @Add ADD
@@ -306,7 +306,7 @@ addImpl _ _ = \i vn -> typeCheckInstrErr (Un.ADD vn) (SomeHST i) ""
 edivImpl
   :: (Typeable rs, Typeable a, Typeable b)
   => Sing a -> Sing b
-  -> HST ('T_c a ': 'T_c b ': rs)
+  -> HST ('Tc a ': 'Tc b ': rs)
   -> VarAnn
   -> TcResult
 edivImpl SCInt SCInt = edivImplDo
@@ -324,7 +324,7 @@ edivImplDo
      , SingI (EDivOpRes n m)
      , Typeable (EDivOpRes n m)
      )
-  => HST ('T_c n ': 'T_c m ': s)
+  => HST ('Tc n ': 'Tc m ': s)
   -> VarAnn
   -> TcResult
 edivImplDo i@(_ ::& _ ::& rs) vn =
@@ -333,7 +333,7 @@ edivImplDo i@(_ ::& _ ::& rs) vn =
 subImpl
   :: (Typeable rs, Typeable a, Typeable b)
   => Sing a -> Sing b
-  -> HST ('T_c a ': 'T_c b ': rs)
+  -> HST ('Tc a ': 'Tc b ': rs)
   -> VarAnn
   -> TcResult
 subImpl SCInt SCInt = arithImpl @Sub SUB
@@ -348,7 +348,7 @@ subImpl _ _ = \i vn -> typeCheckInstrErr (Un.SUB vn) (SomeHST i) ""
 mulImpl
   :: (Typeable rs, Typeable a, Typeable b)
   => Sing a -> Sing b
-  -> HST ('T_c a ': 'T_c b ': rs)
+  -> HST ('Tc a ': 'Tc b ': rs)
   -> VarAnn
   -> TcResult
 mulImpl SCInt SCInt = arithImpl @Mul MUL
@@ -362,7 +362,7 @@ mulImpl _ _ = \i vn -> typeCheckInstrErr (Un.MUL vn) (SomeHST i) ""
 compareImpl
   :: (Typeable rs, Typeable a, Typeable b)
   => Sing a -> Sing b
-  -> HST ('T_c a ': 'T_c b ': rs)
+  -> HST ('Tc a ': 'Tc b ': rs)
   -> VarAnn
   -> TcResult
 compareImpl SCBool SCBool = arithImpl @Compare COMPARE
@@ -381,10 +381,10 @@ compareImpl _ _ = \i vn -> typeCheckInstrErr (Un.COMPARE vn) (SomeHST i) ""
 unaryArithImpl
   :: ( Typeable (UnaryArithRes aop n)
      , SingI (UnaryArithRes aop n)
-     , Typeable ('T_c (UnaryArithRes aop n) ': s)
+     , Typeable ('Tc (UnaryArithRes aop n) ': s)
      )
-  => Instr ('T_c n ': s) ('T_c (UnaryArithRes aop n) ': s)
-  -> HST ('T_c n ': s)
+  => Instr ('Tc n ': s) ('Tc (UnaryArithRes aop n) ': s)
+  -> HST ('Tc n ': s)
   -> VarAnn
   -> TcResult
 unaryArithImpl mkInstr i@(_ ::& rs) vn =

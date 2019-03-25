@@ -80,42 +80,42 @@ typeToComp _ = Nothing
 -- Michelson Type
 data T =
     T_comparable CT
-  | T_key
-  | T_unit
-  | T_signature
-  | T_option FieldAnn Type
-  | T_list Type
-  | T_set Comparable
-  | T_operation
-  | T_contract Type
-  | T_pair FieldAnn FieldAnn Type Type
-  | T_or FieldAnn FieldAnn Type Type
-  | T_lambda Type Type
-  | T_map Comparable Type
-  | T_big_map Comparable Type
+  | TKey
+  | TUnit
+  | TSignature
+  | TOption FieldAnn Type
+  | TList Type
+  | TSet Comparable
+  | TOperation
+  | TContract Type
+  | TPair FieldAnn FieldAnn Type Type
+  | TOr FieldAnn FieldAnn Type Type
+  | TLambda Type Type
+  | TMap Comparable Type
+  | TBigMap Comparable Type
   deriving (Eq, Show, Data, Generic)
 
 instance Buildable T where
   build =
     \case
       T_comparable ct -> build ct
-      T_key -> "key"
-      T_unit -> "unit"
-      T_signature -> "signature"
-      T_option fa t -> "option (" +| t |+ " " +| fa |+ ")"
-      T_list t -> "list (" +| t |+ ")"
-      T_set c -> "set (" +| c |+ ")"
-      T_operation -> "operation"
-      T_contract t -> "contract " +| t |+ ""
-      T_pair fa1 fa2 t1 t2 ->
+      TKey -> "key"
+      TUnit -> "unit"
+      TSignature -> "signature"
+      TOption fa t -> "option (" +| t |+ " " +| fa |+ ")"
+      TList t -> "list (" +| t |+ ")"
+      TSet c -> "set (" +| c |+ ")"
+      TOperation -> "operation"
+      TContract t -> "contract " +| t |+ ""
+      TPair fa1 fa2 t1 t2 ->
         "pair (" +| t1 |+ " " +| fa1 |+ ")"
          +| " (" +| t2 |+ " " +| fa2 |+ ")"
-      T_or fa1 fa2 t1 t2 ->
+      TOr fa1 fa2 t1 t2 ->
         "or ("   +| t1 |+ " " +| fa1 |+ ")"
          +| " (" +| t2 |+ " " +| fa2 |+ ")"
-      T_lambda t1 t2 -> build2 "lambda" t1 t2
-      T_map t1 t2 -> build2 "map" t1 t2
-      T_big_map t1 t2 -> build2 "big_map" t1 t2
+      TLambda t1 t2 -> build2 "lambda" t1 t2
+      TMap t1 t2 -> build2 "map" t1 t2
+      TBigMap t1 t2 -> build2 "big_map" t1 t2
     where
       -- build something with 2 type parameters
       build2 :: (Buildable t1, Buildable t2) => Builder -> t1 -> t2 -> Builder
@@ -222,19 +222,19 @@ isAtomicType t@(Type _ (Annotation "")) =
 isAtomicType _ = False
 
 isKey :: Type -> Bool
-isKey (Type T_key _) = True
+isKey (Type TKey _) = True
 isKey _              = False
 
 isUnit :: Type -> Bool
-isUnit (Type T_unit _) = True
+isUnit (Type TUnit _) = True
 isUnit _               = False
 
 isSignature :: Type -> Bool
-isSignature (Type T_signature _) = True
+isSignature (Type TSignature _) = True
 isSignature _                    = False
 
 isOperation :: Type -> Bool
-isOperation (Type T_operation _) = True
+isOperation (Type TOperation _) = True
 isOperation _                    = False
 
 isComparable :: Type -> Bool
