@@ -144,11 +144,11 @@ instance Buildable ImportContractError where
 instance Exception ImportContractError where
   displayException = pretty
 
-instance Arbitrary (CVal 'T_key_hash) where
+instance Arbitrary (CVal 'CKeyHash) where
   arbitrary = CvKeyHash <$> arbitrary
-instance Arbitrary (CVal 'T_mutez) where
+instance Arbitrary (CVal 'CMutez) where
   arbitrary = CvMutez <$> arbitrary
-instance Arbitrary (CVal 'T_int) where
+instance Arbitrary (CVal 'CInt) where
   arbitrary = CvInt <$> arbitrary
 instance Arbitrary (CVal a) => Arbitrary (Val instr ('T_c a)) where
   arbitrary = VC <$> arbitrary
@@ -174,11 +174,11 @@ minSec = 0
 maxSec :: Integer
 maxSec = 86399
 
--- | Minimal (earliest) timestamp used for @Arbitrary (CVal 'T_timestamp)@
+-- | Minimal (earliest) timestamp used for @Arbitrary (CVal 'CTimestamp)@
 minTimestamp :: Timestamp
 minTimestamp = timestampFromUTCTime $ UTCTime minDay (fromInteger minSec)
 
--- | Maximal (latest) timestamp used for @Arbitrary (CVal 'T_timestamp)@
+-- | Maximal (latest) timestamp used for @Arbitrary (CVal 'CTimestamp)@
 maxTimestamp :: Timestamp
 maxTimestamp = timestampFromUTCTime $ UTCTime maxDay (fromInteger maxSec)
 
@@ -190,7 +190,7 @@ midTimestamp = timestampFromUTCTime $
   UTCTime ( ((maxDay `diffDays` minDay) `div` 2) `addDays` minDay)
           (fromInteger $ (maxSec - minSec) `div` 2)
 
-instance Arbitrary (CVal 'T_timestamp) where
+instance Arbitrary (CVal 'CTimestamp) where
   arbitrary =
     CvTimestamp . timestampFromSeconds @Int <$>
     choose (timestampToSeconds minTimestamp, timestampToSeconds maxTimestamp)

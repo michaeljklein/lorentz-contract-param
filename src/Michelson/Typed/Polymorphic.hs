@@ -74,9 +74,9 @@ instance IterOp ('T_set e) where
 
 class SizeOp (c :: T) where
   evalSize :: Val cp c -> Int
-instance SizeOp ('T_c 'T_string) where
+instance SizeOp ('T_c 'CString) where
   evalSize (VC (CvString s)) = length s
-instance SizeOp ('T_c 'T_bytes) where
+instance SizeOp ('T_c 'CBytes) where
   evalSize (VC (CvBytes b)) = length b
 instance SizeOp ('T_set a) where
   evalSize (VSet s) = S.size s
@@ -88,7 +88,7 @@ instance SizeOp ('T_map k v) where
 class UpdOp (c :: T) where
   type UpdOpKey c :: CT
   type UpdOpParams c :: T
-  evalUpd 
+  evalUpd
     :: CVal (UpdOpKey c)
     -> Val cp (UpdOpParams c) -> Val cp c -> Val cp c
 instance UpdOp ('T_map k v) where
@@ -107,7 +107,7 @@ instance UpdOp ('T_big_map k v) where
       Nothing -> VBigMap $ M.delete k m
 instance UpdOp ('T_set a) where
   type UpdOpKey ('T_set a) = a
-  type UpdOpParams ('T_set a) = 'T_c 'T_bool
+  type UpdOpParams ('T_set a) = 'T_c 'CBool
   evalUpd k (VC (CvBool b)) (VSet s) =
     case b of
       True -> VSet $ S.insert k s
@@ -129,11 +129,11 @@ instance GetOp ('T_map k v) where
 class ConcatOp (c :: T) where
   evalConcat :: Val cp c -> Val cp c -> Val cp c
   evalConcat' :: [Val cp c] -> Val cp c
-instance ConcatOp ('T_c 'T_string) where
+instance ConcatOp ('T_c 'CString) where
   evalConcat (VC (CvString s1)) (VC (CvString s2)) = (VC . CvString) (s1 <> s2)
   evalConcat' l =
     (VC . CvString . fromString) $ concat $ (map (\(VC (CvString s)) -> toString s)) l
-instance ConcatOp ('T_c 'T_bytes) where
+instance ConcatOp ('T_c 'CBytes) where
   evalConcat (VC (CvBytes b1)) (VC (CvBytes b2)) = (VC . CvBytes) (b1 <> b2)
   evalConcat' l =
     (VC . CvBytes) $ foldr (<>) mempty (map (\(VC (CvBytes b)) -> b) l)
@@ -144,7 +144,7 @@ instance ConcatOp ('T_list t) where
 
 class SliceOp (c :: T) where
   evalSlice :: Natural -> Natural -> Val cp c -> Maybe (Val cp c)
-instance SliceOp ('T_c 'T_string) where
+instance SliceOp ('T_c 'CString) where
   evalSlice o l (VC (CvString s)) =
     if o > fromIntegral (length s) || o + l > fromIntegral (length s)
     then Nothing
@@ -154,7 +154,7 @@ instance SliceOp ('T_c 'T_string) where
       sliceText o' l' s' =
         T.drop ((fromIntegral . toInteger) o') $
           T.take ((fromIntegral . toInteger) l') s'
-instance SliceOp ('T_c 'T_bytes) where
+instance SliceOp ('T_c 'CBytes) where
   evalSlice o l (VC (CvBytes b)) =
     if o > fromIntegral (length b) || o + l > fromIntegral (length b)
     then Nothing
@@ -174,50 +174,50 @@ class EDivOp (n :: CT) (m :: CT) where
     -> Val instr ('T_option ('T_pair ('T_c (EDivOpRes n m))
                                      ('T_c (EModOpRes n m))))
 
-instance EDivOp 'T_int 'T_int where
-  type EDivOpRes 'T_int 'T_int = 'T_int
-  type EModOpRes 'T_int 'T_int = 'T_nat
+instance EDivOp 'CInt 'CInt where
+  type EDivOpRes 'CInt 'CInt = 'CInt
+  type EModOpRes 'CInt 'CInt = 'CNat
   evalEDivOp (CvInt i) (CvInt j) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvInt (div i j), VC $ CvNat $ fromInteger (mod i j))
-instance EDivOp 'T_int 'T_nat where
-  type EDivOpRes 'T_int 'T_nat = 'T_int
-  type EModOpRes 'T_int 'T_nat = 'T_nat
+instance EDivOp 'CInt 'CNat where
+  type EDivOpRes 'CInt 'CNat = 'CInt
+  type EModOpRes 'CInt 'CNat = 'CNat
   evalEDivOp (CvInt i) (CvNat j) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvInt (div i (toInteger j)), VC $ CvNat $ (mod (fromInteger i) j))
-instance EDivOp 'T_nat 'T_int where
-  type EDivOpRes 'T_nat 'T_int = 'T_int
-  type EModOpRes 'T_nat 'T_int = 'T_nat
+instance EDivOp 'CNat 'CInt where
+  type EDivOpRes 'CNat 'CInt = 'CInt
+  type EModOpRes 'CNat 'CInt = 'CNat
   evalEDivOp (CvNat i) (CvInt j) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvInt (div (toInteger i) j), VC $ CvNat $ (mod i (fromInteger j)))
-instance EDivOp 'T_nat 'T_nat where
-  type EDivOpRes 'T_nat 'T_nat = 'T_nat
-  type EModOpRes 'T_nat 'T_nat = 'T_nat
+instance EDivOp 'CNat 'CNat where
+  type EDivOpRes 'CNat 'CNat = 'CNat
+  type EModOpRes 'CNat 'CNat = 'CNat
   evalEDivOp (CvNat i) (CvNat j) =
     if j == 0
       then VOption $ Nothing
       else VOption $ Just $
         VPair (VC $ CvNat (div i j), VC $ CvNat $ (mod i j))
-instance EDivOp 'T_mutez 'T_mutez where
-  type EDivOpRes 'T_mutez 'T_mutez = 'T_nat
-  type EModOpRes 'T_mutez 'T_mutez = 'T_mutez
+instance EDivOp 'CMutez 'CMutez where
+  type EDivOpRes 'CMutez 'CMutez = 'CNat
+  type EModOpRes 'CMutez 'CMutez = 'CMutez
   evalEDivOp (CvMutez i) (CvMutez j) =
     VOption $
     i `divModMutez` j <&> \case
       (quotient, remainder) ->
         VPair (VC $ CvNat (fromIntegral quotient), VC $ CvMutez remainder)
 
-instance EDivOp 'T_mutez 'T_nat where
-  type EDivOpRes 'T_mutez 'T_nat = 'T_mutez
-  type EModOpRes 'T_mutez 'T_nat = 'T_mutez
+instance EDivOp 'CMutez 'CNat where
+  type EDivOpRes 'CMutez 'CNat = 'CMutez
+  type EModOpRes 'CMutez 'CNat = 'CMutez
   evalEDivOp (CvMutez i) (CvNat j) =
     VOption $
     i `divModMutezInt` j <&> \case

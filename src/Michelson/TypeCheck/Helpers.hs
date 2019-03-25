@@ -200,7 +200,7 @@ memImpl
   -> TcResult
 memImpl instr i@(_ ::& _ ::& rs) vn =
   case eqT' @q @(MemOpKey c) of
-    Right Refl -> pure (MEM ::: (i, (ST_c ST_bool, NStar, vn) ::& rs))
+    Right Refl -> pure (MEM ::: (i, (ST_c SCBool, NStar, vn) ::& rs))
     Left m     -> typeCheckInstrErr instr (SomeHST i) $
                 "query element type is not equal to set's element type: " <> m
 
@@ -244,11 +244,11 @@ sizeImpl
   -> VarAnn
   -> TcResult
 sizeImpl i@(_ ::& rs) vn =
-  pure $ SIZE ::: (i, (ST_c ST_nat, NStar, vn) ::& rs)
+  pure $ SIZE ::: (i, (ST_c SCNat, NStar, vn) ::& rs)
 
 sliceImpl
   :: (SliceOp c, Typeable c)
-  => HST ('T_c 'T_nat : 'T_c 'T_nat : c : rs)
+  => HST ('T_c 'CNat : 'T_c 'CNat : c : rs)
   -> Un.VarAnn
   -> TcResult
 sliceImpl i@(_ ::& _ ::& (c, cn, cvn) ::& rs) vn = do
@@ -294,13 +294,13 @@ addImpl
   -> HST ('T_c a ': 'T_c b ': rs)
   -> VarAnn
   -> TcResult
-addImpl ST_int ST_int = arithImpl @Add ADD
-addImpl ST_int ST_nat = arithImpl @Add ADD
-addImpl ST_nat ST_int = arithImpl @Add ADD
-addImpl ST_nat ST_nat = arithImpl @Add ADD
-addImpl ST_int ST_timestamp = arithImpl @Add ADD
-addImpl ST_timestamp ST_int = arithImpl @Add ADD
-addImpl ST_mutez ST_mutez = arithImpl @Add ADD
+addImpl SCInt SCInt = arithImpl @Add ADD
+addImpl SCInt SCNat = arithImpl @Add ADD
+addImpl SCNat SCInt = arithImpl @Add ADD
+addImpl SCNat SCNat = arithImpl @Add ADD
+addImpl SCInt SCTimestamp = arithImpl @Add ADD
+addImpl SCTimestamp SCInt = arithImpl @Add ADD
+addImpl SCMutez SCMutez = arithImpl @Add ADD
 addImpl _ _ = \i vn -> typeCheckInstrErr (Un.ADD vn) (SomeHST i) ""
 
 edivImpl
@@ -309,12 +309,12 @@ edivImpl
   -> HST ('T_c a ': 'T_c b ': rs)
   -> VarAnn
   -> TcResult
-edivImpl ST_int ST_int = edivImplDo
-edivImpl ST_int ST_nat = edivImplDo
-edivImpl ST_nat ST_int = edivImplDo
-edivImpl ST_nat ST_nat = edivImplDo
-edivImpl ST_mutez ST_mutez = edivImplDo
-edivImpl ST_mutez ST_nat = edivImplDo
+edivImpl SCInt SCInt = edivImplDo
+edivImpl SCInt SCNat = edivImplDo
+edivImpl SCNat SCInt = edivImplDo
+edivImpl SCNat SCNat = edivImplDo
+edivImpl SCMutez SCMutez = edivImplDo
+edivImpl SCMutez SCNat = edivImplDo
 edivImpl _ _ = \i vn -> typeCheckInstrErr (Un.EDIV vn) (SomeHST i) ""
 
 edivImplDo
@@ -336,13 +336,13 @@ subImpl
   -> HST ('T_c a ': 'T_c b ': rs)
   -> VarAnn
   -> TcResult
-subImpl ST_int ST_int = arithImpl @Sub SUB
-subImpl ST_int ST_nat = arithImpl @Sub SUB
-subImpl ST_nat ST_int = arithImpl @Sub SUB
-subImpl ST_nat ST_nat = arithImpl @Sub SUB
-subImpl ST_timestamp ST_timestamp = arithImpl @Sub SUB
-subImpl ST_timestamp ST_int = arithImpl @Sub SUB
-subImpl ST_mutez ST_mutez = arithImpl @Sub SUB
+subImpl SCInt SCInt = arithImpl @Sub SUB
+subImpl SCInt SCNat = arithImpl @Sub SUB
+subImpl SCNat SCInt = arithImpl @Sub SUB
+subImpl SCNat SCNat = arithImpl @Sub SUB
+subImpl SCTimestamp SCTimestamp = arithImpl @Sub SUB
+subImpl SCTimestamp SCInt = arithImpl @Sub SUB
+subImpl SCMutez SCMutez = arithImpl @Sub SUB
 subImpl _ _ = \i vn -> typeCheckInstrErr (Un.SUB vn) (SomeHST i) ""
 
 mulImpl
@@ -351,12 +351,12 @@ mulImpl
   -> HST ('T_c a ': 'T_c b ': rs)
   -> VarAnn
   -> TcResult
-mulImpl ST_int ST_int = arithImpl @Mul MUL
-mulImpl ST_int ST_nat = arithImpl @Mul MUL
-mulImpl ST_nat ST_int = arithImpl @Mul MUL
-mulImpl ST_nat ST_nat = arithImpl @Mul MUL
-mulImpl ST_nat ST_mutez = arithImpl @Mul MUL
-mulImpl ST_mutez ST_nat = arithImpl @Mul MUL
+mulImpl SCInt SCInt = arithImpl @Mul MUL
+mulImpl SCInt SCNat = arithImpl @Mul MUL
+mulImpl SCNat SCInt = arithImpl @Mul MUL
+mulImpl SCNat SCNat = arithImpl @Mul MUL
+mulImpl SCNat SCMutez = arithImpl @Mul MUL
+mulImpl SCMutez SCNat = arithImpl @Mul MUL
 mulImpl _ _ = \i vn -> typeCheckInstrErr (Un.MUL vn) (SomeHST i) ""
 
 compareImpl
@@ -365,15 +365,15 @@ compareImpl
   -> HST ('T_c a ': 'T_c b ': rs)
   -> VarAnn
   -> TcResult
-compareImpl ST_bool ST_bool = arithImpl @Compare COMPARE
-compareImpl ST_nat ST_nat = arithImpl @Compare COMPARE
-compareImpl ST_address ST_address = arithImpl @Compare COMPARE
-compareImpl ST_int ST_int = arithImpl @Compare COMPARE
-compareImpl ST_string ST_string = arithImpl @Compare COMPARE
-compareImpl ST_bytes ST_bytes = arithImpl @Compare COMPARE
-compareImpl ST_timestamp ST_timestamp = arithImpl @Compare COMPARE
-compareImpl ST_key_hash ST_key_hash = arithImpl @Compare COMPARE
-compareImpl ST_mutez ST_mutez = arithImpl @Compare COMPARE
+compareImpl SCBool SCBool = arithImpl @Compare COMPARE
+compareImpl SCNat SCNat = arithImpl @Compare COMPARE
+compareImpl SCAddress SCAddress = arithImpl @Compare COMPARE
+compareImpl SCInt SCInt = arithImpl @Compare COMPARE
+compareImpl SCString SCString = arithImpl @Compare COMPARE
+compareImpl SCBytes SCBytes = arithImpl @Compare COMPARE
+compareImpl SCTimestamp SCTimestamp = arithImpl @Compare COMPARE
+compareImpl SCKeyHash SCKeyHash = arithImpl @Compare COMPARE
+compareImpl SCMutez SCMutez = arithImpl @Compare COMPARE
 compareImpl _ _ = \i vn -> typeCheckInstrErr (Un.COMPARE vn) (SomeHST i) ""
 
 -- | Helper function to construct instructions for binary arithmetic

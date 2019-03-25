@@ -40,7 +40,7 @@ instance ToADTArbitrary Op
 instance Arbitrary Op where
   arbitrary = Op <$> arbitrary
 
--- TODO: this `Timestamp` gen differs from `Gen (CVal 'T_timestamp)` from `Morley.Test`.
+-- TODO: this `Timestamp` gen differs from `Gen (CVal 'CTimestamp)` from `Morley.Test`.
 instance Arbitrary Timestamp where
   arbitrary = timestampFromSeconds @Word <$> arbitrary
 

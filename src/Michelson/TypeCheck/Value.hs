@@ -13,8 +13,8 @@ import Prelude hiding (EQ, GT, LT)
 import Michelson.TypeCheck.Helpers
 import Michelson.TypeCheck.Types
 import Michelson.Typed
-  (CT(..), Instr(..), Notes(..), Notes'(..), Sing(..), T(..), converge, mkNotes, withSomeSingCT,
-  withSomeSingT, InstrExtT)
+  (CT(..), Instr(..), InstrExtT, Notes(..), Notes'(..), Sing(..), T(..), converge, mkNotes,
+  withSomeSingCT, withSomeSingT)
 import Michelson.Typed.Value (CVal(..), Val(..))
 import qualified Michelson.Untyped as Un
 import Tezos.Address (parseAddress)
@@ -22,25 +22,25 @@ import Tezos.Core (mkMutez, parseTimestamp, timestampFromSeconds)
 import Tezos.Crypto (parseKeyHash, parsePublicKey, parseSignature)
 
 typeCheckCVal :: Un.Value op -> CT -> Maybe SomeValC
-typeCheckCVal (Un.ValueInt i) T_int = pure $ CvInt i :--: ST_int
-typeCheckCVal (Un.ValueInt i) T_nat
-  | i >= 0 = pure $ CvNat (fromInteger i) :--: ST_nat
-typeCheckCVal (Un.ValueInt (mkMutez . fromInteger -> Just mtz)) T_mutez =
-  pure $ CvMutez mtz :--: ST_mutez
-typeCheckCVal (Un.ValueString s) T_string =
-  pure $ CvString s :--: ST_string
-typeCheckCVal (Un.ValueString (parseAddress -> Right s)) T_address =
-  pure $ CvAddress s :--: ST_address
-typeCheckCVal (Un.ValueString (parseKeyHash -> Right s)) T_key_hash =
-  pure $ CvKeyHash s :--: ST_key_hash
-typeCheckCVal (Un.ValueString (parseTimestamp -> Just t)) T_timestamp =
-  pure $ CvTimestamp t :--: ST_timestamp
-typeCheckCVal (Un.ValueInt i) T_timestamp =
-  pure $ CvTimestamp (timestampFromSeconds i) :--: ST_timestamp
-typeCheckCVal (Un.ValueBytes (Un.InternalByteString s)) T_bytes =
-  pure $ CvBytes s :--: ST_bytes
-typeCheckCVal Un.ValueTrue T_bool = pure $ CvBool True :--: ST_bool
-typeCheckCVal Un.ValueFalse T_bool = pure $ CvBool False :--: ST_bool
+typeCheckCVal (Un.ValueInt i) CInt = pure $ CvInt i :--: SCInt
+typeCheckCVal (Un.ValueInt i) CNat
+  | i >= 0 = pure $ CvNat (fromInteger i) :--: SCNat
+typeCheckCVal (Un.ValueInt (mkMutez . fromInteger -> Just mtz)) CMutez =
+  pure $ CvMutez mtz :--: SCMutez
+typeCheckCVal (Un.ValueString s) CString =
+  pure $ CvString s :--: SCString
+typeCheckCVal (Un.ValueString (parseAddress -> Right s)) CAddress =
+  pure $ CvAddress s :--: SCAddress
+typeCheckCVal (Un.ValueString (parseKeyHash -> Right s)) CKeyHash =
+  pure $ CvKeyHash s :--: SCKeyHash
+typeCheckCVal (Un.ValueString (parseTimestamp -> Just t)) CTimestamp =
+  pure $ CvTimestamp t :--: SCTimestamp
+typeCheckCVal (Un.ValueInt i) CTimestamp =
+  pure $ CvTimestamp (timestampFromSeconds i) :--: SCTimestamp
+typeCheckCVal (Un.ValueBytes (Un.InternalByteString s)) CBytes =
+  pure $ CvBytes s :--: SCBytes
+typeCheckCVal Un.ValueTrue CBool = pure $ CvBool True :--: SCBool
+typeCheckCVal Un.ValueFalse CBool = pure $ CvBool False :--: SCBool
 typeCheckCVal _ _ = Nothing
 
 typeCheckCVals

@@ -24,15 +24,15 @@ import Michelson.Typed.T (CT(..), T(..))
 
 -- | Instance of data family 'Sing' for 'CT'.
 data instance Sing :: CT -> Type where
-  ST_int :: Sing  'T_int
-  ST_nat :: Sing  'T_nat
-  ST_string :: Sing  'T_string
-  ST_bytes :: Sing  'T_bytes
-  ST_mutez :: Sing  'T_mutez
-  ST_bool :: Sing  'T_bool
-  ST_key_hash :: Sing  'T_key_hash
-  ST_timestamp :: Sing  'T_timestamp
-  ST_address :: Sing  'T_address
+  SCInt :: Sing  'CInt
+  SCNat :: Sing  'CNat
+  SCString :: Sing  'CString
+  SCBytes :: Sing  'CBytes
+  SCMutez :: Sing  'CMutez
+  SCBool :: Sing  'CBool
+  SCKeyHash :: Sing  'CKeyHash
+  SCTimestamp :: Sing  'CTimestamp
+  SCAddress :: Sing  'CAddress
 
 -- | Instance of data family 'Sing' for 'T'.
 -- Custom instance is implemented in order to inject 'Typeable'
@@ -78,46 +78,46 @@ withSomeSingCT
 withSomeSingCT ct f = (\(SomeSingCT s) -> f s) (toSingCT ct)
 
 fromSingCT :: Sing (a :: CT) -> CT
-fromSingCT ST_int = T_int
-fromSingCT ST_nat = T_nat
-fromSingCT ST_string = T_string
-fromSingCT ST_bytes = T_bytes
-fromSingCT ST_mutez = T_mutez
-fromSingCT ST_bool = T_bool
-fromSingCT ST_key_hash = T_key_hash
-fromSingCT ST_timestamp = T_timestamp
-fromSingCT ST_address = T_address
+fromSingCT SCInt = CInt
+fromSingCT SCNat = CNat
+fromSingCT SCString = CString
+fromSingCT SCBytes = CBytes
+fromSingCT SCMutez = CMutez
+fromSingCT SCBool = CBool
+fromSingCT SCKeyHash = CKeyHash
+fromSingCT SCTimestamp = CTimestamp
+fromSingCT SCAddress = CAddress
 
 -- | Version of 'toSing' which creates 'SomeSingCT'.
 toSingCT :: CT -> SomeSingCT
-toSingCT T_int = SomeSingCT ST_int
-toSingCT T_nat = SomeSingCT ST_nat
-toSingCT T_string = SomeSingCT ST_string
-toSingCT T_bytes = SomeSingCT ST_bytes
-toSingCT T_mutez = SomeSingCT ST_mutez
-toSingCT T_bool = SomeSingCT ST_bool
-toSingCT T_key_hash = SomeSingCT ST_key_hash
-toSingCT T_timestamp = SomeSingCT ST_timestamp
-toSingCT T_address = SomeSingCT ST_address
+toSingCT CInt = SomeSingCT SCInt
+toSingCT CNat = SomeSingCT SCNat
+toSingCT CString = SomeSingCT SCString
+toSingCT CBytes = SomeSingCT SCBytes
+toSingCT CMutez = SomeSingCT SCMutez
+toSingCT CBool = SomeSingCT SCBool
+toSingCT CKeyHash = SomeSingCT SCKeyHash
+toSingCT CTimestamp = SomeSingCT SCTimestamp
+toSingCT CAddress = SomeSingCT SCAddress
 
-instance SingI  'T_int where
-  sing = ST_int
-instance SingI  'T_nat where
-  sing = ST_nat
-instance SingI  'T_string where
-  sing = ST_string
-instance SingI  'T_bytes where
-  sing = ST_bytes
-instance SingI  'T_mutez where
-  sing = ST_mutez
-instance SingI  'T_bool where
-  sing = ST_bool
-instance SingI  'T_key_hash where
-  sing = ST_key_hash
-instance SingI  'T_timestamp where
-  sing = ST_timestamp
-instance SingI  'T_address where
-  sing = ST_address
+instance SingI  'CInt where
+  sing = SCInt
+instance SingI  'CNat where
+  sing = SCNat
+instance SingI  'CString where
+  sing = SCString
+instance SingI  'CBytes where
+  sing = SCBytes
+instance SingI  'CMutez where
+  sing = SCMutez
+instance SingI  'CBool where
+  sing = SCBool
+instance SingI  'CKeyHash where
+  sing = SCKeyHash
+instance SingI  'CTimestamp where
+  sing = SCTimestamp
+instance SingI  'CAddress where
+  sing = SCAddress
 
 ---------------------------------------------
 -- Singleton-related helpers for T

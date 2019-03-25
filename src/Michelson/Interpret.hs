@@ -425,7 +425,7 @@ runArithOp op l r = case evalOp op l r of
 createOrigOp
   :: (SingI param, SingI store, ConversibleExt)
   => KeyHash
-  -> Maybe (Val Instr ('T_c 'U.T_key_hash))
+  -> Maybe (Val Instr ('T_c 'U.CKeyHash))
   -> Bool -> Bool -> Mutez
   -> Contract param store
   -> Val Instr t
@@ -441,6 +441,6 @@ createOrigOp k mbKeyHash delegetable spendable m contract g =
     , ooContract = convertContract contract
     }
 
-unwrapMbKeyHash :: Maybe (Val Instr ('T_c 'U.T_key_hash)) -> Maybe KeyHash
+unwrapMbKeyHash :: Maybe (Val Instr ('T_c 'U.CKeyHash)) -> Maybe KeyHash
 unwrapMbKeyHash (Just (VC (CvKeyHash keyHash))) = Just keyHash
 unwrapMbKeyHash Nothing = Nothing

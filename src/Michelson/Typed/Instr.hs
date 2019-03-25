@@ -92,14 +92,14 @@ data Instr (inp :: [T]) (out :: [T]) where
     => Instr (a ': 'T_list a ': s) s'
     -> Instr s s'
     -> Instr ('T_list a ': s) s'
-  SIZE :: SizeOp c => Instr (c ': s) ('T_c 'T_nat ': s)
+  SIZE :: SizeOp c => Instr (c ': s) ('T_c 'CNat ': s)
   EMPTY_SET :: SingI e => Instr s ('T_set e ': s)
   EMPTY_MAP :: (SingI a, SingI b) => Instr s ('T_map a b ': s)
   MAP :: (Typeable (MapOpInp c ': s), MapOp c b)
       => Instr (MapOpInp c ': s) (b ': s)
       -> Instr (c ': s) (MapOpRes c b ': s)
   ITER :: (Typeable (IterOpEl c ': s), IterOp c) => Instr (IterOpEl c ': s) s -> Instr (c ': s) s
-  MEM :: MemOp c => Instr ('T_c (MemOpKey c) ': c ': s) ('T_c 'T_bool ': s)
+  MEM :: MemOp c => Instr ('T_c (MemOpKey c) ': c ': s) ('T_c 'CBool ': s)
   GET
     :: GetOp c
     => Instr ('T_c (GetOpKey c) ': c ': s) ('T_option (GetOpVal c) ': s)
@@ -109,10 +109,10 @@ data Instr (inp :: [T]) (out :: [T]) where
   IF :: Typeable s
      => Instr s s'
      -> Instr s s'
-     -> Instr ('T_c 'T_bool ': s) s'
+     -> Instr ('T_c 'CBool ': s) s'
   LOOP :: Typeable s
-       => Instr s ('T_c 'T_bool ': s)
-       -> Instr ('T_c 'T_bool ': s) s
+       => Instr s ('T_c 'CBool ': s)
+       -> Instr ('T_c 'CBool ': s) s
   LOOP_LEFT
     :: (Typeable a, Typeable s)
     => Instr (a ': s) ('T_or a b ': s)
@@ -124,14 +124,14 @@ data Instr (inp :: [T]) (out :: [T]) where
   FAILWITH :: Instr (a ': s) t
   CAST :: forall a s . SingI a => Instr (a ': s) (a ': s)
   RENAME :: Instr (a ': s) (a ': s)
-  PACK :: Instr (a ': s) ('T_c 'T_bytes ': s)
-  UNPACK :: SingI a => Instr ('T_c 'T_bytes ': s) ('T_option a ': s)
+  PACK :: Instr (a ': s) ('T_c 'CBytes ': s)
+  UNPACK :: SingI a => Instr ('T_c 'CBytes ': s) ('T_option a ': s)
   CONCAT :: ConcatOp c => Instr (c ': c ': s) (c ': s)
   CONCAT' :: ConcatOp c => Instr ('T_list c ': s) (c ': s)
   SLICE
     :: SliceOp c
-    => Instr ('T_c 'T_nat ': 'T_c 'T_nat ': c ': s) ('T_option c ': s)
-  ISNAT :: Instr ('T_c 'T_int ': s) ('T_option ('T_c 'T_nat) ': s)
+    => Instr ('T_c 'CNat ': 'T_c 'CNat ': c ': s) ('T_option c ': s)
+  ISNAT :: Instr ('T_c 'CInt ': s) ('T_option ('T_c 'CNat) ': s)
   ADD
     :: ArithOp Add n m
     => Instr ('T_c n ': 'T_c m ': s) ('T_c (ArithRes Add n m) ': s)
@@ -191,56 +191,56 @@ data Instr (inp :: [T]) (out :: [T]) where
   GE
     :: UnaryArithOp Ge n
     => Instr ('T_c n ': s) ('T_c (UnaryArithRes Ge n) ': s)
-  INT :: Instr ('T_c 'T_nat ': s) ('T_c 'T_int ': s)
+  INT :: Instr ('T_c 'CNat ': s) ('T_c 'CInt ': s)
   SELF :: forall (cp :: T) s . Instr s ('T_contract cp ': s)
   CONTRACT
-    :: SingI p => Instr ('T_c 'T_address ': s) ('T_option ('T_contract p) ': s)
+    :: SingI p => Instr ('T_c 'CAddress ': s) ('T_option ('T_contract p) ': s)
   TRANSFER_TOKENS
-    :: Instr (p ': 'T_c 'T_mutez ': 'T_contract p ': s)
+    :: Instr (p ': 'T_c 'CMutez ': 'T_contract p ': s)
                    ('T_operation ': s)
   SET_DELEGATE
-    :: Instr ('T_option ('T_c 'T_key_hash) ': s) ('T_operation ': s)
+    :: Instr ('T_option ('T_c 'CKeyHash) ': s) ('T_operation ': s)
 
   CREATE_ACCOUNT
     :: Instr
-        ('T_c 'T_key_hash ': 'T_option ('T_c 'T_key_hash) ': 'T_c 'T_bool
-         ': 'T_c 'T_mutez ': s) ('T_operation ': 'T_c 'T_address ': s)
+        ('T_c 'CKeyHash ': 'T_option ('T_c 'CKeyHash) ': 'T_c 'CBool
+         ': 'T_c 'CMutez ': s) ('T_operation ': 'T_c 'CAddress ': s)
 
   CREATE_CONTRACT
     :: (SingI p, SingI g)
     => Instr
-        ('T_c 'T_key_hash ': 'T_option ('T_c 'T_key_hash) ': 'T_c 'T_bool
-          ': 'T_c 'T_bool ': 'T_c 'T_mutez
+        ('T_c 'CKeyHash ': 'T_option ('T_c 'CKeyHash) ': 'T_c 'CBool
+          ': 'T_c 'CBool ': 'T_c 'CMutez
           ': 'T_lambda ('T_pair p g)
                        ('T_pair ('T_list 'T_operation) g) ': g ': s)
-        ('T_operation ': 'T_c 'T_address ': s)
+        ('T_operation ': 'T_c 'CAddress ': s)
   CREATE_CONTRACT2
     :: (SingI p, SingI g)
     => Instr '[ 'T_pair p g ] '[ 'T_pair ('T_list 'T_operation) g ]
-    -> Instr ('T_c 'T_key_hash ':
-              'T_option ('T_c 'T_key_hash) ':
-              'T_c 'T_bool ':
-              'T_c 'T_bool ':
-              'T_c 'T_mutez ':
+    -> Instr ('T_c 'CKeyHash ':
+              'T_option ('T_c 'CKeyHash) ':
+              'T_c 'CBool ':
+              'T_c 'CBool ':
+              'T_c 'CMutez ':
                g ': s)
-             ('T_operation ': 'T_c 'T_address ': s)
+             ('T_operation ': 'T_c 'CAddress ': s)
 
   IMPLICIT_ACCOUNT
-    :: Instr ('T_c 'T_key_hash ': s) ('T_contract 'T_unit ': s)
-  NOW :: Instr s ('T_c 'T_timestamp ': s)
-  AMOUNT :: Instr s ('T_c 'T_mutez ': s)
-  BALANCE :: Instr s ('T_c 'T_mutez ': s)
+    :: Instr ('T_c 'CKeyHash ': s) ('T_contract 'T_unit ': s)
+  NOW :: Instr s ('T_c 'CTimestamp ': s)
+  AMOUNT :: Instr s ('T_c 'CMutez ': s)
+  BALANCE :: Instr s ('T_c 'CMutez ': s)
   CHECK_SIGNATURE
-    :: Instr ('T_key ': 'T_signature ': 'T_c 'T_bytes ': s)
-                   ('T_c 'T_bool ': s)
-  SHA256 :: Instr ('T_c 'T_bytes ': s) ('T_c 'T_bytes ': s)
-  SHA512 :: Instr ('T_c 'T_bytes ': s) ('T_c 'T_bytes ': s)
-  BLAKE2B :: Instr ('T_c 'T_bytes ': s) ('T_c 'T_bytes ': s)
-  HASH_KEY :: Instr ('T_key ': s) ('T_c 'T_key_hash ': s)
-  STEPS_TO_QUOTA :: Instr s ('T_c 'T_nat ': s)
-  SOURCE :: Instr s ('T_c 'T_address ': s)
-  SENDER :: Instr s ('T_c 'T_address ': s)
-  ADDRESS :: Instr ('T_contract a ': s) ('T_c 'T_address ': s)
+    :: Instr ('T_key ': 'T_signature ': 'T_c 'CBytes ': s)
+                   ('T_c 'CBool ': s)
+  SHA256 :: Instr ('T_c 'CBytes ': s) ('T_c 'CBytes ': s)
+  SHA512 :: Instr ('T_c 'CBytes ': s) ('T_c 'CBytes ': s)
+  BLAKE2B :: Instr ('T_c 'CBytes ': s) ('T_c 'CBytes ': s)
+  HASH_KEY :: Instr ('T_key ': s) ('T_c 'CKeyHash ': s)
+  STEPS_TO_QUOTA :: Instr s ('T_c 'CNat ': s)
+  SOURCE :: Instr s ('T_c 'CAddress ': s)
+  SENDER :: Instr s ('T_c 'CAddress ': s)
+  ADDRESS :: Instr ('T_contract a ': s) ('T_c 'CAddress ': s)
 
 deriving instance Show (ExtT Instr) => Show (Instr inp out)
 

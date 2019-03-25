@@ -284,8 +284,8 @@ typeCheckInstr (Un.IF_CONS mp mq) (SomeHST i@((ST_list a, ns, vn) ::& rs) ) = do
 typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_list _, _, _) ::& _) ) = liftEither $ sizeImpl i vn
 typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_set _, _, _) ::& _) ) = liftEither $ sizeImpl i vn
 typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_map _ _, _, _) ::& _) ) = liftEither $ sizeImpl i vn
-typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_c ST_string, _, _) ::& _) ) = liftEither $  sizeImpl i vn
-typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_c ST_bytes, _, _) ::& _) ) = liftEither $ sizeImpl i vn
+typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_c SCString, _, _) ::& _) ) = liftEither $  sizeImpl i vn
+typeCheckInstr (Un.SIZE vn) (SomeHST i@((ST_c SCBytes, _, _) ::& _) ) = liftEither $ sizeImpl i vn
 
 typeCheckInstr (Un.EMPTY_SET tn vn (Un.Comparable mk ktn)) (SomeHST i) =
   withSomeSingCT mk $ \k ->
@@ -363,16 +363,16 @@ typeCheckInstr instr@Un.UPDATE (SomeHST i@(_ ::& _ ::& (ST_big_map _ _, _, _)
 typeCheckInstr instr@Un.UPDATE (SomeHST i@(_ ::& _ ::& (ST_set _, _, _) ::& _)) =
   liftEither $ updImpl instr i
 
-typeCheckInstr (Un.IF mp mq) (SomeHST i@((ST_c ST_bool, _, _) ::& rs) ) =
+typeCheckInstr (Un.IF mp mq) (SomeHST i@((ST_c SCBool, _, _) ::& rs) ) =
   genericIf IF Un.IF mp mq rs rs i
 
 typeCheckInstr instr@(Un.LOOP is)
-           (SomeHST i@((ST_c ST_bool, _, _) ::& (rs :: HST rs)) ) = do
+           (SomeHST i@((ST_c SCBool, _, _) ::& (rs :: HST rs)) ) = do
   typeCheckList (fmap Un.unOp is) (SomeHST rs) >>= \case
     SiFail -> pure SiFail
     subI ::: ((_ :: HST rs'), (o :: HST o)) -> liftEither $ do
       Refl <- assertEqT @rs @rs' instr i
-      case (eqT' @o @('T_c 'T_bool ': rs), SomeHST o) of
+      case (eqT' @o @('T_c 'CBool ': rs), SomeHST o) of
         (Right Refl, SomeHST (_ ::& rs' :: HST o')) -> do
             Refl <- assertEqT @o @o' instr i
             pure $ LOOP subI ::: (i, rs')
@@ -453,7 +453,7 @@ typeCheckInstr instr@(Un.CAST vn mt)
 typeCheckInstr (Un.RENAME vn) (SomeHST i@((at, an, _) ::& rs)) =
   pure $ RENAME ::: (i, (at, an, vn) ::& rs)
 
-typeCheckInstr instr@(Un.UNPACK vn mt) (SomeHST i@((ST_c ST_bytes, _, _) ::& rs)) =
+typeCheckInstr instr@(Un.UNPACK vn mt) (SomeHST i@((ST_c SCBytes, _, _) ::& rs)) =
   withSomeSingT (fromUType mt) $ \t -> liftEither $ do
     tns <- extractNotes mt t
             `onLeft` TCFailedOnInstr instr (SomeHST i)
@@ -461,32 +461,32 @@ typeCheckInstr instr@(Un.UNPACK vn mt) (SomeHST i@((ST_c ST_bytes, _, _) ::& rs)
     pure $ UNPACK ::: (i, (ST_option t, ns, vn) ::& rs)
 
 typeCheckInstr (Un.PACK vn) (SomeHST i@(_ ::& rs)) =
-  pure $ PACK ::: (i, (ST_c ST_bytes, NStar, vn) ::& rs)
+  pure $ PACK ::: (i, (ST_c SCBytes, NStar, vn) ::& rs)
 
-typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_c ST_bytes, _, _) ::&
-                                    (ST_c ST_bytes, _, _) ::& _)) =
+typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_c SCBytes, _, _) ::&
+                                    (ST_c SCBytes, _, _) ::& _)) =
   liftEither $ concatImpl i vn
-typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_c ST_string, _, _) ::&
-                                    (ST_c ST_string, _, _) ::& _)) =
+typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_c SCString, _, _) ::&
+                                    (ST_c SCString, _, _) ::& _)) =
   liftEither $ concatImpl i vn
-typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_list (ST_c ST_bytes), _, _) ::& _)) =
+typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_list (ST_c SCBytes), _, _) ::& _)) =
   liftEither $  concatImpl' i vn
-typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_list (ST_c ST_string), _, _) ::& _)) =
+typeCheckInstr (Un.CONCAT vn) (SomeHST i@((ST_list (ST_c SCString), _, _) ::& _)) =
   liftEither $ concatImpl' i vn
 
 
-typeCheckInstr (Un.SLICE vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                                   (ST_c ST_nat, _, _) ::&
-                                   (ST_c ST_string, _, _) ::& _)) =
+typeCheckInstr (Un.SLICE vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                                   (ST_c SCNat, _, _) ::&
+                                   (ST_c SCString, _, _) ::& _)) =
   liftEither $ sliceImpl i vn
-typeCheckInstr (Un.SLICE vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                                   (ST_c ST_nat, _, _) ::&
-                                   (ST_c ST_bytes, _, _) ::& _)) =
+typeCheckInstr (Un.SLICE vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                                   (ST_c SCNat, _, _) ::&
+                                   (ST_c SCBytes, _, _) ::& _)) =
   liftEither $ sliceImpl i vn
 
-typeCheckInstr (Un.ISNAT vn') (SomeHST i@((ST_c ST_int, _, oldVn) ::& rs)) = do
+typeCheckInstr (Un.ISNAT vn') (SomeHST i@((ST_c SCInt, _, oldVn) ::& rs)) = do
   let vn = vn' `orAnn` oldVn
-  pure $ ISNAT ::: (i, (ST_option (ST_c ST_nat), NStar, vn) ::& rs)
+  pure $ ISNAT ::: (i, (ST_option (ST_c SCNat), NStar, vn) ::& rs)
 
 typeCheckInstr (Un.ADD vn) (SomeHST i@((ST_c a, _, _) ::&
                                  (ST_c b, _, _) ::& _)) = liftEither $ addImpl a b i vn
@@ -500,65 +500,65 @@ typeCheckInstr (Un.MUL vn) (SomeHST i@((ST_c a, _, _) ::&
 typeCheckInstr (Un.EDIV vn) (SomeHST i@((ST_c a, _, _) ::&
                                   (ST_c b, _, _) ::& _)) = liftEither $ edivImpl a b i vn
 
-typeCheckInstr (Un.ABS vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.ABS vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Abs ABS i vn
 
-typeCheckInstr Un.NEG (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr Un.NEG (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Neg NEG i def
 
-typeCheckInstr (Un.LSL vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                         (ST_c ST_nat, _, _) ::& _)) = liftEither $ arithImpl @Lsl LSL i vn
+typeCheckInstr (Un.LSL vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                         (ST_c SCNat, _, _) ::& _)) = liftEither $ arithImpl @Lsl LSL i vn
 
-typeCheckInstr (Un.LSR vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                         (ST_c ST_nat, _, _) ::& _)) = liftEither $ arithImpl @Lsr LSR i vn
+typeCheckInstr (Un.LSR vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                         (ST_c SCNat, _, _) ::& _)) = liftEither $ arithImpl @Lsr LSR i vn
 
-typeCheckInstr (Un.OR vn) (SomeHST i@((ST_c ST_bool, _, _) ::&
-                         (ST_c ST_bool, _, _) ::& _)) = liftEither $ arithImpl @Or OR i vn
-typeCheckInstr (Un.OR vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                         (ST_c ST_nat, _, _) ::& _)) = liftEither $ arithImpl @Or OR i vn
+typeCheckInstr (Un.OR vn) (SomeHST i@((ST_c SCBool, _, _) ::&
+                         (ST_c SCBool, _, _) ::& _)) = liftEither $ arithImpl @Or OR i vn
+typeCheckInstr (Un.OR vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                         (ST_c SCNat, _, _) ::& _)) = liftEither $ arithImpl @Or OR i vn
 
-typeCheckInstr (Un.AND vn) (SomeHST i@((ST_c ST_int, _, _) ::&
-                         (ST_c ST_nat, _, _) ::& _)) = liftEither $ arithImpl @And AND i vn
-typeCheckInstr (Un.AND vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                         (ST_c ST_nat, _, _) ::& _)) = liftEither $ arithImpl @And AND i vn
-typeCheckInstr (Un.AND vn) (SomeHST i@((ST_c ST_bool, _, _) ::&
-                         (ST_c ST_bool, _, _) ::& _)) = liftEither $ arithImpl @And AND i vn
+typeCheckInstr (Un.AND vn) (SomeHST i@((ST_c SCInt, _, _) ::&
+                         (ST_c SCNat, _, _) ::& _)) = liftEither $ arithImpl @And AND i vn
+typeCheckInstr (Un.AND vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                         (ST_c SCNat, _, _) ::& _)) = liftEither $ arithImpl @And AND i vn
+typeCheckInstr (Un.AND vn) (SomeHST i@((ST_c SCBool, _, _) ::&
+                         (ST_c SCBool, _, _) ::& _)) = liftEither $ arithImpl @And AND i vn
 
-typeCheckInstr (Un.XOR vn) (SomeHST i@((ST_c ST_bool, _, _) ::&
-                         (ST_c ST_bool, _, _) ::& _)) = liftEither $ arithImpl @Xor XOR i vn
-typeCheckInstr (Un.XOR vn) (SomeHST i@((ST_c ST_nat, _, _) ::&
-                         (ST_c ST_nat, _, _) ::& _)) = liftEither $ arithImpl @Xor XOR i vn
+typeCheckInstr (Un.XOR vn) (SomeHST i@((ST_c SCBool, _, _) ::&
+                         (ST_c SCBool, _, _) ::& _)) = liftEither $ arithImpl @Xor XOR i vn
+typeCheckInstr (Un.XOR vn) (SomeHST i@((ST_c SCNat, _, _) ::&
+                         (ST_c SCNat, _, _) ::& _)) = liftEither $ arithImpl @Xor XOR i vn
 
-typeCheckInstr (Un.NOT vn) (SomeHST i@((ST_c ST_nat, _, _) ::& _)) =
+typeCheckInstr (Un.NOT vn) (SomeHST i@((ST_c SCNat, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Not NOT i vn
-typeCheckInstr (Un.NOT vn) (SomeHST i@((ST_c ST_bool, _, _) ::& _)) =
+typeCheckInstr (Un.NOT vn) (SomeHST i@((ST_c SCBool, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Not NOT i vn
-typeCheckInstr (Un.NOT vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.NOT vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Not NOT i vn
 
 typeCheckInstr (Un.COMPARE vn) (SomeHST i@((ST_c a, _, _) ::&
                                  (ST_c b, _, _) ::& _)) = liftEither $ compareImpl a b i vn
 
-typeCheckInstr (Un.EQ vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.EQ vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Eq' EQ i vn
 
-typeCheckInstr (Un.NEQ vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.NEQ vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Neq NEQ i vn
 
-typeCheckInstr (Un.LT vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.LT vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Lt LT i vn
 
-typeCheckInstr (Un.GT vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.GT vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Gt GT i vn
 
-typeCheckInstr (Un.LE vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.LE vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Le LE i vn
 
-typeCheckInstr (Un.GE vn) (SomeHST i@((ST_c ST_int, _, _) ::& _)) =
+typeCheckInstr (Un.GE vn) (SomeHST i@((ST_c SCInt, _, _) ::& _)) =
   liftEither $ unaryArithImpl @Ge GE i vn
 
-typeCheckInstr (Un.INT vn) (SomeHST i@((ST_c ST_nat, _, _) ::& rs)) =
-  pure $ INT ::: (i, (ST_c ST_int, NStar, vn) ::& rs)
+typeCheckInstr (Un.INT vn) (SomeHST i@((ST_c SCNat, _, _) ::& rs)) =
+  pure $ INT ::: (i, (ST_c SCInt, NStar, vn) ::& rs)
 
 typeCheckInstr instr@(Un.SELF vn) shst@(SomeHST i) = do
   cpType <- gets tcContractParam
@@ -568,7 +568,7 @@ typeCheckInstr instr@(Un.SELF vn) shst@(SomeHST i) = do
     pure $ SELF @cp ::: (i, (sing @('T_contract cp), N (NT_contract Un.noAnn nt), vn) ::& i)
 
 typeCheckInstr instr@(Un.CONTRACT vn mt)
-           (SomeHST i@((ST_c ST_address, _, _) ::& rs)) =
+           (SomeHST i@((ST_c SCAddress, _, _) ::& rs)) =
   withSomeSingT (fromUType mt) $ \t -> liftEither $ do
     tns <- extractNotes mt t
             `onLeft` TCFailedOnInstr instr (SomeHST i)
@@ -576,7 +576,7 @@ typeCheckInstr instr@(Un.CONTRACT vn mt)
     pure $ CONTRACT ::: (i, (ST_option $ ST_contract t, ns, vn) ::& rs)
 
 typeCheckInstr instr@(Un.TRANSFER_TOKENS vn) (SomeHST i@(((_ :: Sing p'), _, _)
-  ::& (ST_c ST_mutez, _, _) ::& (ST_contract (_ :: Sing p), _, _) ::& rs)) = do
+  ::& (ST_c SCMutez, _, _) ::& (ST_contract (_ :: Sing p), _, _) ::& rs)) = do
   case eqT' @p @p' of
     Right Refl ->
       pure $ TRANSFER_TOKENS ::: (i, (ST_operation, NStar, vn) ::& rs)
@@ -584,21 +584,21 @@ typeCheckInstr instr@(Un.TRANSFER_TOKENS vn) (SomeHST i@(((_ :: Sing p'), _, _)
       typeCheckInstrErrM instr (SomeHST i) $ "mismatch of contract param type: " <> m
 
 typeCheckInstr (Un.SET_DELEGATE vn)
-           (SomeHST i@((ST_option (ST_c ST_key_hash), _, _) ::& rs)) = do
+           (SomeHST i@((ST_option (ST_c SCKeyHash), _, _) ::& rs)) = do
   pure $ SET_DELEGATE ::: (i, (ST_operation, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.CREATE_ACCOUNT ovn avn)
-           (SomeHST i@((ST_c ST_key_hash, _, _)
-             ::& (ST_option (ST_c ST_key_hash), _, _) ::& (ST_c ST_bool, _, _)
-             ::& (ST_c ST_mutez, _, _) ::& rs)) =
+           (SomeHST i@((ST_c SCKeyHash, _, _)
+             ::& (ST_option (ST_c SCKeyHash), _, _) ::& (ST_c SCBool, _, _)
+             ::& (ST_c SCMutez, _, _) ::& rs)) =
   pure $ CREATE_ACCOUNT ::: (i, (ST_operation, NStar, ovn) ::&
-                                 (ST_c ST_address, NStar, avn) ::& rs)
+                                 (ST_c SCAddress, NStar, avn) ::& rs)
 
 typeCheckInstr instr@(Un.CREATE_CONTRACT ovn avn)
-           (SomeHST i@((ST_c ST_key_hash, _, _)
-             ::& (ST_option (ST_c ST_key_hash), _, _)
-             ::& (ST_c ST_bool, _, _) ::& (ST_c ST_bool, _, _)
-             ::& (ST_c ST_mutez, _, _)
+           (SomeHST i@((ST_c SCKeyHash, _, _)
+             ::& (ST_option (ST_c SCKeyHash), _, _)
+             ::& (ST_c SCBool, _, _) ::& (ST_c SCBool, _, _)
+             ::& (ST_c SCMutez, _, _)
              ::& (ST_lambda (ST_pair _ (_ :: Sing g1))
                    (ST_pair (ST_list ST_operation) (_ :: Sing g2)), ln, _)
                         ::& ((_ :: Sing g3), gn3, _) ::& rs)) = do
@@ -613,14 +613,14 @@ typeCheckInstr instr@(Un.CREATE_CONTRACT ovn avn)
     gn12 <- converge gn1 gn2
     _ <- converge gn12 gn3
     pure $ CREATE_CONTRACT ::: (i, (ST_operation, NStar, ovn) ::&
-                                     (ST_c ST_address, NStar, avn) ::& rs)
+                                     (ST_c SCAddress, NStar, avn) ::& rs)
 
 typeCheckInstr instr@(Un.CREATE_CONTRACT2 ovn avn contract)
-           (SomeHST i@((ST_c ST_key_hash, _, _)
-             ::& (ST_option (ST_c ST_key_hash), _, _)
-             ::& (ST_c ST_bool, _, _)
-             ::& (ST_c ST_bool, _, _)
-             ::& (ST_c ST_mutez, _, _)
+           (SomeHST i@((ST_c SCKeyHash, _, _)
+             ::& (ST_option (ST_c SCKeyHash), _, _)
+             ::& (ST_c SCBool, _, _)
+             ::& (ST_c SCBool, _, _)
+             ::& (ST_c SCMutez, _, _)
              ::& ((_ :: Sing g), gn, _) ::& rs)) = do
   (SomeContract (contr :: Contract i' g') _ out) <-
       flip withExceptT (typeCheckContractImpl $ fmap Un.unOp contract)
@@ -630,57 +630,57 @@ typeCheckInstr instr@(Un.CREATE_CONTRACT2 ovn avn contract)
     Refl <- checkEqT @g @g' instr i "contract storage type mismatch"
     void $ converge gn (outNotes out) `onLeft` TCFailedOnInstr instr (SomeHST i)
     pure $ CREATE_CONTRACT2 contr ::: (i, (ST_operation, NStar, ovn) ::&
-                                          (ST_c ST_address, NStar, avn) ::& rs)
+                                          (ST_c SCAddress, NStar, avn) ::& rs)
   where
     outNotes :: HST '[ 'T_pair ('T_list 'T_operation) g' ] -> Notes g'
     outNotes ((_, n, _) ::& SNil) =
       notesCase NStar (\(NT_pair _ _ _ _ n') -> n') n
 
 typeCheckInstr (Un.IMPLICIT_ACCOUNT vn)
-           (SomeHST i@((ST_c ST_key_hash, _, _) ::& rs)) =
+           (SomeHST i@((ST_c SCKeyHash, _, _) ::& rs)) =
   pure $ IMPLICIT_ACCOUNT ::: (i, (ST_contract ST_unit, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.NOW vn) (SomeHST i) =
-  pure $ NOW ::: (i, (ST_c ST_timestamp, NStar, vn) ::& i)
+  pure $ NOW ::: (i, (ST_c SCTimestamp, NStar, vn) ::& i)
 
 typeCheckInstr (Un.AMOUNT vn) (SomeHST i) =
-  pure $ AMOUNT ::: (i, (ST_c ST_mutez, NStar, vn) ::& i)
+  pure $ AMOUNT ::: (i, (ST_c SCMutez, NStar, vn) ::& i)
 
 typeCheckInstr (Un.BALANCE vn) (SomeHST i) =
-  pure $ BALANCE ::: (i, (ST_c ST_mutez, NStar, vn) ::& i)
+  pure $ BALANCE ::: (i, (ST_c SCMutez, NStar, vn) ::& i)
 
 typeCheckInstr (Un.CHECK_SIGNATURE vn)
            (SomeHST i@((ST_key, _, _)
-             ::& (ST_signature, _, _) ::& (ST_c ST_bytes, _, _) ::& rs)) =
-  pure $ CHECK_SIGNATURE ::: (i, (ST_c ST_bool, NStar, vn) ::& rs)
+             ::& (ST_signature, _, _) ::& (ST_c SCBytes, _, _) ::& rs)) =
+  pure $ CHECK_SIGNATURE ::: (i, (ST_c SCBool, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.SHA256 vn)
-           (SomeHST i@((ST_c ST_bytes, _, _) ::& rs)) =
-  pure $ SHA256 ::: (i, (ST_c ST_bytes, NStar, vn) ::& rs)
+           (SomeHST i@((ST_c SCBytes, _, _) ::& rs)) =
+  pure $ SHA256 ::: (i, (ST_c SCBytes, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.SHA512 vn)
-           (SomeHST i@((ST_c ST_bytes, _, _) ::& rs)) =
-  pure $ SHA512 ::: (i, (ST_c ST_bytes, NStar, vn) ::& rs)
+           (SomeHST i@((ST_c SCBytes, _, _) ::& rs)) =
+  pure $ SHA512 ::: (i, (ST_c SCBytes, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.BLAKE2B vn)
-           (SomeHST i@((ST_c ST_bytes, _, _) ::& rs)) =
-  pure $ BLAKE2B ::: (i, (ST_c ST_bytes, NStar, vn) ::& rs)
+           (SomeHST i@((ST_c SCBytes, _, _) ::& rs)) =
+  pure $ BLAKE2B ::: (i, (ST_c SCBytes, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.HASH_KEY vn)
            (SomeHST i@((ST_key, _, _) ::& rs)) =
-  pure $ HASH_KEY ::: (i, (ST_c ST_key_hash, NStar, vn) ::& rs)
+  pure $ HASH_KEY ::: (i, (ST_c SCKeyHash, NStar, vn) ::& rs)
 
 typeCheckInstr (Un.STEPS_TO_QUOTA vn) (SomeHST i) =
-  pure $ STEPS_TO_QUOTA ::: (i, (ST_c ST_nat, NStar, vn) ::& i)
+  pure $ STEPS_TO_QUOTA ::: (i, (ST_c SCNat, NStar, vn) ::& i)
 
 typeCheckInstr (Un.SOURCE vn) (SomeHST i) =
-  pure $ SOURCE ::: (i, (ST_c ST_address, NStar, vn) ::& i)
+  pure $ SOURCE ::: (i, (ST_c SCAddress, NStar, vn) ::& i)
 
 typeCheckInstr (Un.SENDER vn) (SomeHST i) =
-  pure $ SENDER ::: (i, (ST_c ST_address, NStar, vn) ::& i)
+  pure $ SENDER ::: (i, (ST_c SCAddress, NStar, vn) ::& i)
 
 typeCheckInstr (Un.ADDRESS vn) (SomeHST i@((ST_contract _, _, _) ::& rs)) =
-  pure $ ADDRESS ::: (i, (ST_c ST_address, NStar, vn) ::& rs)
+  pure $ ADDRESS ::: (i, (ST_c SCAddress, NStar, vn) ::& rs)
 
 typeCheckInstr instr sit = typeCheckInstrErrM instr sit ""
 

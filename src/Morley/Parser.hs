@@ -343,15 +343,15 @@ t_ct :: (Default a) => Parser a -> Parser (a, Mo.Type)
 t_ct fp = do ct' <- ct; (f,t) <- fieldType fp; return (f, Mo.Type (Mo.T_comparable ct') t)
 
 ct :: Parser Mo.CT
-ct = (symbol "int" >> return Mo.T_int)
-  <|> (symbol "nat" >> return Mo.T_nat)
-  <|> (symbol "string" >> return Mo.T_string)
-  <|> (symbol "bytes" >> return Mo.T_bytes)
-  <|> (symbol "mutez" >> return Mo.T_mutez)
-  <|> (symbol "bool" >> return Mo.T_bool)
-  <|> (symbol "key_hash" >> return Mo.T_key_hash)
-  <|> (symbol "timestamp" >> return Mo.T_timestamp)
-  <|> (symbol "address" >> return Mo.T_address)
+ct = (symbol "int" >> return Mo.CInt)
+  <|> (symbol "nat" >> return Mo.CNat)
+  <|> (symbol "string" >> return Mo.CString)
+  <|> (symbol "bytes" >> return Mo.CBytes)
+  <|> (symbol "mutez" >> return Mo.CMutez)
+  <|> (symbol "bool" >> return Mo.CBool)
+  <|> (symbol "key_hash" >> return Mo.CKeyHash)
+  <|> (symbol "timestamp" >> return Mo.CTimestamp)
+  <|> (symbol "address" >> return Mo.CAddress)
 
 -- Protocol Types
 t_key :: (Default a) => Parser a -> Parser (a, Mo.Type)
@@ -365,7 +365,7 @@ t_operation fp = do symbol "operation"; (f, t) <- fieldType fp; return (f, Mo.Ty
 
 t_contract :: (Default a) => Parser a -> Parser (a, Mo.Type)
 t_contract  fp = do symbol "contract"; (f, t) <- fieldType fp; a <- type_; return (f, Mo.Type (Mo.T_contract a) t)
---(do symbol "address"; (f, t) <- ft; return (f, Mo.Type Mo.T_address t)
+--(do symbol "address"; (f, t) <- ft; return (f, Mo.Type Mo.CAddress t)
 
 -- Abstraction Types
 t_unit :: (Default a) => Parser a -> Parser (a, Mo.Type)

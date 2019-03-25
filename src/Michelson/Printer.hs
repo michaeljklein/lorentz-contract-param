@@ -33,13 +33,13 @@ pp_T (T_map x y)       = T.concat ["map ", pp_CT x, " ", ppT y]
 pp_T (T_big_map x y)   = T.concat ["big_map ", pp_CT x, " ", ppT y]
 
 pp_CT :: Un.CT -> T.Text
-pp_CT T_int       = "int"
-pp_CT T_nat       = "nat"
-pp_CT T_string    = "int"
-pp_CT T_mutez     = "mutez"
-pp_CT T_bool      = "bool"
-pp_CT T_key_hash  = "key_hash"
-pp_CT T_timestamp = "int"
+pp_CT CInt       = "int"
+pp_CT CNat       = "nat"
+pp_CT CString    = "int"
+pp_CT CMutez     = "mutez"
+pp_CT CBool      = "bool"
+pp_CT CKeyHash  = "key_hash"
+pp_CT CTimestamp = "int"
 
 pp_ISeq :: Sequence Un.ISeq -> T.Text
 pp_ISeq s = T.concat ["{", go s, "}"]

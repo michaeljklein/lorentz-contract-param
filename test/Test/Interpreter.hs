@@ -73,22 +73,22 @@ spec = describe "Advanced type interpreter tests" $ do
         Left _ -> expectationFailure "expecting another failure reason"
 
 validateBasic1
-  :: ContractPropValidator 'T_unit ('T_list ('T_c 'T_int)) Property
+  :: ContractPropValidator 'T_unit ('T_list ('T_c 'CInt)) Property
 validateBasic1 _env _param input (Right (ops, res), _) =
     (trToList res === [calcSum input + 12, 100])
     .&&.
     (label "returned no ops" $ null ops)
   where
-    calcSum :: Val instr ('T_list ('T_c 'T_int)) -> Integer
+    calcSum :: Val instr ('T_list ('T_c 'CInt)) -> Integer
     calcSum (VList l) = sum $ map (\(VC (CvInt i)) -> i) l
 
-    trToList :: Val instr ('T_list ('T_c 'T_int)) -> [Integer]
+    trToList :: Val instr ('T_list ('T_c 'CInt)) -> [Integer]
     trToList (VList l) = map (\(VC (CvInt i)) -> i) l
 
 validateBasic1 _ _ _ (Left e, _) = error $ show e
 
 validateStepsToQuotaTest ::
-     ContractReturn MorleyLogs ('T_c 'T_nat) -> RemainingSteps -> Expectation
+     ContractReturn MorleyLogs ('T_c 'CNat) -> RemainingSteps -> Expectation
 validateStepsToQuotaTest res numOfSteps =
   case fst res of
     Right ([], VC (CvNat x)) ->
@@ -107,7 +107,7 @@ validateStepsToQuotaTest res numOfSteps =
 --    ADD;
 --    PUSH nat 12
 --    ADD;
-_myInstr :: Typeable s => Instr ('T_c 'T_int : s) ('T_c 'T_int : s)
+_myInstr :: Typeable s => Instr ('T_c 'CInt : s) ('T_c 'CInt : s)
 _myInstr =
   PUSH (VC $ CvInt 223) #
   SOME #
@@ -116,7 +116,7 @@ _myInstr =
   PUSH (VC $ CvNat 12) #
   ADD
 
-_myInstr2 :: Typeable a => Instr a ('T_option ('T_c 'T_int) : a)
+_myInstr2 :: Typeable a => Instr a ('T_option ('T_c 'CInt) : a)
 _myInstr2 =
   PUSH (VOption $ Just $ VC $ CvInt 223) #
   Nop

@@ -39,7 +39,7 @@ checkFile file = do
 valueParserTest :: Expectation
 valueParserTest = do
   P.parseNoEnv P.value "" "{PUSH int 5;}" `shouldBe`
-    (Right $ Mo.ValueLambda [Mo.PRIM (Mo.PUSH noAnn (Mo.Type (Mo.T_comparable Mo.T_int) noAnn) (Mo.ValueInt 5))])
+    (Right $ Mo.ValueLambda [Mo.PRIM (Mo.PUSH noAnn (Mo.Type (Mo.T_comparable Mo.CInt) noAnn) (Mo.ValueInt 5))])
   P.parseNoEnv P.value "" "{1; 2}" `shouldBe`
     (Right $ Mo.ValueSeq [Mo.ValueInt 1, Mo.ValueInt 2])
   P.parseNoEnv P.value "" "{Elt 1 2; Elt 3 4}" `shouldBe`
@@ -125,7 +125,7 @@ setTypeParserTest = do
   where
     intSet :: Mo.Type
     intSet =
-      Mo.Type (Mo.T_set (Mo.Comparable Mo.T_int noAnn)) noAnn
+      Mo.Type (Mo.T_set (Mo.Comparable Mo.CInt noAnn)) noAnn
 
 pairTest :: Expectation
 pairTest = do

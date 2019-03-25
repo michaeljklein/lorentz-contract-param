@@ -27,9 +27,9 @@ interpretHandlerSpec = describe "interpretHandler PRINT/TEST_ASSERT tests" $
       runTest False c -1 -2
   where
     runTest corr contract x y = do
-      let x' = VC $ CvInt x :: Val Instr ('T.T_c 'T.T_int)
-      let y' = VC $ CvInt y :: Val Instr ('T.T_c 'T.T_int)
-      let area' = VC $ CvInt $ x * y :: Val Instr ('T.T_c 'T.T_int)
+      let x' = VC $ CvInt x :: Val Instr ('T.T_c 'T.CInt)
+      let y' = VC $ CvInt y :: Val Instr ('T.T_c 'T.CInt)
+      let area' = VC $ CvInt $ x * y :: Val Instr ('T.T_c 'T.CInt)
       let check (a, InterpreterState s _) =
             if corr then isRight a && s == MorleyLogs ["Area is " <> show area']
             else isLeft a && s == MorleyLogs ["Sides are " <> show x' <> " x " <> show y']
@@ -64,7 +64,7 @@ typeCheckHandlerSpec = describe "typeCheckHandler STACKTYPE tests" $ do
 
     t1 = Type (T_option (ann "f") (Type T_key (ann "key"))) (ann "opt")
     t2 = Type (T_pair (ann "f") (ann "s") (Type T_unit "x") (Type T_signature "s")) noAnn
-    t3 = Type (T_comparable T_int) (ann "tint")
+    t3 = Type (T_comparable CInt) (ann "tint")
 
     convertToHST :: [Type] -> SomeHST
     convertToHST [] = SomeHST SNil

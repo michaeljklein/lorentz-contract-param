@@ -31,8 +31,8 @@ stringCallerSpec =
   specImpl stringCaller idString
 
 specImpl ::
-     (UntypedContract, Contract ('T_c 'T_string) ('T_c 'T_address))
-  -> (UntypedContract, Contract ('T_c 'T_string) ('T_c 'T_string))
+     (UntypedContract, Contract ('T_c 'CString) ('T_c 'CAddress))
+  -> (UntypedContract, Contract ('T_c 'CString) ('T_c 'CString))
   -> Spec
 specImpl (uStringCaller, _stringCaller) (uIdString, _idString) = do
   it "stringCaller calls idString and updates its storage with a constant" $

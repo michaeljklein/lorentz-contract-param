@@ -186,8 +186,8 @@ instrToOps instr = Un.Op <$> handleInstr instr
     handleInstr PACK = [Un.PACK Un.noAnn]
     handleInstr i@(UNPACK) = handle i
       where
-        handle :: Instr ('T_c 'T_bytes ': s) ('T_option a ': s) -> [Un.Instr]
-        handle (UNPACK :: Instr ('T_c 'T_bytes ': s) ('T_option a ': s)) =
+        handle :: Instr ('T_c 'CBytes ': s) ('T_option a ': s) -> [Un.Instr]
+        handle (UNPACK :: Instr ('T_c 'CBytes ': s) ('T_option a ': s)) =
           [Un.UNPACK Un.noAnn (toUType $ fromSingT (sing @a))]
         handle _ = error "unexcepted call"
     handleInstr CONCAT = [Un.CONCAT Un.noAnn]
@@ -217,9 +217,9 @@ instrToOps instr = Un.Op <$> handleInstr instr
     handleInstr SELF = [Un.SELF Un.noAnn]
     handleInstr i@CONTRACT = handle i
       where
-        handle :: Instr ('T_c 'T_address ': s) ('T_option ('T_contract p) ': s)
+        handle :: Instr ('T_c 'CAddress ': s) ('T_option ('T_contract p) ': s)
                -> [Un.Instr]
-        handle (CONTRACT :: Instr ('T_c 'T_address ': s) ('T_option ('T_contract p) ': s)) =
+        handle (CONTRACT :: Instr ('T_c 'CAddress ': s) ('T_option ('T_contract p) ': s)) =
           [Un.CONTRACT Un.noAnn (toUType $ fromSingT (sing @p))]
         handle _ = error "unexcepted call"
     handleInstr TRANSFER_TOKENS = [Un.TRANSFER_TOKENS Un.noAnn]
@@ -228,13 +228,13 @@ instrToOps instr = Un.Op <$> handleInstr instr
     handleInstr CREATE_CONTRACT = [Un.CREATE_CONTRACT Un.noAnn Un.noAnn]
     handleInstr i@(CREATE_CONTRACT2 _) = handle i
       where
-        handle :: Instr ('T_c 'T_key_hash ': 'T_option ('T_c 'T_key_hash)
-                    ': 'T_c 'T_bool ': 'T_c 'T_bool ': 'T_c 'T_mutez ': g ': s)
-                   ('T_operation ': 'T_c 'T_address ': s) -> [Un.Instr]
-        handle (CREATE_CONTRACT2 ops :: Instr ('T_c 'T_key_hash
-                    ': 'T_option ('T_c 'T_key_hash)
-                    ': 'T_c 'T_bool ': 'T_c 'T_bool ': 'T_c 'T_mutez ': g ': s)
-                   ('T_operation ': 'T_c 'T_address ': s)) =
+        handle :: Instr ('T_c 'CKeyHash ': 'T_option ('T_c 'CKeyHash)
+                    ': 'T_c 'CBool ': 'T_c 'CBool ': 'T_c 'CMutez ': g ': s)
+                   ('T_operation ': 'T_c 'CAddress ': s) -> [Un.Instr]
+        handle (CREATE_CONTRACT2 ops :: Instr ('T_c 'CKeyHash
+                    ': 'T_option ('T_c 'CKeyHash)
+                    ': 'T_c 'CBool ': 'T_c 'CBool ': 'T_c 'CMutez ': g ': s)
+                   ('T_operation ': 'T_c 'CAddress ': s)) =
           case ops of
             (code :: Instr '[ 'T_pair p g ] '[ 'T_pair ('T_list 'T_operation) g ]) ->
               let contract = Un.Contract (toUType $ fromSingT (sing @p))
