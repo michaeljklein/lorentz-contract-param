@@ -236,7 +236,7 @@ instance ToADTArbitrary T
 instance Arbitrary T where
   arbitrary =
     oneof
-      [ T_comparable <$> arbitrary
+      [ Tc <$> arbitrary
       , pure TKey
       , pure TUnit
       , pure TSignature

@@ -23,7 +23,7 @@ import qualified Michelson.Untyped as Un
 fromUType :: Un.Type -> T
 fromUType (Un.Type wholeT _) = conv wholeT
   where
-    conv (Un.T_comparable ct) = Tc ct
+    conv (Un.Tc ct) = Tc ct
     conv Un.TKey = TKey
     conv Un.TUnit = TUnit
     conv Un.TSignature = TSignature
@@ -41,8 +41,8 @@ fromUType (Un.Type wholeT _) = conv wholeT
 
 mkUType :: Sing x -> Notes x -> Un.Type
 mkUType sing notes = case (sing, notes) of
-  (STc ct, N (NTc tn))              -> mt (Un.T_comparable (fromSingCT ct)) tn
-  (STc ct, NStar)                    -> mt (Un.T_comparable (fromSingCT ct)) na
+  (STc ct, N (NTc tn))              -> mt (Un.Tc (fromSingCT ct)) tn
+  (STc ct, NStar)                    -> mt (Un.Tc (fromSingCT ct)) na
   (STKey, N (NTKey tn))             -> mt Un.TKey tn
   (STKey, NStar)                     -> mt Un.TKey na
   (STUnit, N (NTUnit tn))           -> mt Un.TUnit tn
@@ -91,7 +91,7 @@ extractNotes :: Un.Type -> Sing t -> Either Text (Notes t)
 extractNotes (Un.Type wholeT tn) s = conv wholeT s
   where
     conv :: Un.T -> Sing t -> Either Text (Notes t)
-    conv (Un.T_comparable ct) (STc cst)
+    conv (Un.Tc ct) (STc cst)
       | fromSingCT cst == ct = pure $ mkNotes $ NTc tn
     conv Un.TKey STKey = pure $ mkNotes $ NTKey tn
     conv Un.TUnit STUnit = pure $ mkNotes $ NTUnit tn
@@ -131,7 +131,7 @@ toUType :: T -> Un.Type
 toUType t = Un.Type (convert t) Un.noAnn
   where
     convert :: T -> Un.T
-    convert (Tc a) = Un.T_comparable a
+    convert (Tc a) = Un.Tc a
     convert (TKey) = Un.TKey
     convert (TUnit) = Un.TUnit
     convert (TSignature) = Un.TSignature

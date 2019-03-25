@@ -340,7 +340,7 @@ comparable :: Parser Mo.Comparable
 comparable = let c = do ct' <- ct; Mo.Comparable ct' <$> noteTDef in parens c <|> c
 
 t_ct :: (Default a) => Parser a -> Parser (a, Mo.Type)
-t_ct fp = do ct' <- ct; (f,t) <- fieldType fp; return (f, Mo.Type (Mo.T_comparable ct') t)
+t_ct fp = do ct' <- ct; (f,t) <- fieldType fp; return (f, Mo.Type (Mo.Tc ct') t)
 
 ct :: Parser Mo.CT
 ct = (symbol "int" >> return Mo.CInt)

@@ -18,7 +18,7 @@ pp_Code :: Code -> T.Text
 pp_Code (Code s) = T.concat ["code ", pp_ISeq s, ";"]
 
 pp_T :: T -> T.Text
-pp_T (T_comparable ct) = pp_CT ct
+pp_T (Tc ct) = pp_CT ct
 pp_T TKey             = "key"
 pp_T TUnit            = "unit"
 pp_T TSignature       = "signature"

@@ -22,7 +22,7 @@ import Michelson.Interpret
 import Michelson.TypeCheck
 import Michelson.TypeCheck.Helpers (convergeHST, eqT')
 import Michelson.TypeCheck.Types (HST)
-import Michelson.Typed (T(..), Val, converge, extractNotes, mkUType)
+import Michelson.Typed (Val, converge, extractNotes, mkUType)
 import qualified Michelson.Typed as T
 import Michelson.Untyped (CT(..), InstrAbstract(..))
 import Morley.Types
@@ -64,7 +64,7 @@ typeCheckHandler ext nfs hst@(SomeHST hs) =
         instr ::: (_ :: HST inp, ((_ :: (Sing b, T.Notes b, VarAnn)) ::& (_ :: HST out1))) -> do
           Refl <- liftEither $
                     first (const $ TCOtherError "TEST_ASSERT has to return Bool, but returned something else") $
-                      eqT' @b @('Tc 'CBool)
+                      eqT' @b @('T.Tc 'CBool)
           pure (nfs, Just $ TEST_ASSERT $ TestAssert tassName tassComment instr)
         _ -> thErr "TEST_ASSERT has to return Bool, but the stack is empty"
   where

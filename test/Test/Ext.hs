@@ -64,7 +64,7 @@ typeCheckHandlerSpec = describe "typeCheckHandler STACKTYPE tests" $ do
 
     t1 = Type (TOption (ann "f") (Type TKey (ann "key"))) (ann "opt")
     t2 = Type (TPair (ann "f") (ann "s") (Type TUnit "x") (Type TSignature "s")) noAnn
-    t3 = Type (T_comparable CInt) (ann "tint")
+    t3 = Type (Tc CInt) (ann "tint")
 
     convertToHST :: [Type] -> SomeHST
     convertToHST [] = SomeHST SNil

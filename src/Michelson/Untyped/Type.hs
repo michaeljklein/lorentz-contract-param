@@ -71,15 +71,15 @@ instance Buildable Comparable where
     | otherwise = ct |+ " " +| a |+ ""
 
 compToType :: Comparable -> Type
-compToType (Comparable ct tn) = Type (T_comparable ct) tn
+compToType (Comparable ct tn) = Type (Tc ct) tn
 
 typeToComp :: Type -> Maybe Comparable
-typeToComp (Type (T_comparable ct) tn) = Just $ Comparable ct tn
+typeToComp (Type (Tc ct) tn) = Just $ Comparable ct tn
 typeToComp _ = Nothing
 
 -- Michelson Type
 data T =
-    T_comparable CT
+    Tc CT
   | TKey
   | TUnit
   | TSignature
@@ -98,7 +98,7 @@ data T =
 instance Buildable T where
   build =
     \case
-      T_comparable ct -> build ct
+      Tc ct -> build ct
       TKey -> "key"
       TUnit -> "unit"
       TSignature -> "signature"
@@ -163,58 +163,58 @@ instance Buildable CT where
       CAddress -> "address"
 
 pattern Tint :: T
-pattern Tint <- T_comparable CInt
+pattern Tint <- Tc CInt
 
 pattern Tnat :: T
-pattern Tnat <- T_comparable CNat
+pattern Tnat <- Tc CNat
 
 pattern Tstring :: T
-pattern Tstring <- T_comparable CString
+pattern Tstring <- Tc CString
 
 pattern Tbytes :: T
-pattern Tbytes <- T_comparable CBytes
+pattern Tbytes <- Tc CBytes
 
 pattern Tmutez :: T
-pattern Tmutez <- T_comparable CMutez
+pattern Tmutez <- Tc CMutez
 
 pattern Tbool :: T
-pattern Tbool <- T_comparable CBool
+pattern Tbool <- Tc CBool
 
 pattern Tkey_hash :: T
-pattern Tkey_hash <- T_comparable CKeyHash
+pattern Tkey_hash <- Tc CKeyHash
 
 pattern Ttimestamp :: T
-pattern Ttimestamp <- T_comparable CTimestamp
+pattern Ttimestamp <- Tc CTimestamp
 
 pattern Taddress :: T
-pattern Taddress <- T_comparable CAddress
+pattern Taddress <- Tc CAddress
 
 tint :: T
-tint = T_comparable CInt
+tint = Tc CInt
 
 tnat :: T
-tnat = T_comparable CNat
+tnat = Tc CNat
 
 tstring :: T
-tstring = T_comparable CString
+tstring = Tc CString
 
 tbytes :: T
-tbytes = T_comparable CBytes
+tbytes = Tc CBytes
 
 tmutez :: T
-tmutez = T_comparable CMutez
+tmutez = Tc CMutez
 
 tbool :: T
-tbool = T_comparable CBool
+tbool = Tc CBool
 
 tkeyHash :: T
-tkeyHash = T_comparable CKeyHash
+tkeyHash = Tc CKeyHash
 
 ttimestamp :: T
-ttimestamp = T_comparable CTimestamp
+ttimestamp = Tc CTimestamp
 
 taddress :: T
-taddress = T_comparable CAddress
+taddress = Tc CAddress
 
 isAtomicType :: Type -> Bool
 isAtomicType t@(Type _ (Annotation "")) =
@@ -238,42 +238,42 @@ isOperation (Type TOperation _) = True
 isOperation _                    = False
 
 isComparable :: Type -> Bool
-isComparable (Type (T_comparable _) _) = True
+isComparable (Type (Tc _) _) = True
 isComparable _ = False
 
 isMutez :: Type -> Bool
-isMutez (Type (T_comparable CMutez) _) = True
+isMutez (Type (Tc CMutez) _) = True
 isMutez _ = False
 
 isTimestamp :: Type -> Bool
-isTimestamp (Type (T_comparable CTimestamp) _) = True
+isTimestamp (Type (Tc CTimestamp) _) = True
 isTimestamp _ = False
 
 isKeyHash :: Type -> Bool
-isKeyHash (Type (T_comparable CKeyHash) _) = True
+isKeyHash (Type (Tc CKeyHash) _) = True
 isKeyHash _ = False
 
 isBool  :: Type -> Bool
-isBool (Type (T_comparable CBool) _) = True
+isBool (Type (Tc CBool) _) = True
 isBool _ = False
 
 isString  :: Type -> Bool
-isString (Type (T_comparable CString) _) = True
+isString (Type (Tc CString) _) = True
 isString _ = False
 
 isInteger :: Type -> Bool
 isInteger a = isNat a || isInt a || isMutez a || isTimestamp a
 
 isNat  :: Type -> Bool
-isNat (Type (T_comparable CNat) _) = True
+isNat (Type (Tc CNat) _) = True
 isNat _ = False
 
 isInt  :: Type -> Bool
-isInt (Type (T_comparable CInt) _) = True
+isInt (Type (Tc CInt) _) = True
 isInt _ = False
 
 isBytes :: Type -> Bool
-isBytes (Type (T_comparable CBytes) _) = True
+isBytes (Type (Tc CBytes) _) = True
 isBytes _ = False
 
 ----------------------------------------------------------------------------
