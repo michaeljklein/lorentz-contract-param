@@ -8,7 +8,7 @@ import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (Property, label, (.&&.), (===))
 
 import Michelson.Interpret (ContractEnv(..), ContractReturn, MichelsonFailed(..), RemainingSteps)
-import Michelson.Typed (CT(..), CVal(..), Instr(..), T(..), Val(..), toVal, ( # ))
+import Michelson.Typed (CT(..), CValue(..), Instr(..), T(..), Val(..), toVal, ( # ))
 import Morley.Ext (interpretMorley)
 import Morley.Test (ContractPropValidator, contractProp, specWithTypedContract)
 import Morley.Types (MorleyLogs)

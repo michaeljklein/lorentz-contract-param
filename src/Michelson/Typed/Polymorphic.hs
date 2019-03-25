@@ -18,7 +18,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 
-import Michelson.Typed.CValue (CVal(..))
+import Michelson.Typed.CValue (CValue(..))
 import Michelson.Typed.T (CT(..), T(..))
 import Michelson.Typed.Value (Val(..))
 
@@ -26,7 +26,7 @@ import Tezos.Core (divModMutez, divModMutezInt)
 
 class MemOp (c :: T) where
   type MemOpKey c :: CT
-  evalMem :: CVal (MemOpKey c) -> Val cp c -> Bool
+  evalMem :: CValue (MemOpKey c) -> Val cp c -> Bool
 instance MemOp ('TSet e) where
   type MemOpKey ('TSet e) = e
   evalMem e (VSet s) = e `S.member` s
@@ -89,7 +89,7 @@ class UpdOp (c :: T) where
   type UpdOpKey c :: CT
   type UpdOpParams c :: T
   evalUpd
-    :: CVal (UpdOpKey c)
+    :: CValue (UpdOpKey c)
     -> Val cp (UpdOpParams c) -> Val cp c -> Val cp c
 instance UpdOp ('TMap k v) where
   type UpdOpKey ('TMap k v) = k
@@ -116,7 +116,7 @@ instance UpdOp ('TSet a) where
 class GetOp (c :: T) where
   type GetOpKey c :: CT
   type GetOpVal c :: T
-  evalGet :: CVal (GetOpKey c) -> Val cp c -> Maybe (Val cp (GetOpVal c))
+  evalGet :: CValue (GetOpKey c) -> Val cp c -> Maybe (Val cp (GetOpVal c))
 instance GetOp ('TBigMap k v) where
   type GetOpKey ('TBigMap k v) = k
   type GetOpVal ('TBigMap k v) = v
@@ -169,8 +169,8 @@ class EDivOp (n :: CT) (m :: CT) where
   type EDivOpRes n m :: CT
   type EModOpRes n m :: CT
   evalEDivOp
-    :: CVal n
-    -> CVal m
+    :: CValue n
+    -> CValue m
     -> Val instr ('TOption ('TPair ('Tc (EDivOpRes n m))
                                      ('Tc (EModOpRes n m))))
 

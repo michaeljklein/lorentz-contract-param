@@ -28,7 +28,7 @@ import Text.Megaparsec (parse)
 
 import Michelson.Interpret (ContractEnv, ContractReturn)
 import Michelson.TypeCheck (SomeContract(..), TCError)
-import Michelson.Typed (CT(..), CVal(..), Contract, Instr, T(..), Val(..))
+import Michelson.Typed (CT(..), CValue(..), Contract, Instr, T(..), Val(..))
 import qualified Michelson.Untyped as U
 import Morley.Aliases (UntypedContract)
 import Morley.Ext (interpretMorley, typeCheckMorleyContract)
@@ -144,13 +144,13 @@ instance Buildable ImportContractError where
 instance Exception ImportContractError where
   displayException = pretty
 
-instance Arbitrary (CVal 'CKeyHash) where
+instance Arbitrary (CValue 'CKeyHash) where
   arbitrary = CvKeyHash <$> arbitrary
-instance Arbitrary (CVal 'CMutez) where
+instance Arbitrary (CValue 'CMutez) where
   arbitrary = CvMutez <$> arbitrary
-instance Arbitrary (CVal 'CInt) where
+instance Arbitrary (CValue 'CInt) where
   arbitrary = CvInt <$> arbitrary
-instance Arbitrary (CVal a) => Arbitrary (Val instr ('Tc a)) where
+instance Arbitrary (CValue a) => Arbitrary (Val instr ('Tc a)) where
   arbitrary = VC <$> arbitrary
 instance Arbitrary (Val instr a) => Arbitrary (Val instr ('TList a)) where
   arbitrary = VList <$> arbitrary
@@ -174,11 +174,11 @@ minSec = 0
 maxSec :: Integer
 maxSec = 86399
 
--- | Minimal (earliest) timestamp used for @Arbitrary (CVal 'CTimestamp)@
+-- | Minimal (earliest) timestamp used for @Arbitrary (CValue 'CTimestamp)@
 minTimestamp :: Timestamp
 minTimestamp = timestampFromUTCTime $ UTCTime minDay (fromInteger minSec)
 
--- | Maximal (latest) timestamp used for @Arbitrary (CVal 'CTimestamp)@
+-- | Maximal (latest) timestamp used for @Arbitrary (CValue 'CTimestamp)@
 maxTimestamp :: Timestamp
 maxTimestamp = timestampFromUTCTime $ UTCTime maxDay (fromInteger maxSec)
 
@@ -190,7 +190,7 @@ midTimestamp = timestampFromUTCTime $
   UTCTime ( ((maxDay `diffDays` minDay) `div` 2) `addDays` minDay)
           (fromInteger $ (maxSec - minSec) `div` 2)
 
-instance Arbitrary (CVal 'CTimestamp) where
+instance Arbitrary (CValue 'CTimestamp) where
   arbitrary =
     CvTimestamp . timestampFromSeconds @Int <$>
     choose (timestampToSeconds minTimestamp, timestampToSeconds maxTimestamp)

@@ -14,7 +14,7 @@ import Test.QuickCheck.Random (mkQCGen)
 
 import Michelson.Interpret (ContractEnv(..))
 import Michelson.Typed
-  (CT(..), CVal(..), Operation(..), ToT, TransferTokens(..), Val(..), fromVal, toVal)
+  (CT(..), CValue(..), Operation(..), ToT, TransferTokens(..), Val(..), fromVal, toVal)
 import Morley.Test (ContractPropValidator, contractProp, midTimestamp, specWithTypedContract)
 import Morley.Test.Util (failedProp)
 import Tezos.Address (Address(..))
@@ -71,7 +71,7 @@ auctionSpec = parallel $ do
     aBitBeforeMidTimestamp = midTimestamp `timestampPlusSeconds` -1
     -- ^ 1s before NOW
 
-    -- N.B.: using Gen (CVal 'CTimestamp) from Morley.Test.
+    -- N.B.: using Gen (CValue 'CTimestamp) from Morley.Test.
     denseTime = CvTimestamp . (timestampPlusSeconds midTimestamp) <$> choose (-4, 4)
     denseAmount = unsafeMkMutez . (midAmount +) . fromInteger <$> choose (-4, 4)
 
@@ -84,7 +84,7 @@ auctionSpec = parallel $ do
     mkParam :: Param -> ContractParam instr
     mkParam = toVal
 
-    mkStorage :: (CVal 'CTimestamp, (Mutez, KeyHash)) -> ContractStorage instr
+    mkStorage :: (CValue 'CTimestamp, (Mutez, KeyHash)) -> ContractStorage instr
     mkStorage (CvTimestamp t, b) = toVal (t, b)
 
 keyHash1 :: KeyHash

@@ -77,7 +77,7 @@ valToOpOrValue = \case
     fmap Un.ValueMap . forM (Map.toList m) $ \(k, v) ->
       Un.Elt (cValToValue k) <$> valToOpOrValue v
 
-cValToValue :: CVal t -> Un.Value Un.Op
+cValToValue :: CValue t -> Un.Value Un.Op
 cValToValue cVal = case cVal of
   CvInt i -> Un.ValueInt i
   CvNat i -> Un.ValueInt $ toInteger i

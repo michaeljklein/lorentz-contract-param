@@ -15,7 +15,7 @@ import Michelson.TypeCheck.Types
 import Michelson.Typed
   (CT(..), ConversibleExt, Instr(..), InstrExtT, Notes(..), Notes'(..), Sing(..), T(..), converge,
   mkNotes, withSomeSingCT, withSomeSingT)
-import Michelson.Typed.Value (CVal(..), Val(..))
+import Michelson.Typed.Value (CValue(..), Val(..))
 import qualified Michelson.Untyped as Un
 import Tezos.Address (parseAddress)
 import Tezos.Core (mkMutez, parseTimestamp, timestampFromSeconds)
@@ -47,7 +47,7 @@ typeCheckCVals
   :: forall t op . Typeable t
   => [Un.Value op]
   -> CT
-  -> Either (Un.Value op, Text) [CVal t]
+  -> Either (Un.Value op, Text) [CValue t]
 typeCheckCVals mvs t = traverse check mvs
   where
     check mv = do

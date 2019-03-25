@@ -36,7 +36,7 @@ import Michelson.TypeCheck
   (ExtC, SomeContract(..), SomeVal(..), TCError, TcExtHandler, eqT', runTypeCheckT,
   typeCheckContract, typeCheckVal)
 import Michelson.Typed
-  (CVal(..), Contract, ConversibleExt, CreateAccount(..), CreateContract(..), Instr(..),
+  (CValue(..), Contract, ConversibleExt, CreateAccount(..), CreateContract(..), Instr(..),
   Operation(..), SetDelegate(..), Sing(..), T(..), TransferTokens(..), Val(..), fromUType,
   valToOpOrValue)
 import qualified Michelson.Typed as T
@@ -73,7 +73,7 @@ data ContractEnv = ContractEnv
 -- value that was on top of the stack when `FAILWITH` was called.
 data MichelsonFailed where
   MichelsonFailedWith :: Val Instr t -> MichelsonFailed
-  MichelsonArithError :: ArithError (CVal n) (CVal m) -> MichelsonFailed
+  MichelsonArithError :: ArithError (CValue n) (CValue m) -> MichelsonFailed
   MichelsonGasExhaustion :: MichelsonFailed
   MichelsonFailedOther :: Text -> MichelsonFailed
 
@@ -415,8 +415,8 @@ runInstrImpl _ ADDRESS (VContract a :& r) = pure $ VC (CvAddress a) :& r
 runArithOp
   :: ArithOp aop n m
   => proxy aop
-  -> CVal n
-  -> CVal m
+  -> CValue n
+  -> CValue m
   -> EvalOp s (Val instr ('Tc (ArithRes aop n m)))
 runArithOp op l r = case evalOp op l r of
   Left  err -> throwError (MichelsonArithError err)

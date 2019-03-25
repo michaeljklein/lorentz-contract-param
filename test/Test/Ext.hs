@@ -7,7 +7,7 @@ import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldSa
 
 import Michelson.Interpret (InterpreterState(..))
 import Michelson.TypeCheck (HST(..), SomeHST(..), runTypeCheckT)
-import Michelson.Typed (CVal(..), Instr, Val(..), extractNotes, fromUType, withSomeSingT)
+import Michelson.Typed (CValue(..), Instr, Val(..), extractNotes, fromUType, withSomeSingT)
 import qualified Michelson.Typed as T
 import Michelson.Untyped (CT(..), T(..), Type(..), ann, noAnn)
 import Morley.Ext (interpretMorley, typeCheckHandler)

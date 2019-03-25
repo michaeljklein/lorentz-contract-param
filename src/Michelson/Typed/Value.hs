@@ -6,7 +6,7 @@ module Michelson.Typed.Value
   , ContractOut
   , CreateAccount (..)
   , CreateContract (..)
-  , CVal (..)
+  , CValue (..)
   , Operation (..)
   , SetDelegate (..)
   , TransferTokens (..)
@@ -21,7 +21,7 @@ import qualified Data.Set as Set
 import Data.Singletons (SingI)
 
 import Michelson.EqParam
-import Michelson.Typed.CValue (CVal(..), FromCVal, ToCVal, fromCVal, toCVal)
+import Michelson.Typed.CValue (CValue(..), FromCVal, ToCVal, fromCVal, toCVal)
 import Michelson.Typed.T (T(..), ToT)
 import Tezos.Address (Address)
 import Tezos.Core (Mutez, Timestamp)
@@ -95,14 +95,15 @@ type ContractOut st = '[ 'TPair ('TList 'TOperation) st ]
 --
 -- Type parameter @instr@ stands for Michelson instruction
 -- type, i.e. data type to represent an instruction of language.
+
 data Val instr t where
-  VC :: CVal t -> Val instr ('Tc t)
+  VC :: CValue t -> Val instr ('Tc t)
   VKey :: PublicKey -> Val instr 'TKey
   VUnit :: Val instr 'TUnit
   VSignature :: Signature -> Val instr 'TSignature
   VOption :: Maybe (Val instr t) -> Val instr ('TOption t)
   VList :: [Val instr t] -> Val instr ('TList t)
-  VSet :: Set (CVal t) -> Val instr ('TSet t)
+  VSet :: Set (CValue t) -> Val instr ('TSet t)
   VOp :: Operation instr -> Val instr 'TOperation
   VContract :: Address -> Val instr ('TContract p)
   VPair :: (Val instr l, Val instr r) -> Val instr ('TPair l r)
@@ -112,8 +113,8 @@ data Val instr t where
        , Eq (instr '[inp] '[out])
        )
     => instr (inp ': '[]) (out ': '[]) -> Val instr ('TLambda inp out)
-  VMap :: Map (CVal k) (Val instr v) -> Val instr ('TMap k v)
-  VBigMap :: Map (CVal k) (Val instr v) -> Val instr ('TBigMap k v)
+  VMap :: Map (CValue k) (Val instr v) -> Val instr ('TMap k v)
+  VBigMap :: Map (CValue k) (Val instr v) -> Val instr ('TBigMap k v)
 
 deriving instance Show (Val instr t)
 deriving instance Eq (Val instr t)
@@ -130,7 +131,7 @@ deriving instance Eq (Val instr t)
 --     | NotExisted
 --
 -- data BigMap op ref k v = BigMap
---  { bmRef :: ref k v, bmChanges :: Map (CVal k) (ValueOp (Val cp v)) }
+--  { bmRef :: ref k v, bmChanges :: Map (CValue k) (ValueOp (Val cp v)) }
 
 
 -- | Converts a complex Haskell structure into @Val@ representation.

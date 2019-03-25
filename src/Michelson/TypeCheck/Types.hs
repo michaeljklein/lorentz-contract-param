@@ -109,7 +109,7 @@ data SomeVal where
 -- type singleton.
 data SomeValC where
     (:--:) :: (SingI t, Typeable t)
-           => CVal t -> Sing t -> SomeValC
+           => CValue t -> Sing t -> SomeValC
 
 data SomeContract where
   SomeContract

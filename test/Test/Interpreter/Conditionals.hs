@@ -9,7 +9,7 @@ import Test.QuickCheck (Property, arbitrary, (===))
 import Test.QuickCheck.Property (forAll, withMaxSuccess)
 
 import Michelson.Interpret (InterpreterState, MichelsonFailed)
-import Michelson.Typed (CVal(..), ToT, Val(..), toVal)
+import Michelson.Typed (CValue(..), ToT, Val(..), toVal)
 import Morley.Test (contractProp, specWithTypedContract)
 import Morley.Test.Util (failedProp)
 import Morley.Types (MorleyLogs)

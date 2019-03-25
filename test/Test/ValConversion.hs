@@ -9,7 +9,7 @@ module Test.ValConversion
 import Test.Hspec (Spec, describe, it, shouldBe)
 import Test.QuickCheck (Arbitrary)
 
-import Michelson.Typed (CVal(..), FromVal, ToT, ToVal, Val(..), fromVal, toVal)
+import Michelson.Typed (CValue(..), FromVal, ToT, ToVal, Val(..), fromVal, toVal)
 
 import Test.Util.QuickCheck (roundtripSpec)
 
