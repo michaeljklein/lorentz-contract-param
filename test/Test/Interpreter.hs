@@ -8,7 +8,7 @@ import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (Property, label, (.&&.), (===))
 
 import Michelson.Interpret (ContractEnv(..), ContractReturn, MichelsonFailed(..), RemainingSteps)
-import Michelson.Typed (CT(..), CValue(..), Instr(..), T(..), Val(..), toVal, ( # ))
+import Michelson.Typed (CT(..), CValue(..), Instr(..), T(..), Value(..), toVal, ( # ))
 import Morley.Ext (interpretMorley)
 import Morley.Test (ContractPropValidator, contractProp, specWithTypedContract)
 import Morley.Types (MorleyLogs)
@@ -85,10 +85,10 @@ validateBasic1 _env _param input (Right (ops, res), _) =
     .&&.
     (label "returned no ops" $ null ops)
   where
-    calcSum :: Val instr ('TList ('Tc 'CInt)) -> Integer
+    calcSum :: Value instr ('TList ('Tc 'CInt)) -> Integer
     calcSum (VList l) = sum $ map (\(VC (CvInt i)) -> i) l
 
-    trToList :: Val instr ('TList ('Tc 'CInt)) -> [Integer]
+    trToList :: Value instr ('TList ('Tc 'CInt)) -> [Integer]
     trToList (VList l) = map (\(VC (CvInt i)) -> i) l
 
 validateBasic1 _ _ _ (Left e, _) = error $ show e

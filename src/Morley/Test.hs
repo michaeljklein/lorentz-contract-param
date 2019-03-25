@@ -28,7 +28,7 @@ import Text.Megaparsec (parse)
 
 import Michelson.Interpret (ContractEnv, ContractReturn)
 import Michelson.TypeCheck (SomeContract(..), TCError)
-import Michelson.Typed (CT(..), CValue(..), Contract, Instr, T(..), Val(..))
+import Michelson.Typed (CT(..), CValue(..), Contract, Instr, T(..), Value(..))
 import qualified Michelson.Untyped as U
 import Morley.Aliases (UntypedContract)
 import Morley.Ext (interpretMorley, typeCheckMorleyContract)
@@ -53,8 +53,8 @@ import Tezos.Core
 -- or anything else relevant.
 type ContractPropValidator cp st prop =
      ContractEnv
-  -> Val Instr cp
-  -> Val Instr st
+  -> Value Instr cp
+  -> Value Instr st
   -> ContractReturn MorleyLogs st
   -> prop
 
@@ -66,8 +66,8 @@ contractProp
   => Contract cp st
   -> ContractPropValidator cp st prop
   -> ContractEnv
-  -> Val Instr cp
-  -> Val Instr st
+  -> Value Instr cp
+  -> Value Instr st
   -> prop
 contractProp instr check env param initSt =
   check env param initSt $ interpretMorley instr param initSt env
@@ -150,14 +150,14 @@ instance Arbitrary (CValue 'CMutez) where
   arbitrary = CvMutez <$> arbitrary
 instance Arbitrary (CValue 'CInt) where
   arbitrary = CvInt <$> arbitrary
-instance Arbitrary (CValue a) => Arbitrary (Val instr ('Tc a)) where
+instance Arbitrary (CValue a) => Arbitrary (Value instr ('Tc a)) where
   arbitrary = VC <$> arbitrary
-instance Arbitrary (Val instr a) => Arbitrary (Val instr ('TList a)) where
+instance Arbitrary (Value instr a) => Arbitrary (Value instr ('TList a)) where
   arbitrary = VList <$> arbitrary
-instance Arbitrary (Val instr 'TUnit) where
+instance Arbitrary (Value instr 'TUnit) where
   arbitrary = pure VUnit
-instance (Arbitrary (Val instr a), Arbitrary (Val instr b))
-    => Arbitrary (Val instr ('TPair a b)) where
+instance (Arbitrary (Value instr a), Arbitrary (Value instr b))
+    => Arbitrary (Value instr ('TPair a b)) where
   arbitrary = VPair ... (,) <$> arbitrary <*> arbitrary
 
 minDay :: Day

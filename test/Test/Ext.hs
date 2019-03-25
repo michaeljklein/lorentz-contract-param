@@ -7,7 +7,7 @@ import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldSa
 
 import Michelson.Interpret (InterpreterState(..))
 import Michelson.TypeCheck (HST(..), SomeHST(..), runTypeCheckT)
-import Michelson.Typed (CValue(..), Instr, Val(..), extractNotes, fromUType, withSomeSingT)
+import Michelson.Typed (CValue(..), Instr, Value(..), extractNotes, fromUType, withSomeSingT)
 import qualified Michelson.Typed as T
 import Michelson.Untyped (CT(..), T(..), Type(..), ann, noAnn)
 import Morley.Ext (interpretMorley, typeCheckHandler)
@@ -27,9 +27,9 @@ interpretHandlerSpec = describe "interpretHandler PRINT/TEST_ASSERT tests" $
       runTest False c -1 -2
   where
     runTest corr contract x y = do
-      let x' = VC $ CvInt x :: Val Instr ('T.Tc 'T.CInt)
-      let y' = VC $ CvInt y :: Val Instr ('T.Tc 'T.CInt)
-      let area' = VC $ CvInt $ x * y :: Val Instr ('T.Tc 'T.CInt)
+      let x' = VC $ CvInt x :: Value Instr ('T.Tc 'T.CInt)
+      let y' = VC $ CvInt y :: Value Instr ('T.Tc 'T.CInt)
+      let area' = VC $ CvInt $ x * y :: Value Instr ('T.Tc 'T.CInt)
       let check (a, InterpreterState s _) =
             if corr then isRight a && s == MorleyLogs ["Area is " <> show area']
             else isLeft a && s == MorleyLogs ["Sides are " <> show x' <> " x " <> show y']

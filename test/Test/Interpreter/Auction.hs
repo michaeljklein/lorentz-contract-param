@@ -14,7 +14,7 @@ import Test.QuickCheck.Random (mkQCGen)
 
 import Michelson.Interpret (ContractEnv(..))
 import Michelson.Typed
-  (CT(..), CValue(..), Operation(..), ToT, TransferTokens(..), Val(..), fromVal, toVal)
+  (CT(..), CValue(..), Operation(..), ToT, TransferTokens(..), Value(..), fromVal, toVal)
 import Morley.Test (ContractPropValidator, contractProp, midTimestamp, specWithTypedContract)
 import Morley.Test.Util (failedProp)
 import Tezos.Address (Address(..))
@@ -25,8 +25,8 @@ import Test.Util.Interpreter (dummyContractEnv)
 
 type Storage = (Timestamp, (Mutez, KeyHash))
 type Param = KeyHash
-type ContractParam instr = Val instr (ToT Param)
-type ContractStorage instr = Val instr (ToT Storage)
+type ContractParam instr = Value instr (ToT Param)
+type ContractStorage instr = Value instr (ToT Storage)
 
 -- | Spec to test auction.tz contract.
 --

@@ -43,7 +43,7 @@ convertContract contract =
 --
 -- VOp cannot be represented in @Value@ from untyped types, so calling this function
 -- on it will cause an error
-unsafeValToValue :: (ConversibleExt, HasCallStack) => Val Instr t -> Un.Value Un.Op
+unsafeValToValue :: (ConversibleExt, HasCallStack) => Value Instr t -> Un.Value Un.Op
 unsafeValToValue = fromMaybe (error err) . valToOpOrValue
   where
     err =
@@ -53,7 +53,7 @@ unsafeValToValue = fromMaybe (error err) . valToOpOrValue
 -- which are unrepresentable there.
 valToOpOrValue ::
      forall t . ConversibleExt
-  => Val Instr t
+  => Value Instr t
   -> Maybe (Un.Value Un.Op)
 valToOpOrValue = \case
   VC cVal -> Just $ cValToValue cVal
@@ -173,7 +173,7 @@ instrToOps instr = Un.Op <$> handleInstr instr
             (toUType $ fromSingT (sing @i)) (convertLambdaBody l)
           ]
         handle _ = error "unexcepted call"
-        convertLambdaBody :: Val Instr ('TLambda i o) -> [Un.Op]
+        convertLambdaBody :: Value Instr ('TLambda i o) -> [Un.Op]
         convertLambdaBody (VLam ops) = instrToOps ops
     handleInstr EXEC = [Un.EXEC Un.noAnn]
     handleInstr (DIP op) = [Un.DIP (instrToOps op)]

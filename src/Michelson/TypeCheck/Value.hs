@@ -1,6 +1,6 @@
 module Michelson.TypeCheck.Value
     ( typeCheckValImpl
-    , typeCheckCVal
+    , typeCheckCValue
     ) where
 
 import Control.Monad.Except (liftEither, throwError)
@@ -15,33 +15,33 @@ import Michelson.TypeCheck.Types
 import Michelson.Typed
   (CT(..), ConversibleExt, Instr(..), InstrExtT, Notes(..), Notes'(..), Sing(..), T(..), converge,
   mkNotes, withSomeSingCT, withSomeSingT)
-import Michelson.Typed.Value (CValue(..), Val(..))
+import Michelson.Typed.Value (CValue(..), Value(..))
 import qualified Michelson.Untyped as Un
 import Tezos.Address (parseAddress)
 import Tezos.Core (mkMutez, parseTimestamp, timestampFromSeconds)
 import Tezos.Crypto (parseKeyHash, parsePublicKey, parseSignature)
 
-typeCheckCVal :: Un.Value op -> CT -> Maybe SomeValC
-typeCheckCVal (Un.ValueInt i) CInt = pure $ CvInt i :--: SCInt
-typeCheckCVal (Un.ValueInt i) CNat
+typeCheckCValue :: Un.Value op -> CT -> Maybe SomeCValue
+typeCheckCValue (Un.ValueInt i) CInt = pure $ CvInt i :--: SCInt
+typeCheckCValue (Un.ValueInt i) CNat
   | i >= 0 = pure $ CvNat (fromInteger i) :--: SCNat
-typeCheckCVal (Un.ValueInt (mkMutez . fromInteger -> Just mtz)) CMutez =
+typeCheckCValue (Un.ValueInt (mkMutez . fromInteger -> Just mtz)) CMutez =
   pure $ CvMutez mtz :--: SCMutez
-typeCheckCVal (Un.ValueString s) CString =
+typeCheckCValue (Un.ValueString s) CString =
   pure $ CvString s :--: SCString
-typeCheckCVal (Un.ValueString (parseAddress -> Right s)) CAddress =
+typeCheckCValue (Un.ValueString (parseAddress -> Right s)) CAddress =
   pure $ CvAddress s :--: SCAddress
-typeCheckCVal (Un.ValueString (parseKeyHash -> Right s)) CKeyHash =
+typeCheckCValue (Un.ValueString (parseKeyHash -> Right s)) CKeyHash =
   pure $ CvKeyHash s :--: SCKeyHash
-typeCheckCVal (Un.ValueString (parseTimestamp -> Just t)) CTimestamp =
+typeCheckCValue (Un.ValueString (parseTimestamp -> Just t)) CTimestamp =
   pure $ CvTimestamp t :--: SCTimestamp
-typeCheckCVal (Un.ValueInt i) CTimestamp =
+typeCheckCValue (Un.ValueInt i) CTimestamp =
   pure $ CvTimestamp (timestampFromSeconds i) :--: SCTimestamp
-typeCheckCVal (Un.ValueBytes (Un.InternalByteString s)) CBytes =
+typeCheckCValue (Un.ValueBytes (Un.InternalByteString s)) CBytes =
   pure $ CvBytes s :--: SCBytes
-typeCheckCVal Un.ValueTrue CBool = pure $ CvBool True :--: SCBool
-typeCheckCVal Un.ValueFalse CBool = pure $ CvBool False :--: SCBool
-typeCheckCVal _ _ = Nothing
+typeCheckCValue Un.ValueTrue CBool = pure $ CvBool True :--: SCBool
+typeCheckCValue Un.ValueFalse CBool = pure $ CvBool False :--: SCBool
+typeCheckCValue _ _ = Nothing
 
 typeCheckCVals
   :: forall t op . Typeable t
@@ -52,7 +52,7 @@ typeCheckCVals mvs t = traverse check mvs
   where
     check mv = do
       v :--: (_ :: Sing t') <-
-        maybe (Left (mv, "failed to typecheck cval")) pure $ typeCheckCVal mv t
+        maybe (Left (mv, "failed to typecheck cval")) pure $ typeCheckCValue mv t
       Refl <- eqT' @t @t' `onLeft` (,) mv
       pure v
 
@@ -73,11 +73,11 @@ typeCheckValImpl
   => TcInstrHandler
   -> Un.Value Un.Op
   -> T
-  -> TypeCheckT SomeVal
+  -> TypeCheckT SomeValue
 typeCheckValImpl _ mv t@(Tc ct) =
   maybe (throwError $ TCFailedOnValue mv t "")
         (\(v :--: cst) -> pure $ VC v :::: (STc cst, NStar))
-        (typeCheckCVal mv ct)
+        (typeCheckCValue mv ct)
 typeCheckValImpl _ (Un.ValueString (parsePublicKey -> Right s)) TKey =
   pure $ VKey s :::: (STKey, NStar)
 
@@ -168,12 +168,11 @@ typeCheckValsImpl
   => TcInstrHandler
   -> [Un.Value Un.Op]
   -> T
-  -> TypeCheckT ([Val Instr t], Notes t)
+  -> TypeCheckT ([Value Instr t], Notes t)
 typeCheckValsImpl tcDo mvs t = foldM check ([], NStar) mvs
   where
     check (res, ns) mv = do
       v :::: ((_ :: Sing t'), vns) <- typeCheckValImpl tcDo mv t
-      Refl <- liftEither $ eqT' @t @t'
-                `onLeft` (TCFailedOnValue mv t . ("wrong element type " <>))
+      Refl <- liftEither $ eqT' @t @t' `onLeft` (TCFailedOnValue mv t . ("wrong element type " <>))
       ns' <- liftEither $ converge ns vns `onLeft` TCFailedOnValue mv t
       pure (v : res, ns')

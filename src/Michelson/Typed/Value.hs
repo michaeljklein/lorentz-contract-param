@@ -1,7 +1,7 @@
 -- | Module, containing data types for Michelson value.
 
 module Michelson.Typed.Value
-  ( Val (..)
+  ( Value (..)
   , ContractInp
   , ContractOut
   , CreateAccount (..)
@@ -55,9 +55,9 @@ instance Eq (Operation instr) where
     (OpCreateContract _, _) -> False
 
 data TransferTokens instr p = TransferTokens
-  { ttContractParameter :: !(Val instr p)
+  { ttContractParameter :: !(Value instr p)
   , ttAmount :: !Mutez
-  , ttContract :: !(Val instr ('TContract p))
+  , ttContract :: !(Value instr ('TContract p))
   } deriving (Show, Eq)
 
 data SetDelegate = SetDelegate
@@ -81,7 +81,7 @@ data CreateContract instr t cp st
   , ccSpendable :: !Bool
   , ccDelegatable :: !Bool
   , ccBalance :: !Mutez
-  , ccStorageVal :: !(Val instr t)
+  , ccStorageVal :: !(Value instr t)
   , ccContractCode :: !(instr (ContractInp cp st) (ContractOut st))
   }
 
@@ -96,33 +96,33 @@ type ContractOut st = '[ 'TPair ('TList 'TOperation) st ]
 -- Type parameter @instr@ stands for Michelson instruction
 -- type, i.e. data type to represent an instruction of language.
 
-data Val instr t where
-  VC :: CValue t -> Val instr ('Tc t)
-  VKey :: PublicKey -> Val instr 'TKey
-  VUnit :: Val instr 'TUnit
-  VSignature :: Signature -> Val instr 'TSignature
-  VOption :: Maybe (Val instr t) -> Val instr ('TOption t)
-  VList :: [Val instr t] -> Val instr ('TList t)
-  VSet :: Set (CValue t) -> Val instr ('TSet t)
-  VOp :: Operation instr -> Val instr 'TOperation
-  VContract :: Address -> Val instr ('TContract p)
-  VPair :: (Val instr l, Val instr r) -> Val instr ('TPair l r)
-  VOr :: Either (Val instr l) (Val instr r) -> Val instr ('TOr l r)
+data Value instr t where
+  VC :: CValue t -> Value instr ('Tc t)
+  VKey :: PublicKey -> Value instr 'TKey
+  VUnit :: Value instr 'TUnit
+  VSignature :: Signature -> Value instr 'TSignature
+  VOption :: Maybe (Value instr t) -> Value instr ('TOption t)
+  VList :: [Value instr t] -> Value instr ('TList t)
+  VSet :: Set (CValue t) -> Value instr ('TSet t)
+  VOp :: Operation instr -> Value instr 'TOperation
+  VContract :: Address -> Value instr ('TContract p)
+  VPair :: (Value instr l, Value instr r) -> Value instr ('TPair l r)
+  VOr :: Either (Value instr l) (Value instr r) -> Value instr ('TOr l r)
   VLam
     :: ( Show (instr '[inp] '[out])
        , Eq (instr '[inp] '[out])
        )
-    => instr (inp ': '[]) (out ': '[]) -> Val instr ('TLambda inp out)
-  VMap :: Map (CValue k) (Val instr v) -> Val instr ('TMap k v)
-  VBigMap :: Map (CValue k) (Val instr v) -> Val instr ('TBigMap k v)
+    => instr (inp ': '[]) (out ': '[]) -> Value instr ('TLambda inp out)
+  VMap :: Map (CValue k) (Value instr v) -> Value instr ('TMap k v)
+  VBigMap :: Map (CValue k) (Value instr v) -> Value instr ('TBigMap k v)
 
-deriving instance Show (Val instr t)
-deriving instance Eq (Val instr t)
+deriving instance Show (Value instr t)
+deriving instance Eq (Value instr t)
 
 -- TODO: actually we should handle big maps with something close
 -- to following:
 --
---  VBigMap :: BigMap op ref k v -> Val cp ('TBigMap k v)
+--  VBigMap :: BigMap op ref k v -> Value cp ('TBigMap k v)
 --
 -- data ValueOp v
 --     = New v
@@ -131,16 +131,16 @@ deriving instance Eq (Val instr t)
 --     | NotExisted
 --
 -- data BigMap op ref k v = BigMap
---  { bmRef :: ref k v, bmChanges :: Map (CValue k) (ValueOp (Val cp v)) }
+--  { bmRef :: ref k v, bmChanges :: Map (CValue k) (ValueOp (Value cp v)) }
 
 
 -- | Converts a complex Haskell structure into @Val@ representation.
 class ToVal a where
-  toVal :: a -> Val instr (ToT a)
+  toVal :: a -> Value instr (ToT a)
 
 -- | Converts a @Val@ value into complex Haskell type.
 class FromVal t where
-  fromVal :: Val instr (ToT t) -> t
+  fromVal :: Value instr (ToT t) -> t
 
 -- ToVal / FromVal instances
 

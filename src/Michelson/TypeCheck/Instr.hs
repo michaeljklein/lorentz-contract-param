@@ -17,16 +17,16 @@
 -- @Instr inp out@ along with @HST inp@ and @HST out@ all wrapped into
 -- @SomeInstr@ data type. This wrapping is done to satsify Haskell type
 -- system (which has no support for dependent types).
--- Functions @typeCheckInstr@, @typeCheckVal@ behave similarly.
+-- Functions @typeCheckInstr@, @typeCheckValue@ behave similarly.
 --
 -- When a recursive call is made within @typeCheck@, @typeCheckInstr@ or
--- @typeCheckVal@, result of a call is unwrapped from @SomeInstr@ and type
+-- @typeCheckValue@, result of a call is unwrapped from @SomeInstr@ and type
 -- information from @HST inp@ and @HST out@ is being used to assert that
 -- recursive call returned instruction of expected type
 -- (error is thrown otherwise).
 module Michelson.TypeCheck.Instr
     ( typeCheckContract
-    , typeCheckVal
+    , typeCheckValue
     , typeCheckList
     ) where
 
@@ -42,8 +42,8 @@ import Michelson.TypeCheck.Types
 import Michelson.TypeCheck.Value
 import Michelson.Typed
   (Abs, And, CT(..), Contract, ContractInp, ContractOut, Eq', Ge, Gt, Instr(..), IterOp(..), Le,
-  Lsl, Lsr, Lt, MapOp(..), Neg, Neq, Not, Notes(..), Notes'(..), Or, Sing(..), T(..), Val(..), Xor,
-  converge, convergeAnns, extractNotes, fromUType, mkNotes, notesCase, orAnn, withSomeSingCT,
+  Lsl, Lsr, Lt, MapOp(..), Neg, Neq, Not, Notes(..), Notes'(..), Or, Sing(..), T(..), Value(..),
+  Xor, converge, convergeAnns, extractNotes, fromUType, mkNotes, notesCase, orAnn, withSomeSingCT,
   withSomeSingT, ( # ))
 
 import qualified Michelson.Untyped as Un
@@ -118,11 +118,11 @@ typeCheckList
   -> TypeCheckT SomeInstr
 typeCheckList = typeCheckImpl typeCheckInstr
 
--- | Function @typeCheckVal@ converts a single Michelson value
+-- | Function @typeCheckValue@ converts a single Michelson value
 -- given in representation from @Michelson.Type@ module to representation
 -- in strictly typed GADT.
 --
--- As a second argument, @typeCheckVal@ accepts expected type of value.
+-- As a second argument, @typeCheckValue@ accepts expected type of value.
 --
 -- Type checking algorithm pattern-matches on parse value representation,
 -- expected type @t@ and constructs @Val t@ value.
@@ -130,12 +130,12 @@ typeCheckList = typeCheckImpl typeCheckInstr
 -- If there was no match on a given pair of value and expected type,
 -- that is interpreted as input of wrong type and type check finishes with
 -- error.
-typeCheckVal
+typeCheckValue
   :: ExtC
   => Un.Value Un.Op
   -> T
-  -> TypeCheckT SomeVal
-typeCheckVal = typeCheckValImpl typeCheckInstr
+  -> TypeCheckT SomeValue
+typeCheckValue = typeCheckValImpl typeCheckInstr
 
 -- | Function @typeCheckInstr@ converts a single Michelson instruction
 -- given in representation from @Michelson.Type@ module to representation
@@ -172,7 +172,7 @@ typeCheckInstr Un.SWAP (SomeHST i@(a ::& b ::& rs)) =
   pure (SWAP ::: (i, b ::& a ::& rs))
 
 typeCheckInstr instr@(Un.PUSH vn mt mval) (SomeHST i) = do
-  val :::: (t, n) <- typeCheckVal mval (fromUType mt)
+  val :::: (t, n) <- typeCheckValue mval (fromUType mt)
   notes <- liftEither $ (extractNotes mt t >>= converge n)
               `onLeft` TCFailedOnInstr instr (SomeHST i)
   pure $ PUSH val ::: (i, (t, notes, vn) ::& i)

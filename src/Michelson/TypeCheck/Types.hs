@@ -2,9 +2,9 @@ module Michelson.TypeCheck.Types
     ( HST (..)
     , SomeHST (..)
     , SomeInstr (..)
-    , SomeVal (..)
+    , SomeValue (..)
     , SomeContract (..)
-    , SomeValC (..)
+    , SomeCValue (..)
     , TCError (..)
     , ExtC
     , TcInstrHandler
@@ -99,17 +99,17 @@ instance Show InstrExtT => Show SomeInstr where
 
 -- | Data type, holding strictly-typed Michelson value along with its
 -- type singleton.
-data SomeVal where
+data SomeValue where
     (::::) :: (SingI t, Typeable t)
-           => Val Instr t
+           => Value Instr t
            -> (Sing t, Notes t)
-           -> SomeVal
+           -> SomeValue
 
 -- | Data type, holding strictly-typed Michelson value along with its
 -- type singleton.
-data SomeValC where
+data SomeCValue where
     (:--:) :: (SingI t, Typeable t)
-           => CValue t -> Sing t -> SomeValC
+           => CValue t -> Sing t -> SomeCValue
 
 data SomeContract where
   SomeContract

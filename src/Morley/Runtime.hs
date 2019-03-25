@@ -37,9 +37,10 @@ import Michelson.Interpret
   RemainingSteps(..))
 import Michelson.TypeCheck (TCError)
 import Michelson.Typed
-  (CreateContract(..), Instr, Operation(..), TransferTokens(..), Val(..), convertContract,
-  unsafeValToValue)
-import Michelson.Untyped (Contract(..), Op(..), OriginationOperation(..), Value, mkContractAddress)
+  (CreateContract(..), Instr, Operation(..), TransferTokens(..), convertContract, unsafeValToValue)
+import qualified Michelson.Typed as T
+import Michelson.Untyped (Contract(..), Op, OriginationOperation(..), mkContractAddress)
+import qualified Michelson.Untyped as U
 import Morley.Aliases (UntypedContract)
 import Morley.Ext (interpretMorleyUntyped, typeCheckMorleyContract)
 import Morley.Macro (expandFlattenContract)
@@ -170,7 +171,7 @@ runContract
   -> Word64
   -> Mutez
   -> FilePath
-  -> Value Op
+  -> U.Value Op
   -> Contract Op
   -> TxData
   -> "verbose" :! Bool
@@ -292,7 +293,7 @@ interpretOneOp
   -> Either InterpreterError InterpreterRes
 interpretOneOp _ remainingSteps _ gs (OriginateOp origination) = do
   void $ first IEIllTypedContract $
-    typeCheckMorleyContract (unOp <$> ooContract origination)
+    typeCheckMorleyContract (U.unOp <$> ooContract origination)
   let originatorAddress = KeyAddress (ooManager origination)
   originatorBalance <- case gsAddresses gs ^. at (originatorAddress) of
     Nothing -> Left (IEUnknownManager originatorAddress)
@@ -425,7 +426,7 @@ convertOp interpretedAddr =
               , tdParameter = unsafeValToValue (ttContractParameter tt)
               , tdAmount = ttAmount tt
               }
-          VContract destAddress = ttContract tt
+          T.VContract destAddress = ttContract tt
        in Just (TransferOp destAddress txData)
     OpSetDelegate {} -> Nothing
     OpCreateAccount {} -> Nothing
