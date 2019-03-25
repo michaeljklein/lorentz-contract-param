@@ -54,6 +54,7 @@ genFixture =
 
 type Parameter = 'Tc 'CInt
 type Storage = 'Tc 'CNat
+
 specImpl ::
      (UntypedContract, Contract Parameter Storage)
   -> Spec
