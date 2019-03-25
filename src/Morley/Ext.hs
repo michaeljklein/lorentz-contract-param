@@ -40,8 +40,8 @@ interpretMorleyUntyped c v1 v2 cenv =
 interpretMorley
   :: (Typeable cp, Typeable st)
   => T.Contract cp st
-  -> T.Value T.Instr cp
-  -> T.Value T.Instr st
+  -> T.Value cp
+  -> T.Value st
   -> ContractEnv
   -> ContractReturn MorleyLogs st
 interpretMorley c param initSt env =
@@ -95,7 +95,7 @@ interpretHandler (PRINT (PrintComment pc), SomeItStack st) = do
         rat st (fromIntegral i)
   modify (\s -> s {isExtState = MorleyLogs $ mconcat (map getEl pc) : unMorleyLogs (isExtState s)})
 interpretHandler (TEST_ASSERT (TestAssert nm pc (instr :: T.Instr inp1 ('T.Tc 'T.CBool ': out1) )),
-            SomeItStack (st :: Rec (T.Value T.Instr) inp2)) = do
+            SomeItStack (st :: Rec T.Value inp2)) = do
   Refl <- liftEither $ first (error "TEST_ASSERT input stack doesn't match") $ eqT' @inp1 @inp2
   runInstrNoGas instr st >>= \case
     (T.VC (T.CvBool False) :& RNil) -> do
@@ -205,7 +205,7 @@ lengthHST :: HST xs -> Int
 lengthHST (_ ::& xs) = 1 + lengthHST xs
 lengthHST SNil = 0
 
-rat :: Rec (T.Value T.Instr) xs -> Int -> Maybe Text
+rat :: Rec T.Value xs -> Int -> Maybe Text
 rat (x :& _) 0 = Just $ show x
 rat (_ :& xs) i = rat xs (i - 1)
 rat RNil _ = Nothing

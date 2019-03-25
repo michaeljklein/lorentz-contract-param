@@ -9,7 +9,8 @@ import Test.QuickCheck (Property, arbitrary, (===))
 import Test.QuickCheck.Property (forAll, withMaxSuccess)
 
 import Michelson.Interpret (InterpreterState, MichelsonFailed)
-import Michelson.Typed (CValue(..), ToT, Value(..), toVal)
+import Michelson.Typed (CValue(..), ToT, toVal)
+import qualified Michelson.Typed as T
 import Morley.Test (contractProp, specWithTypedContract)
 import Morley.Test.Util (failedProp)
 import Morley.Types (MorleyLogs)
@@ -18,8 +19,8 @@ import Test.Util.Interpreter (dummyContractEnv)
 import Test.Util.QuickCheck (qcIsLeft, qcIsRight)
 
 type Param = Either Text (Maybe Integer)
-type ContractParam instr = Value instr (ToT Param)
-type ContractStorage instr = Value instr (ToT Text)
+type ContractParam instr = T.Value' instr (ToT Param)
+type ContractStorage instr = T.Value' instr (ToT Text)
 type ContractResult x instr
    = ( Either MichelsonFailed ([x], ContractStorage instr)
      , InterpreterState MorleyLogs)
@@ -50,7 +51,7 @@ conditionalsSpec = parallel $ do
       => Param
       -> ContractResult x instr
       -> Property
-    validate (Left a) (Right ([], VC (CvString b)), _) = a === b
+    validate (Left a) (Right ([], T.VC (CvString b)), _) = a === b
     validate (Right Nothing) r = qcIsLeft $ fst r
     validate (Right (Just a)) r | a < 0 = qcIsLeft $ fst r
     validate (Right (Just a)) r | a >= 0 = qcIsRight $ fst r

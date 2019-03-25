@@ -28,7 +28,8 @@ import Text.Megaparsec (parse)
 
 import Michelson.Interpret (ContractEnv, ContractReturn)
 import Michelson.TypeCheck (SomeContract(..), TCError)
-import Michelson.Typed (CT(..), CValue(..), Contract, Instr, T(..), Value(..))
+import Michelson.Typed (CT(..), CValue(..), Contract, T(..))
+import qualified Michelson.Typed as T
 import qualified Michelson.Untyped as U
 import Morley.Aliases (UntypedContract)
 import Morley.Ext (interpretMorley, typeCheckMorleyContract)
@@ -53,8 +54,8 @@ import Tezos.Core
 -- or anything else relevant.
 type ContractPropValidator cp st prop =
      ContractEnv
-  -> Value Instr cp
-  -> Value Instr st
+  -> T.Value cp
+  -> T.Value st
   -> ContractReturn MorleyLogs st
   -> prop
 
@@ -66,8 +67,8 @@ contractProp
   => Contract cp st
   -> ContractPropValidator cp st prop
   -> ContractEnv
-  -> Value Instr cp
-  -> Value Instr st
+  -> T.Value cp
+  -> T.Value st
   -> prop
 contractProp instr check env param initSt =
   check env param initSt $ interpretMorley instr param initSt env
@@ -150,15 +151,16 @@ instance Arbitrary (CValue 'CMutez) where
   arbitrary = CvMutez <$> arbitrary
 instance Arbitrary (CValue 'CInt) where
   arbitrary = CvInt <$> arbitrary
-instance Arbitrary (CValue a) => Arbitrary (Value instr ('Tc a)) where
-  arbitrary = VC <$> arbitrary
-instance Arbitrary (Value instr a) => Arbitrary (Value instr ('TList a)) where
-  arbitrary = VList <$> arbitrary
-instance Arbitrary (Value instr 'TUnit) where
-  arbitrary = pure VUnit
-instance (Arbitrary (Value instr a), Arbitrary (Value instr b))
-    => Arbitrary (Value instr ('TPair a b)) where
-  arbitrary = VPair ... (,) <$> arbitrary <*> arbitrary
+instance Arbitrary (CValue a) => Arbitrary (T.Value' instr ('Tc a)) where
+  arbitrary = T.VC <$> arbitrary
+instance Arbitrary (T.Value' instr a)
+    => Arbitrary (T.Value' instr ('TList a)) where
+  arbitrary = T.VList <$> arbitrary
+instance Arbitrary (T.Value' instr 'TUnit) where
+  arbitrary = pure T.VUnit
+instance (Arbitrary (T.Value' instr a), Arbitrary (T.Value' instr b))
+    => Arbitrary (T.Value' instr ('TPair a b)) where
+  arbitrary = T.VPair ... (,) <$> arbitrary <*> arbitrary
 
 minDay :: Day
 minDay = fromMaybe (error "failed to parse day 2008-11-01") $

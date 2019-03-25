@@ -24,7 +24,8 @@ import qualified Text.Show
 import Michelson.Typed (ConversibleExt, Notes(..), Sing(..), T(..), fromSingT)
 import Michelson.Typed.Extract (toUType)
 import Michelson.Typed.Instr
-import Michelson.Typed.Value
+import Michelson.Typed.Value (CValue, ContractInp, ContractOut)
+import qualified Michelson.Typed as T
 
 import qualified Michelson.Untyped as U
 import Michelson.Untyped.Annotation (VarAnn)
@@ -101,7 +102,7 @@ instance Show InstrExtT => Show SomeInstr where
 -- type singleton.
 data SomeValue where
     (::::) :: (SingI t, Typeable t)
-           => Value Instr t
+           => T.Value t
            -> (Sing t, Notes t)
            -> SomeValue
 

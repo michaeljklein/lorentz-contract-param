@@ -14,7 +14,8 @@ import Test.QuickCheck.Random (mkQCGen)
 
 import Michelson.Interpret (ContractEnv(..))
 import Michelson.Typed
-  (CT(..), CValue(..), Operation(..), ToT, TransferTokens(..), Value(..), fromVal, toVal)
+  (CT(..), CValue(..), Operation(..), ToT, TransferTokens(..), fromVal, toVal)
+import qualified Michelson.Typed as T
 import Morley.Test (ContractPropValidator, contractProp, midTimestamp, specWithTypedContract)
 import Morley.Test.Util (failedProp)
 import Tezos.Address (Address(..))
@@ -25,8 +26,8 @@ import Test.Util.Interpreter (dummyContractEnv)
 
 type Storage = (Timestamp, (Mutez, KeyHash))
 type Param = KeyHash
-type ContractParam instr = Value instr (ToT Param)
-type ContractStorage instr = Value instr (ToT Storage)
+type ContractParam instr = T.Value' instr (ToT Param)
+type ContractStorage instr = T.Value' instr (ToT Storage)
 
 -- | Spec to test auction.tz contract.
 --
@@ -122,15 +123,15 @@ validateAuction env
   | Left e <- resE
       = failedProp $ "Unexpected script fail: " <> show e
 
-  | Right (_, (VPair ( VC (CvTimestamp endOfAuction'), _))) <- resE
+  | Right (_, (T.VPair ( T.VC (CvTimestamp endOfAuction'), _))) <- resE
   , endOfAuction /= endOfAuction'
       = failedProp "End of auction timestamp of contract changed"
 
-  | Right (_, (VPair (_, VPair (VC (CvMutez amount'), _)))) <- resE
+  | Right (_, (T.VPair (_, T.VPair (T.VC (CvMutez amount'), _)))) <- resE
   , amount' /= ceAmount env
       = failedProp $ "Storage updated to wrong value: new amount"
                       <> " is not equal to amount of transaction"
-  | Right (_, (VPair (_, VPair (_, VC (CvKeyHash keyHash'))))) <- resE
+  | Right (_, (T.VPair (_, T.VPair (_, T.VC (CvKeyHash keyHash'))))) <- resE
   , keyHash' /= newKeyHash
       = failedProp $ "Storage updated to wrong value: new key hash"
                       <> " is not equal to contract's parameter"
@@ -139,7 +140,7 @@ validateAuction env
      = let counterE msg =
               counterexample $ "Invalid money back operation (" <> msg <> ")"
         in case ops of
-            OpTransferTokens (TransferTokens VUnit retAmount (VContract retAddr)) : [] ->
+            OpTransferTokens (TransferTokens T.VUnit retAmount (T.VContract retAddr)) : [] ->
               counterE "wrong amount" (retAmount === amount)
                 .&&.
               counterE "wrong address" (KeyAddress keyHash === retAddr)
