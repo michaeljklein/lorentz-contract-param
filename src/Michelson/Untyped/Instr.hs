@@ -21,7 +21,7 @@ import qualified Data.Kind as K
 import Formatting.Buildable (Buildable)
 
 import Michelson.Untyped.Annotation (FieldAnn, TypeAnn, VarAnn)
-import Michelson.Untyped.Contract (Contract)
+import Michelson.Untyped.Contract (Contract'(..))
 import Michelson.Untyped.Type (Comparable, Type)
 import Michelson.Untyped.Value (Value')
 import Tezos.Address (Address, mkContractAddressRaw)
@@ -122,7 +122,7 @@ data InstrAbstract op
   | SET_DELEGATE      VarAnn
   | CREATE_ACCOUNT    VarAnn VarAnn
   | CREATE_CONTRACT   VarAnn VarAnn
-  | CREATE_CONTRACT2  VarAnn VarAnn (Contract op)
+  | CREATE_CONTRACT2  VarAnn VarAnn (Contract' op)
   | IMPLICIT_ACCOUNT  VarAnn
   | NOW               VarAnn
   | AMOUNT            VarAnn
@@ -169,7 +169,7 @@ data OriginationOperation = OriginationOperation
   -- ^ Initial balance of the contract.
   , ooStorage :: !(Value' Op)
   -- ^ Initial storage value of the contract.
-  , ooContract :: !(Contract Op)
+  , ooContract :: !(Contract' Op)
   -- ^ The contract itself.
   } deriving (Generic)
 

@@ -39,7 +39,7 @@ import Michelson.TypeCheck (TCError)
 import Michelson.Typed
   (CreateContract(..), Instr, Operation(..), TransferTokens(..), convertContract, unsafeValToValue)
 import qualified Michelson.Typed as T
-import Michelson.Untyped (Contract(..), Op, OriginationOperation(..), mkContractAddress)
+import Michelson.Untyped (Contract, OriginationOperation(..), mkContractAddress)
 import qualified Michelson.Untyped as U
 import Morley.Aliases (UntypedContract)
 import Morley.Ext (interpretMorleyUntyped, typeCheckMorleyContract)
@@ -95,7 +95,7 @@ makeLenses ''InterpreterRes
 data InterpreterError
   = IEUnknownContract !Address
   -- ^ The interpreted contract hasn't been originated.
-  | IEInterpreterFailed !(Contract Op)
+  | IEInterpreterFailed !Contract
                         !(InterpretUntypedError MorleyLogs)
   -- ^ Interpretation of Michelson contract failed.
   | IEAlreadyOriginated !Address
@@ -138,7 +138,7 @@ instance Exception InterpreterError where
 
 -- | Read and parse a contract from give path or `stdin` (if the
 -- argument is 'Nothing'). The contract is not expanded.
-readAndParseContract :: Maybe FilePath -> IO (Contract ParsedOp)
+readAndParseContract :: Maybe FilePath -> IO (U.Contract' ParsedOp)
 readAndParseContract mFilename = do
   code <- readCode mFilename
   let filename = fromMaybe "<stdin>" mFilename
@@ -150,7 +150,7 @@ readAndParseContract mFilename = do
 
 -- | Read a contract using 'readAndParseContract', expand and
 -- flatten. The contract is not type checked.
-prepareContract :: Maybe FilePath -> IO (Contract Op)
+prepareContract :: Maybe FilePath -> IO Contract
 prepareContract mFile = expandFlattenContract <$> readAndParseContract mFile
 
 -- | Originate a contract. Returns the address of the originated
@@ -172,7 +172,7 @@ runContract
   -> Mutez
   -> FilePath
   -> U.Value
-  -> Contract Op
+  -> Contract
   -> TxData
   -> "verbose" :! Bool
   -> "dryRun" :! Bool

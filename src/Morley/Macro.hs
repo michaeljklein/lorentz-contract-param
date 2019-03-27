@@ -22,15 +22,15 @@ module Morley.Macro
 import Generics.SYB (everywhere, mkT)
 
 import Morley.Types
-  (CadrStruct(..), Contract(..), Elt(..), ExpandedInstr, ExpandedOp(..), FieldAnn, Instr,
-  InstrAbstract(..), LetMacro(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..), TypeAnn,
+  (CadrStruct(..), Contract, Contract'(..), Elt(..), ExpandedInstr, ExpandedOp(..), FieldAnn,
+  Instr, InstrAbstract(..), LetMacro(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..), TypeAnn,
   UExtInstrAbstract(..), Value, Value'(..), VarAnn, ann, noAnn)
 
 expandFlat :: [ParsedOp] -> [Op]
 expandFlat = fmap Op . concatMap flatten . fmap expand
 
 -- | Expand and flatten and instructions in parsed contract.
-expandFlattenContract :: Contract ParsedOp -> Contract Op
+expandFlattenContract :: Contract' ParsedOp -> Contract
 expandFlattenContract Contract {..} =
   Contract para stor (expandFlat $ code)
 

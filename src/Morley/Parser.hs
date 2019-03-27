@@ -41,10 +41,10 @@ import qualified Morley.Types as Mo
 ------------------
 
 -- | Michelson contract with let definitions
-program :: Mo.Parsec CustomParserException T.Text (Mo.Contract ParsedOp)
+program :: Mo.Parsec CustomParserException T.Text (Mo.Contract' ParsedOp)
 program = runReaderT programInner Mo.noLetEnv
 
-programInner :: Parser (Mo.Contract ParsedOp)
+programInner :: Parser (Mo.Contract' ParsedOp)
 programInner = do
   mSpace
   env <- fromMaybe Mo.noLetEnv <$> (optional letBlock)
@@ -56,7 +56,7 @@ parseNoEnv :: Parser a -> String -> T.Text
 parseNoEnv p = parse (runReaderT p Mo.noLetEnv)
 
 -- | Michelson contract
-contract :: Parser (Mo.Contract ParsedOp)
+contract :: Parser (Mo.Contract' ParsedOp)
 contract = do
   mSpace
   (p,s,c) <- intercalateEffect semicolon $

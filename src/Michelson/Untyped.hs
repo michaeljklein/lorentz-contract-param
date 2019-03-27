@@ -49,7 +49,8 @@ module Michelson.Untyped
   , mkContractAddress
   , Parameter
   , Storage
-  , Contract (..)
+  , Contract' (..)
+  , Contract
   , Annotation (..)
   , pattern WithAnn
   , TypeAnn
@@ -72,3 +73,4 @@ import Michelson.Untyped.Type
 import Michelson.Untyped.Value
 
 type Value = Value' Op
+type Contract = Contract' Op

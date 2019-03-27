@@ -29,7 +29,7 @@ import qualified Michelson.Untyped as U
 import Morley.Types
 
 interpretMorleyUntyped
-  :: Contract Op
+  :: U.Contract
   -> U.Value
   -> U.Value
   -> ContractEnv
@@ -47,7 +47,7 @@ interpretMorley
 interpretMorley c param initSt env =
   interpret c param initSt (InterpreterEnv env interpretHandler) def
 
-typeCheckMorleyContract :: Contract Instr -> Either TCError SomeContract
+typeCheckMorleyContract :: U.Contract' Instr -> Either TCError SomeContract
 typeCheckMorleyContract = typeCheckContract typeCheckHandler
 
 typeCheckHandler :: UExtInstr -> TcExtFrames -> SomeHST -> TypeCheckT (TcExtFrames, Maybe ExtInstr)

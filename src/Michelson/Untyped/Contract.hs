@@ -5,7 +5,7 @@
 module Michelson.Untyped.Contract
   ( Parameter
   , Storage
-  , Contract (..)
+  , Contract' (..)
   ) where
 
 import Data.Aeson.TH (defaultOptions, deriveJSON)
@@ -17,13 +17,13 @@ import Michelson.Untyped.Type (Type)
 
 type Parameter = Type
 type Storage = Type
-data Contract op = Contract
+data Contract' op = Contract
   { para :: Parameter
   , stor :: Storage
   , code :: [op]
   } deriving stock (Eq, Show, Functor, Data, Generic)
 
-instance Buildable op => Buildable (Contract op) where
+instance Buildable op => Buildable (Contract' op) where
   build = genericF
 
-deriveJSON defaultOptions ''Contract
+deriveJSON defaultOptions ''Contract'

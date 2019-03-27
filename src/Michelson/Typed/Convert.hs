@@ -31,7 +31,7 @@ type ConversibleExt = Conversible (ExtT Instr) (U.ExtU U.InstrAbstract U.Op)
 
 convertContract
   :: forall param store . (SingI param, SingI store, ConversibleExt)
-  => Contract param store -> U.Contract U.Op
+  => Contract param store -> U.Contract
 convertContract contract =
   U.Contract
     { para = toUType $ fromSingT (sing @param)

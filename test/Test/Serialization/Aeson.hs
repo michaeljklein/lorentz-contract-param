@@ -7,7 +7,7 @@ import Test.Aeson.GenericSpecs (roundtripADTSpecs, roundtripSpecs)
 import Test.Hspec (Spec)
 import Test.QuickCheck (Arbitrary)
 
-import Michelson.Untyped (Contract, Elt, FieldAnn, InstrAbstract, Op, TypeAnn, Value', VarAnn)
+import Michelson.Untyped (Contract', Elt, FieldAnn, InstrAbstract, Op, TypeAnn, Value', VarAnn)
 import Tezos.Core (Mutez, Timestamp)
 
 import Test.Arbitrary ()
@@ -47,7 +47,7 @@ spec = do
   test (Proxy @FieldAnn)
   test (Proxy @VarAnn)
 
-  test (Proxy @(Contract Op))
+  test (Proxy @(Contract' Op))
   testADT (Proxy @(InstrAbstract Op))
   test (Proxy @(Value' Op))
   test (Proxy @(Elt Op))

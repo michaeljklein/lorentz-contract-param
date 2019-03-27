@@ -54,13 +54,13 @@ import Michelson.Untyped.Annotation (VarAnn)
 typeCheckContract
   :: ExtC
   => TcExtHandler
-  -> U.Contract U.Instr
+  -> U.Contract' U.Instr
   -> Either TCError SomeContract
 typeCheckContract nh c = runTypeCheckT nh (U.para c) $ typeCheckContractImpl c
 
 typeCheckContractImpl
   :: ExtC
-  => U.Contract U.Instr
+  => U.Contract' U.Instr
   -> TypeCheckT SomeContract
 typeCheckContractImpl (U.Contract mParam mStorage pCode) = do
   code <- maybe (throwError $ TCOtherError "no instructions in contract code")

@@ -39,7 +39,7 @@ dummyContractEnv = ContractEnv
 
 dummyOrigination ::
      U.Value
-  -> U.Contract U.Op
+  -> U.Contract
   -> U.OriginationOperation
 dummyOrigination storage contract = U.OriginationOperation
   { ooManager = genesisKeyHash
@@ -65,7 +65,7 @@ simplerIntegrationalTestProperty =
 --
 -- This type is mostly used for testing purposes.
 data ContractAux = ContractAux
-  { caContract :: !(U.Contract U.Op)
+  { caContract :: !U.Contract
   , caEnv :: !ContractEnv
   , caStorage :: !U.Value
   , caParameter :: !U.Value

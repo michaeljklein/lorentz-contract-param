@@ -11,7 +11,7 @@ import Test.QuickCheck (Arbitrary(..), Gen, choose, elements, listOf, oneof, vec
 import Test.QuickCheck.Arbitrary.ADT (ToADTArbitrary(..))
 
 import Michelson.Untyped
-  (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, InstrAbstract(..),
+  (Annotation(..), CT(..), Comparable(..), Contract'(..), Elt(..), FieldAnn, InstrAbstract(..),
   InternalByteString(..), Op(..), T(..), Type(..), TypeAnn, Value'(..), VarAnn)
 import Morley.Test ()
 import Morley.Types (StackTypePattern(..), TyVar(..), UExtInstr, UExtInstrAbstract(..), Var(..))
@@ -61,8 +61,8 @@ instance Arbitrary VarAnn where
 smallSize :: Gen Int
 smallSize = choose (0, 3)
 
-instance (Arbitrary op, ToADTArbitrary op) => ToADTArbitrary (Contract op)
-instance (Arbitrary op) => Arbitrary (Contract op) where
+instance (Arbitrary op, ToADTArbitrary op) => ToADTArbitrary (Contract' op)
+instance (Arbitrary op) => Arbitrary (Contract' op) where
   arbitrary = Contract <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance (Arbitrary op, ToADTArbitrary op, Arbitrary (UExtInstrAbstract op)) => ToADTArbitrary (InstrAbstract op)

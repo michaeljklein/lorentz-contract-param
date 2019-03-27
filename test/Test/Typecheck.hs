@@ -4,7 +4,7 @@ module Test.Typecheck
 
 import Test.Hspec (Expectation, Spec, describe, expectationFailure, it)
 
-import Michelson.Untyped (Contract(..), Op(..))
+import Michelson.Untyped (Contract, Op(..))
 import Morley.Ext (typeCheckMorleyContract)
 import Morley.Runtime (prepareContract)
 
@@ -23,7 +23,7 @@ typeCheckSpec = describe "Typechecker tests" $ do
     badContractsTest = mapM_ (checkFile doTC False) =<< getIllTypedContracts
 
 
-checkFile :: (Contract Op -> Either String ()) -> Bool -> FilePath -> Expectation
+checkFile :: (Contract -> Either String ()) -> Bool -> FilePath -> Expectation
 checkFile doTypeCheck wellTyped file = do
   c <- prepareContract (Just file)
   case doTypeCheck c of

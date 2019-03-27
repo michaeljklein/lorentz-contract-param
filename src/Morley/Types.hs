@@ -13,7 +13,8 @@ module Morley.Types
    -- * Rexported from Michelson.Types
     U.Parameter
   , U.Storage
-  , U.Contract (..)
+  , U.Contract' (..)
+  , U.Contract
   , U.Value' (..)
   , U.Value
   , U.Elt (..)

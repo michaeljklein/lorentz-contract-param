@@ -7,5 +7,5 @@ module Morley.Aliases
 
 import qualified Michelson.Untyped as Untyped
 
-type UntypedValue = Untyped.Value' Untyped.Op
-type UntypedContract = Untyped.Contract Untyped.Op
+type UntypedValue = Untyped.Value
+type UntypedContract = Untyped.Contract

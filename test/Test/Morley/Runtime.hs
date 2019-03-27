@@ -91,7 +91,7 @@ failsToOriginateTwice =
     isAlreadyOriginated (Left (IEAlreadyOriginated {})) = True
     isAlreadyOriginated _ = False
 
-failsToOriginateIllTyped :: U.Value -> U.Contract U.Op -> Expectation
+failsToOriginateIllTyped :: U.Value -> U.Contract -> Expectation
 failsToOriginateIllTyped initialStorage illTypedContract =
   simpleTest ops isIllTypedContract
   where
@@ -120,7 +120,7 @@ contractAux1 = ContractAux
   , caParameter = U.ValueString "aaa"
   }
   where
-    contract :: U.Contract U.Op
+    contract :: U.Contract
     contract = U.Contract
       { para = U.Type U.tstring U.noAnn
       , stor = U.Type U.tbool U.noAnn

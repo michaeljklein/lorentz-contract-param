@@ -56,7 +56,7 @@ data ContractEnv = ContractEnv
   -- ^ Number of steps after which execution unconditionally terminates.
   , ceBalance :: !Mutez
   -- ^ Current amount of mutez of the current contract.
-  , ceContracts :: Map Address (U.Contract U.Op)
+  , ceContracts :: Map Address U.Contract
   -- ^ Mapping from existing contracts' addresses to their executable
   -- representation.
   , ceSelf :: !Address
@@ -124,7 +124,7 @@ data InterpretUntypedResult s where
 interpretUntyped
   :: forall s . (ExtC, Aeson.ToJSON U.InstrExtU)
   => TcExtHandler
-  -> U.Contract U.Op
+  -> U.Contract
   -> U.Value
   -> U.Value
   -> InterpreterEnv s
