@@ -171,7 +171,7 @@ runContract
   -> Word64
   -> Mutez
   -> FilePath
-  -> U.Value Op
+  -> U.Value
   -> Contract Op
   -> TxData
   -> "verbose" :! Bool

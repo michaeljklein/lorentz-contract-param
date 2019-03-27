@@ -22,7 +22,7 @@ import Tezos.Address (parseAddress)
 import Tezos.Core (mkMutez, parseTimestamp, timestampFromSeconds)
 import Tezos.Crypto (parseKeyHash, parsePublicKey, parseSignature)
 
-typeCheckCValue :: U.Value op -> CT -> Maybe SomeCValue
+typeCheckCValue :: U.Value' op -> CT -> Maybe SomeCValue
 typeCheckCValue (U.ValueInt i) CInt = pure $ CvInt i :--: SCInt
 typeCheckCValue (U.ValueInt i) CNat
   | i >= 0 = pure $ CvNat (fromInteger i) :--: SCNat
@@ -46,9 +46,9 @@ typeCheckCValue _ _ = Nothing
 
 typeCheckCVals
   :: forall t op . Typeable t
-  => [U.Value op]
+  => [U.Value' op]
   -> CT
-  -> Either (U.Value op, Text) [CValue t]
+  -> Either (U.Value' op, Text) [CValue t]
 typeCheckCVals mvs t = traverse check mvs
   where
     check mv = do
@@ -72,7 +72,7 @@ typeCheckCVals mvs t = traverse check mvs
 typeCheckValImpl
   :: (Show InstrExtT, ConversibleExt, Eq U.InstrExtU)
   => TcInstrHandler
-  -> U.Value U.Op
+  -> U.Value
   -> T
   -> TypeCheckT SomeValue
 typeCheckValImpl _ mv t@(Tc ct) =
@@ -167,7 +167,7 @@ typeCheckValImpl _ v t = throwError $ TCFailedOnValue v t ""
 typeCheckValsImpl
   :: forall t . (Typeable t, Show InstrExtT, ConversibleExt, Eq U.InstrExtU)
   => TcInstrHandler
-  -> [U.Value U.Op]
+  -> [U.Value]
   -> T
   -> TypeCheckT ([T.Value t], Notes t)
 typeCheckValsImpl tcDo mvs t = foldM check ([], NStar) mvs

@@ -23,7 +23,7 @@ import Formatting.Buildable (Buildable)
 import Michelson.Untyped.Annotation (FieldAnn, TypeAnn, VarAnn)
 import Michelson.Untyped.Contract (Contract)
 import Michelson.Untyped.Type (Comparable, Type)
-import Michelson.Untyped.Value (Value)
+import Michelson.Untyped.Value (Value')
 import Tezos.Address (Address, mkContractAddressRaw)
 import Tezos.Core (Mutez)
 import Tezos.Crypto (KeyHash)
@@ -57,7 +57,7 @@ data InstrAbstract op
   | DROP
   | DUP               VarAnn
   | SWAP
-  | PUSH              VarAnn Type (Value op)
+  | PUSH              VarAnn Type (Value' op)
   | SOME              TypeAnn VarAnn FieldAnn
   | NONE              TypeAnn VarAnn FieldAnn Type
   | UNIT              TypeAnn VarAnn
@@ -167,7 +167,7 @@ data OriginationOperation = OriginationOperation
   -- ^ Whether the contract is delegatable.
   , ooBalance :: !Mutez
   -- ^ Initial balance of the contract.
-  , ooStorage :: !(Value Op)
+  , ooStorage :: !(Value' Op)
   -- ^ Initial storage value of the contract.
   , ooContract :: !(Contract Op)
   -- ^ The contract itself.

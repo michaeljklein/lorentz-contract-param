@@ -11,26 +11,27 @@
 module Morley.Types
   (
    -- * Rexported from Michelson.Types
-    Parameter
-  , Storage
-  , Contract (..)
-  , Value (..)
-  , Elt (..)
-  , InstrAbstract (..)
-  , Instr
-  , Op (..)
-  , TypeAnn
-  , FieldAnn
-  , VarAnn
-  , ann
-  , noAnn
-  , Type (..)
-  , Comparable (..)
-  , T (..)
-  , CT (..)
-  , Annotation (..)
-  , InternalByteString(..)
-  , unInternalByteString
+    U.Parameter
+  , U.Storage
+  , U.Contract (..)
+  , U.Value' (..)
+  , U.Value
+  , U.Elt (..)
+  , U.InstrAbstract (..)
+  , U.Instr
+  , U.Op (..)
+  , U.TypeAnn
+  , U.FieldAnn
+  , U.VarAnn
+  , U.ann
+  , U.noAnn
+  , U.Type (..)
+  , U.Comparable (..)
+  , U.T (..)
+  , U.CT (..)
+  , U.Annotation (..)
+  , U.InternalByteString(..)
+  , U.unInternalByteString
 
   -- Parser types
   , CustomParserException (..)
@@ -94,10 +95,7 @@ import qualified Text.Show (show)
 import Michelson.EqParam (eqParam2)
 import Michelson.Typed (instrToOps)
 import qualified Michelson.Typed as T
-import Michelson.Untyped
-  (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), ExtU, FieldAnn, Instr,
-  InstrAbstract(..), InternalByteString(..), Op(..), Parameter, Storage, T(..), Type(..), TypeAnn,
-  Value(..), VarAnn, ann, noAnn, unInternalByteString)
+import qualified Michelson.Untyped as U
 import Morley.Default (Default(..))
 
 -------------------------------------
@@ -171,7 +169,7 @@ instance Buildable op => Buildable (UExtInstrAbstract op) where
 -- TODO replace ParsedOp in UExtInstr with op
 -- to reflect Parsed, Epxanded and Flattened phase
 
-type instance ExtU InstrAbstract = UExtInstrAbstract
+type instance U.ExtU U.InstrAbstract = UExtInstrAbstract
 type instance T.ExtT T.Instr = ExtInstr
 
 ---------------------------------------------------
@@ -180,7 +178,7 @@ type ParsedUTestAssert = UTestAssert ParsedOp
 
 type ParsedUExtInstr = UExtInstrAbstract ParsedOp
 
-type ParsedInstr = InstrAbstract ParsedOp
+type ParsedInstr = U.InstrAbstract ParsedOp
 
 -- | Unexpanded instructions produced directly by the @ops@ parser, which
 -- contains primitive Michelson Instructions, inline-able macros and sequences
@@ -201,7 +199,7 @@ instance Buildable ParsedOp where
 -- Types after macroexpander
 -------------------------------------
 
-type ExpandedInstr = InstrAbstract ExpandedOp
+type ExpandedInstr = U.InstrAbstract ExpandedOp
 
 data ExpandedOp
   = PRIM_EX ExpandedInstr
@@ -214,9 +212,9 @@ instance Buildable ExpandedInstr where
 instance Buildable ExpandedOp where
   build = genericF
 
-type UExtInstr = UExtInstrAbstract Op
+type UExtInstr = UExtInstrAbstract U.Op
 
-instance Buildable Instr where
+instance Buildable U.Instr where
   build = genericF
 
 ---------------------------------------------------
@@ -226,7 +224,7 @@ data TestAssert where
     :: (Typeable inp, Typeable out)
     => T.Text
     -> PrintComment
-    -> T.Instr inp ('T.Tc 'CBool ': out)
+    -> T.Instr inp ('T.Tc 'T.CBool ': out)
     -> TestAssert
 
 deriving instance Show TestAssert
@@ -246,7 +244,7 @@ data ExtInstr
   | PRINT PrintComment
   deriving (Show, Eq)
 
-instance T.Conversible ExtInstr (UExtInstrAbstract Op) where
+instance T.Conversible ExtInstr (UExtInstrAbstract U.Op) where
   convert (PRINT pc) = UPRINT pc
   convert (TEST_ASSERT (TestAssert nm pc i)) =
     UTEST_ASSERT $ UTestAssert nm pc (instrToOps i)
@@ -265,7 +263,7 @@ noMorleyLogs = MorleyLogs []
 ---------------------------------------------------
 
 data PairStruct
-  = F (VarAnn, FieldAnn)
+  = F (U.VarAnn, U.FieldAnn)
   | P PairStruct PairStruct
   deriving (Eq, Show, Data, Generic)
 
@@ -282,17 +280,17 @@ instance Buildable CadrStruct where
 
 -- | Built-in Michelson Macros defined by the specification
 data Macro
-  = CMP ParsedInstr VarAnn
+  = CMP ParsedInstr U.VarAnn
   | IFX ParsedInstr [ParsedOp] [ParsedOp]
-  | IFCMP ParsedInstr VarAnn [ParsedOp] [ParsedOp]
+  | IFCMP ParsedInstr U.VarAnn [ParsedOp] [ParsedOp]
   | FAIL
-  | PAPAIR PairStruct TypeAnn VarAnn
+  | PAPAIR PairStruct U.TypeAnn U.VarAnn
   | UNPAIR PairStruct
-  | CADR [CadrStruct] VarAnn FieldAnn
-  | SET_CADR [CadrStruct] VarAnn FieldAnn
-  | MAP_CADR [CadrStruct] VarAnn FieldAnn [ParsedOp]
+  | CADR [CadrStruct] U.VarAnn U.FieldAnn
+  | SET_CADR [CadrStruct] U.VarAnn U.FieldAnn
+  | MAP_CADR [CadrStruct] U.VarAnn U.FieldAnn [ParsedOp]
   | DIIP Integer [ParsedOp]
-  | DUUP Integer VarAnn
+  | DUUP Integer U.VarAnn
   | ASSERT
   | ASSERTX ParsedInstr
   | ASSERT_CMP ParsedInstr
@@ -323,7 +321,7 @@ instance Buildable Var where
 -- | A type-variable or a type-constant
 data TyVar =
     VarID Var
-  | TyCon Type
+  | TyCon U.Type
   deriving (Eq, Show, Data, Generic)
 
 instance Buildable TyVar where
@@ -383,14 +381,14 @@ instance Buildable LetMacro where
 -- | A programmer-defined constant
 data LetValue = LetValue
   { lvName :: T.Text
-  , lvSig :: Type
-  , lvVal :: (Value ParsedOp)
+  , lvSig :: U.Type
+  , lvVal :: (U.Value' ParsedOp)
   } deriving (Eq, Show)
 
 -- | A programmer-defined type-synonym
 data LetType = LetType
   { ltName :: T.Text
-  , ltSig :: Type
+  , ltSig :: U.Type
   } deriving (Eq, Show)
 
 -- A print format with references into the stack

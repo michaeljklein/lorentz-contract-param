@@ -24,7 +24,7 @@ import Generics.SYB (everywhere, mkT)
 import Morley.Types
   (CadrStruct(..), Contract(..), Elt(..), ExpandedInstr, ExpandedOp(..), FieldAnn, Instr,
   InstrAbstract(..), LetMacro(..), Macro(..), Op(..), PairStruct(..), ParsedOp(..), TypeAnn,
-  UExtInstrAbstract(..), Value(..), VarAnn, ann, noAnn)
+  UExtInstrAbstract(..), Value, Value'(..), VarAnn, ann, noAnn)
 
 expandFlat :: [ParsedOp] -> [Op]
 expandFlat = fmap Op . concatMap flatten . fmap expand
@@ -35,7 +35,7 @@ expandFlattenContract Contract {..} =
   Contract para stor (expandFlat $ code)
 
 -- Probably, some SYB can be used here
-expandValue :: Value ParsedOp -> Value Op
+expandValue :: Value' ParsedOp -> Value
 expandValue = \case
   ValuePair l r -> ValuePair (expandValue l) (expandValue r)
   ValueLeft x -> ValueLeft (expandValue x)

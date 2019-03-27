@@ -125,8 +125,8 @@ interpretUntyped
   :: forall s . (ExtC, Aeson.ToJSON U.InstrExtU)
   => TcExtHandler
   -> U.Contract U.Op
-  -> U.Value U.Op
-  -> U.Value U.Op
+  -> U.Value
+  -> U.Value
   -> InterpreterEnv s
   -> s
   -> Either (InterpretUntypedError s) (InterpretUntypedResult s)

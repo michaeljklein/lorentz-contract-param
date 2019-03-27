@@ -12,7 +12,7 @@ import Test.QuickCheck.Arbitrary.ADT (ToADTArbitrary(..))
 
 import Michelson.Untyped
   (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, InstrAbstract(..),
-  InternalByteString(..), Op(..), T(..), Type(..), TypeAnn, Value(..), VarAnn)
+  InternalByteString(..), Op(..), T(..), Type(..), TypeAnn, Value'(..), VarAnn)
 import Morley.Test ()
 import Morley.Types (StackTypePattern(..), TyVar(..), UExtInstr, UExtInstrAbstract(..), Var(..))
 import Tezos.Core (Mutez(..), Timestamp(..), timestampFromSeconds)
@@ -195,8 +195,8 @@ instance (Arbitrary op, Arbitrary (UExtInstrAbstract op)) => Arbitrary (InstrAbs
       , ADDRESS <$> arbitrary
       ]
 
-instance (Arbitrary op, ToADTArbitrary op) => ToADTArbitrary (Value op)
-instance (Arbitrary op) => Arbitrary (Value op) where
+instance (Arbitrary op, ToADTArbitrary op) => ToADTArbitrary (Value' op)
+instance (Arbitrary op) => Arbitrary (Value' op) where
   arbitrary =
     oneof
       [ ValueInt <$> arbitrary

@@ -12,7 +12,7 @@ import Test.Hspec (Expectation)
 import Test.QuickCheck (Property)
 
 import Michelson.Interpret (ContractEnv(..), RemainingSteps)
-import Michelson.Untyped
+import qualified Michelson.Untyped as U
 import Morley.Runtime (InterpreterOp)
 import Morley.Runtime.GState (genesisAddress, genesisKeyHash)
 import Morley.Test.Integrational
@@ -38,10 +38,10 @@ dummyContractEnv = ContractEnv
   }
 
 dummyOrigination ::
-     Value Op
-  -> Contract Op
-  -> OriginationOperation
-dummyOrigination storage contract = OriginationOperation
+     U.Value
+  -> U.Contract U.Op
+  -> U.OriginationOperation
+dummyOrigination storage contract = U.OriginationOperation
   { ooManager = genesisKeyHash
   , ooDelegate = Nothing
   , ooSpendable = False
@@ -65,8 +65,8 @@ simplerIntegrationalTestProperty =
 --
 -- This type is mostly used for testing purposes.
 data ContractAux = ContractAux
-  { caContract :: !(Contract Op)
+  { caContract :: !(U.Contract U.Op)
   , caEnv :: !ContractEnv
-  , caStorage :: !(Value Op)
-  , caParameter :: !(Value Op)
+  , caStorage :: !U.Value
+  , caParameter :: !U.Value
   }

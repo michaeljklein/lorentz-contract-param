@@ -12,7 +12,7 @@ import Test.Hspec
 
 import Michelson.Interpret (ContractEnv(..), InterpretUntypedError(..), InterpretUntypedResult(..))
 import Michelson.Typed (unsafeValToValue)
-import Michelson.Untyped
+import qualified Michelson.Untyped as U
 import Morley.Ext (interpretMorleyUntyped)
 import Morley.Runtime
 import Morley.Runtime.GState (GState(..), initGState)
@@ -35,7 +35,7 @@ spec = describe "Morley.Runtime" $ do
       specify "contract2" $ updatesStorageValue contractAux2
     it "Fails to originate an already originated contract" failsToOriginateTwice
     it "Fails to originate an ill-typed contract"
-      (failsToOriginateIllTyped (ValueString "") illTypedContract)
+      (failsToOriginateIllTyped (U.ValueString "") illTypedContract)
 
 ----------------------------------------------------------------------------
 -- Test code
@@ -53,9 +53,9 @@ updatesStorageValue ca = either throwM handleResult $ do
     contract = caContract ca
     ce = caEnv ca
     origination = (dummyOrigination (caStorage ca) contract)
-      { ooBalance = ceBalance ce
+      { U.ooBalance = ceBalance ce
       }
-    addr = mkContractAddress origination
+    addr = U.mkContractAddress origination
     txData = TxData
       { tdSenderAddress = ceSender ce
       , tdParameter = caParameter ca
@@ -67,7 +67,7 @@ updatesStorageValue ca = either throwM handleResult $ do
       ]
   (addr,) <$> interpreterPure dummyNow dummyMaxSteps initGState interpreterOps
   where
-    toNewStorage :: InterpretUntypedResult MorleyLogs -> Value Op
+    toNewStorage :: InterpretUntypedResult MorleyLogs -> U.Value
     toNewStorage InterpretUntypedResult {..} = unsafeValToValue iurNewStorage
 
     handleResult :: (Address, InterpreterRes) -> Expectation
@@ -91,7 +91,7 @@ failsToOriginateTwice =
     isAlreadyOriginated (Left (IEAlreadyOriginated {})) = True
     isAlreadyOriginated _ = False
 
-failsToOriginateIllTyped :: Value Op -> Contract Op -> Expectation
+failsToOriginateIllTyped :: U.Value -> U.Contract U.Op -> Expectation
 failsToOriginateIllTyped initialStorage illTypedContract =
   simpleTest ops isIllTypedContract
   where
@@ -116,29 +116,29 @@ contractAux1 :: ContractAux
 contractAux1 = ContractAux
   { caContract = contract
   , caEnv = dummyContractEnv
-  , caStorage = ValueTrue
-  , caParameter = ValueString "aaa"
+  , caStorage = U.ValueTrue
+  , caParameter = U.ValueString "aaa"
   }
   where
-    contract :: Contract Op
-    contract = Contract
-      { para = Type tstring noAnn
-      , stor = Type tbool noAnn
+    contract :: U.Contract U.Op
+    contract = U.Contract
+      { para = U.Type U.tstring U.noAnn
+      , stor = U.Type U.tbool U.noAnn
       , code =
-        [ Op $ CDR noAnn noAnn
-        , Op $ NIL noAnn noAnn $ Type TOperation noAnn
-        , Op $ PAIR noAnn noAnn noAnn noAnn
+        [ U.Op $ U.CDR U.noAnn U.noAnn
+        , U.Op $ U.NIL U.noAnn U.noAnn $ U.Type U.TOperation U.noAnn
+        , U.Op $ U.PAIR U.noAnn U.noAnn U.noAnn U.noAnn
         ]
       }
 
 contractAux2 :: ContractAux
 contractAux2 = contractAux1
   { caContract = (caContract contractAux1)
-    { code =
-      [ Op $ CDR noAnn noAnn
-      , Op $ NOT noAnn
-      , Op $ NIL noAnn noAnn $ Type TOperation noAnn
-      , Op $ PAIR noAnn noAnn noAnn noAnn
+    { U.code =
+      [ U.Op $ U.CDR U.noAnn U.noAnn
+      , U.Op $ U.NOT U.noAnn
+      , U.Op $ U.NIL U.noAnn U.noAnn $ U.Type U.TOperation U.noAnn
+      , U.Op $ U.PAIR U.noAnn U.noAnn U.noAnn U.noAnn
       ]
     }
   }

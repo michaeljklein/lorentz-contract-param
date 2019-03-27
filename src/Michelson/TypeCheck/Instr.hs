@@ -134,7 +134,7 @@ typeCheckList = typeCheckImpl typeCheckInstr
 -- error.
 typeCheckValue
   :: ExtC
-  => U.Value U.Op
+  => U.Value
   -> T
   -> TypeCheckT SomeValue
 typeCheckValue = typeCheckValImpl typeCheckInstr

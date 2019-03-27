@@ -150,23 +150,23 @@ expandValueTest = do
   expandValue parsedPapair `shouldBe` expandedPapair
   expandValue parsedLambdaWithMac `shouldBe` expandedLambdaWithMac
   where
-    parsedPair :: Value ParsedOp
+    parsedPair :: Value' ParsedOp
     parsedPair = ValuePair (ValueInt 5) (ValueInt 5)
 
-    expandedPair :: Value Op
+    expandedPair :: Value
     expandedPair = ValuePair (ValueInt 5) (ValueInt 5)
 
-    parsedPapair :: Value ParsedOp
+    parsedPapair :: Value' ParsedOp
     parsedPapair = ValuePair (ValuePair (ValueInt 5) (ValueInt 5)) (ValueInt 5)
 
-    expandedPapair :: Value Op
+    expandedPapair :: Value
     expandedPapair = ValuePair (ValuePair (ValueInt 5) (ValueInt 5)) (ValueInt 5)
 
-    parsedLambdaWithMac :: Value ParsedOp
+    parsedLambdaWithMac :: Value' ParsedOp
     parsedLambdaWithMac = ValueLambda
       [MAC (PAPAIR (P (F (noAnn, noAnn)) (P (F (noAnn, noAnn)) (F (noAnn, noAnn)))) noAnn noAnn)]
 
-    expandedLambdaWithMac :: Value Op
+    expandedLambdaWithMac :: Value
     expandedLambdaWithMac = ValueLambda
       [ Op {unOp = DIP [Op {unOp = PAIR noAnn noAnn noAnn noAnn}]}
       , Op {unOp = PAIR noAnn noAnn noAnn noAnn}

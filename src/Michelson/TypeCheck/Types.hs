@@ -22,10 +22,10 @@ import Prelude hiding (EQ, GT, LT)
 import qualified Text.Show
 
 import Michelson.Typed (ConversibleExt, Notes(..), Sing(..), T(..), fromSingT)
+import qualified Michelson.Typed as T
 import Michelson.Typed.Extract (toUType)
 import Michelson.Typed.Instr
 import Michelson.Typed.Value (CValue, ContractInp, ContractOut)
-import qualified Michelson.Typed as T
 
 import qualified Michelson.Untyped as U
 import Michelson.Untyped.Annotation (VarAnn)
@@ -125,7 +125,7 @@ deriving instance Show InstrExtT => Show SomeContract
 -- | Type check error
 data TCError =
     TCFailedOnInstr U.Instr SomeHST Text
-  | TCFailedOnValue (U.Value U.Op) T Text
+  | TCFailedOnValue U.Value T Text
   | TCOtherError Text
 
 instance Buildable U.Instr => Buildable TCError where

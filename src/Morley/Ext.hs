@@ -30,8 +30,8 @@ import Morley.Types
 
 interpretMorleyUntyped
   :: Contract Op
-  -> U.Value Op
-  -> U.Value Op
+  -> U.Value
+  -> U.Value
   -> ContractEnv
   -> Either (InterpretUntypedError MorleyLogs) (InterpretUntypedResult MorleyLogs)
 interpretMorleyUntyped c v1 v2 cenv =

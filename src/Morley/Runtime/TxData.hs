@@ -4,7 +4,7 @@ module Morley.Runtime.TxData
        ( TxData (..)
        ) where
 
-import Michelson.Untyped (Op, Value)
+import Michelson.Untyped (Value)
 import Morley.Types (UExtInstr)
 import Tezos.Address (Address)
 import Tezos.Core (Mutez)
@@ -12,7 +12,7 @@ import Tezos.Core (Mutez)
 -- | Data associated with a particular transaction.
 data TxData = TxData
   { tdSenderAddress :: !Address
-  , tdParameter :: !(Value Op)
+  , tdParameter :: !Value
   , tdAmount :: !Mutez
   }
 

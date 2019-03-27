@@ -3,7 +3,7 @@
 -- | Untyped Michelson values (i. e. type of a value is not statically known).
 
 module Michelson.Untyped.Value
-  ( Value (..)
+  ( Value' (..)
   , Elt (..)
 
   -- Internal types to avoid orphan instances
@@ -19,26 +19,26 @@ import Fmt (hexF, (+|), (|+))
 import Formatting.Buildable (Buildable)
 import qualified Formatting.Buildable as Buildable
 
-data Value op =
+data Value' op =
     ValueInt     Integer
   | ValueString  Text
   | ValueBytes   InternalByteString
   | ValueUnit
   | ValueTrue
   | ValueFalse
-  | ValuePair    (Value op) (Value op)
-  | ValueLeft    (Value op)
-  | ValueRight   (Value op)
-  | ValueSome    (Value op)
+  | ValuePair    (Value' op) (Value' op)
+  | ValueLeft    (Value' op)
+  | ValueRight   (Value' op)
+  | ValueSome    (Value' op)
   | ValueNone
-  | ValueSeq     [Value op]
+  | ValueSeq     [Value' op]
   -- ^ A sequence of elements: can be a list or a set.
   -- We can't distinguish lists and sets during parsing.
   | ValueMap     [Elt op]
   | ValueLambda  [op]
   deriving stock (Eq, Show, Functor, Data, Generic)
 
-data Elt op = Elt (Value op) (Value op)
+data Elt op = Elt (Value' op) (Value' op)
   deriving stock (Eq, Show, Functor, Data, Generic)
 
 -- | ByteString does not have an instance for ToJSON and FromJSON, to
@@ -49,7 +49,7 @@ newtype InternalByteString = InternalByteString ByteString
 unInternalByteString :: InternalByteString -> ByteString
 unInternalByteString (InternalByteString bs) = bs
 
-instance Buildable op => Buildable (Value op) where
+instance Buildable op => Buildable (Value' op) where
   build =
     \case
       ValueInt i -> Buildable.build i
@@ -89,5 +89,5 @@ instance ToJSON InternalByteString where
 instance FromJSON InternalByteString where
   parseJSON = fmap (InternalByteString . encodeUtf8 @Text) . parseJSON
 
-deriveJSON defaultOptions ''Value
+deriveJSON defaultOptions ''Value'
 deriveJSON defaultOptions ''Elt
