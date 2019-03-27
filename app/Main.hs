@@ -37,7 +37,7 @@ data CmdLnArgs
 data RunOptions = RunOptions
   { roContractFile :: !(Maybe FilePath)
   , roDBPath :: !FilePath
-  , roStorageValue :: !(Value Op)
+  , roStorageValue :: !Value
   , roTxData :: !TxData
   , roVerbose :: !Bool
   , roNow :: !(Maybe Timestamp)
@@ -53,7 +53,7 @@ data OriginateOptions = OriginateOptions
   , ooDelegate :: !(Maybe KeyHash)
   , ooSpendable :: !Bool
   , ooDelegatable :: !Bool
-  , ooStorageValue :: !(Value Op)
+  , ooStorageValue :: !Value
   , ooBalance :: !Mutez
   , ooVerbose :: !Bool
   }
@@ -219,12 +219,12 @@ keyHashOption defaultValue name hInfo =
   maybeAddDefault pretty defaultValue <>
   help hInfo
 
-valueOption :: String -> String -> Opt.Parser (Value Op)
+valueOption :: String -> String -> Opt.Parser Value
 valueOption name hInfo = option (eitherReader parseValue) $
   long name <>
   help hInfo
   where
-    parseValue :: String -> Either String (Value Op)
+    parseValue :: String -> Either String Value
     parseValue s =
       either (Left . mappend "Failed to parse value: " . show)
              (Right . expandValue)
@@ -258,7 +258,7 @@ txData =
     <*> valueOption "parameter" "Parameter of passed contract"
     <*> mutezOption (Just minBound) "amount" "Amout sent by a transaction"
   where
-    mkTxData :: Address -> Value Op -> Mutez -> TxData
+    mkTxData :: Address -> Value -> Mutez -> TxData
     mkTxData addr param amount =
       TxData
         { tdSenderAddress = addr
