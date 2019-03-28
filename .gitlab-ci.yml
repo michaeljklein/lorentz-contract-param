@@ -62,6 +62,8 @@ build-docker:
   dependencies:
     - build-and-test
   only:
+    refs:
+      - master
     changes:
       - Dockerfile
       - .dockerignore
