@@ -59,13 +59,11 @@ do
         mkdir -p "$docker_dir/contract/$dn/"
         cp "$contract_filepath" "$docker_dir/contract/$contract_filepath"
         args+=("$arg" "$mnt_dir/contract/$contract_filepath")
-        shift
-        shift
+        shift 2
         ;;
     --db )
         user_db_filepath="$2"
-        shift
-        shift
+        shift 2
         ;;
     --docker_debug )
         debug_flag=true
