@@ -131,4 +131,3 @@ then
     rm "$docker_dir/db/$user_db_filepath"
 fi
 exit "$run_exitcode"
-docker_image
