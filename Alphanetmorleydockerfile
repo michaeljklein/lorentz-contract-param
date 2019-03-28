@@ -1,0 +1,4 @@
+FROM registry.gitlab.com/camlcase-dev/morley as morley
+FROM tezos/tezos:alphanet
+COPY --from=morley /opt/morley/morley /var/run/morley/morley
+ENV PATH "$PATH:/var/run/morley"

@@ -9,7 +9,7 @@ docker_dir="$HOME/.morley"
 mnt_dir="/mnt"
 mkdir -p "$docker_dir"
 docker_pull_timestamp="$docker_dir/docker_pull.timestamp"
-docker_image=registry.gitlab.com/camlcase-dev/morley
+default_docker_image=registry.gitlab.com/camlcase-dev/morley
 
 maybe_pull_image() {
     if [ ! -f "$docker_pull_timestamp" ] \
@@ -23,14 +23,35 @@ pull_image() {
     date "+%s" > "$docker_pull_timestamp"
 }
 
-maybe_pull_image
-
 manpage() {
-    docker run $docker_image morley --help
+    if [ "$docker_image" = "$default_docker_image" ]
+    then
+        docker run $docker_image morley --help
+    else
+        docker run "--entrypoint" "/var/run/morley/morley" $docker_image --help
+    fi
     echo ""
     echo "Also you can use --docker_debug to see additional informations such as"
     echo "arguments that are being passed to docker run"
+    echo ""
+    echo "Use --docker_image to provide tezos integrated morley image such as"
+    echo "tezos-morley:alphanet"
 }
+
+if [ "$1" = "--docker_image" ];
+then
+    docker_image="$2"
+    shift 2
+fi
+
+if [ "$docker_image" = "" ]
+then
+    docker_image=$default_docker_image
+else
+    entrypoint_arg="--entrypoint=\"/var/run/morley/morley\""
+fi
+
+maybe_pull_image
 
 if [ "$#" -eq 0 ];
 then
@@ -94,7 +115,14 @@ if [ -n "$debug_flag" ];
 then
     echo "docker run arguments: ${args[*]}"
 fi
-docker run -v "$docker_dir:$mnt_dir" -i $docker_image morley "${args[@]}"
+if [ "$docker_image" = "$default_docker_image" ]
+then
+    docker run -v "$docker_dir:$mnt_dir" -i $docker_image morley "${args[@]}"
+else
+    docker run "--entrypoint" "/var/run/morley/morley" -v "$docker_dir:$mnt_dir" \
+           -i $docker_image "${args[@]}"
+fi
+
 run_exitcode=$?
 rm -rf "$docker_dir/contract"
 if [ "$user_db_filepath" != "$default_db_filepath" ];
@@ -102,3 +130,4 @@ then
     rm "$docker_dir/db/$user_db_filepath"
 fi
 exit "$run_exitcode"
+docker_image
