@@ -28,14 +28,14 @@ manpage() {
     then
         docker run $docker_image morley --help
     else
-        docker run "--entrypoint" "/var/run/morley/morley" $docker_image --help
+        docker run $entrypoint_arg $entrypoint_path $docker_image --help
     fi
     echo ""
     echo "Also you can use --docker_debug to see additional informations such as"
     echo "arguments that are being passed to docker run"
     echo ""
-    echo "Use --docker_image to provide tezos integrated morley image such as"
-    echo "tezos-morley:alphanet"
+    echo "Use --docker_image as a first argument to this script to provide tezos"
+    echo "integrated morley image such registry.gitlab.com/camlcase-dev/morley:tezos-morley-alphanet"
 }
 
 if [ "$1" = "--docker_image" ];
@@ -48,7 +48,8 @@ if [ "$docker_image" = "" ]
 then
     docker_image=$default_docker_image
 else
-    entrypoint_arg="--entrypoint=\"/var/run/morley/morley\""
+    entrypoint_arg="--entrypoint"
+    entrypoint_path="/var/run/morley/morley"
 fi
 
 maybe_pull_image
@@ -119,7 +120,7 @@ if [ "$docker_image" = "$default_docker_image" ]
 then
     docker run -v "$docker_dir:$mnt_dir" -i $docker_image morley "${args[@]}"
 else
-    docker run "--entrypoint" "/var/run/morley/morley" -v "$docker_dir:$mnt_dir" \
+    docker run $entrypoint_arg $entrypoint_path -v "$docker_dir:$mnt_dir" \
            -i $docker_image "${args[@]}"
 fi
 
