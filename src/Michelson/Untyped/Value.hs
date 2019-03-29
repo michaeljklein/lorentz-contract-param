@@ -5,7 +5,6 @@
 module Michelson.Untyped.Value
   ( Value (..)
   , Elt (..)
-
   -- Internal types to avoid orphan instances
   , InternalByteString(..)
   , unInternalByteString
@@ -14,10 +13,13 @@ module Michelson.Untyped.Value
 import Data.Aeson (FromJSON(..), ToJSON(..))
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
-import Data.Text.Lazy.Builder (Builder)
-import Fmt (hexF, (+|), (|+))
-import Formatting.Buildable (Buildable)
-import qualified Formatting.Buildable as Buildable
+import qualified Data.List as L
+import qualified Data.Text.Lazy as LT
+import Formatting.Buildable (Buildable(build))
+import Text.Hex (encodeHex)
+import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, (<+>), (<++>))
+
+import Michelson.Printer.Util (RenderDoc(..), printDoc, renderOps)
 
 data Value op =
     ValueInt     Integer
@@ -50,33 +52,33 @@ newtype InternalByteString = InternalByteString ByteString
 unInternalByteString :: InternalByteString -> ByteString
 unInternalByteString (InternalByteString bs) = bs
 
-instance Buildable op => Buildable (Value op) where
-  build =
+instance RenderDoc op => RenderDoc (Value op) where
+  renderDoc =
     \case
-      ValueInt i -> Buildable.build i
-      ValueString s -> "\"" +| s |+ "\""
-      ValueBytes (InternalByteString b) -> "0x" <> hexF b
-      ValueUnit -> "Unit"
-      ValueTrue -> "True"
-      ValueFalse -> "False"
-      ValuePair a b -> "(Pair " +| a |+ " " +| b |+ ")"
-      ValueLeft v -> "(Left " +| v |+ ")"
-      ValueRight v -> "(Right " +| v |+ ")"
-      ValueSome v -> "(Some " +| v |+ ")"
-      ValueNone -> "None"
-      ValueNil -> "{}"
-      ValueSeq vs -> buildList vs
-      ValueMap els -> buildList els
-      ValueLambda ops -> buildList ops
-    where
-      buildList :: Buildable a => NonEmpty a -> Builder
-      buildList (toList -> items) =
-        "{" <>
-        mconcat (intersperse "; " $ map Buildable.build items) <>
-        "}"
+      ValueNil       -> mempty
+      ValueInt x     -> text . LT.pack . show $ x 
+      ValueString x  -> dquotes (text . LT.fromStrict $ x)
+      ValueBytes xs  -> "0x" <+> (text . LT.fromStrict . encodeHex . unInternalByteString $ xs)
+      ValueUnit      -> "Unit"
+      ValueTrue      -> "True"
+      ValueFalse     -> "False"
+      ValuePair l r  -> parens $ ("Pair"  <++> renderDoc l <++> renderDoc r)
+      ValueLeft l    -> parens $ ("Left"  <++> renderDoc l)
+      ValueRight r   -> parens $ ("Right" <++> renderDoc r)
+      ValueSome x    -> parens $ ("Some"  <++> renderDoc x)
+      ValueNone      -> "None"
+      ValueSeq xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
+      ValueMap xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
+      ValueLambda xs -> renderOps xs
 
-instance Buildable op => Buildable (Elt op) where
-  build (Elt a b) = "Elt " +| a |+ " " +| b |+ ""
+instance RenderDoc op => RenderDoc (Elt op) where
+  renderDoc (Elt k v) = "Elt" <+> renderDoc k <+> renderDoc v
+
+instance (RenderDoc op) => Buildable (Value op) where
+  build = build . printDoc . renderDoc
+
+instance (RenderDoc op) => Buildable (Elt op) where
+  build = build . printDoc . renderDoc
 
 ----------------------------------------------------------------------------
 -- JSON serialization

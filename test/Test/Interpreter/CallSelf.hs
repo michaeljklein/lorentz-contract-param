@@ -10,7 +10,7 @@ import Test.QuickCheck (Gen, choose, forAll)
 
 import Michelson.Interpret (ContractEnv(..), InterpreterState(..), RemainingSteps(..))
 import Michelson.Typed
-import Michelson.Untyped (OriginationOperation(..), mkContractAddress, UntypedContract)
+import Michelson.Untyped (OriginationOperation(..), UntypedContract, mkContractAddress)
 import qualified Michelson.Untyped as Untyped
 import Morley.Runtime (InterpreterOp(..), TxData(..))
 import Morley.Runtime.GState

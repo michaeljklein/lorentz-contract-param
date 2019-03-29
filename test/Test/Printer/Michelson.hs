@@ -1,0 +1,182 @@
+module Test.Printer.Michelson
+  ( spec
+  ) where
+
+import Prelude hiding (bool)
+import Test.Hspec (Spec, describe, it, shouldBe)
+
+import Michelson.Printer (printUntypedContract)
+import Michelson.Typed
+import Michelson.Untyped (UntypedContract)
+import Morley.Test (ImportContractError, readContract, specWithContract)
+
+spec :: Spec
+spec = describe "Michelson.TzPrinter.printUntypedContract" $ do
+  roundtripPrintTest @('TOr ('Tc 'CKeyHash) ('TPair 'TKey ('TPair ('Tc 'CMutez) 'TSignature))) @('TMap 'CKeyHash ('Tc 'CMutez)) "contracts/accounts.tz"
+  roundtripPrintTest @('TList ('Tc 'CInt)) @('TList ('Tc 'CInt)) "contracts/add1_list.tz"
+  roundtripPrintTest @('Tc 'CInt) @('Tc 'CInt) "contracts/add1.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CTimestamp)) @('TOption ('Tc 'CTimestamp)) "contracts/add_delta_timestamp.tz"
+  roundtripPrintTest @('TPair ('Tc 'CTimestamp) ('Tc 'CInt)) @('TOption ('Tc 'CTimestamp)) "contracts/add_timestamp_delta.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TPair ('TPair ('Tc 'CNat) ('Tc 'CBool)) ('Tc 'CTimestamp)) "contracts/after_strategy.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TPair ('Tc 'CNat) ('Tc 'CBool)) "contracts/always.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBool) ('Tc 'CBool)) @('TOption ('Tc 'CBool)) "contracts/and.tz"
+  roundtripPrintTest @('TPair ('TList ('Tc 'CInt)) ('TList ('Tc 'CInt))) @('TList ('Tc 'CInt)) "contracts/append.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_cmpeq.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_cmpge.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_cmpgt.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_cmple.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_cmplt.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_cmpneq.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_eq.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_ge.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_gt.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_le.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_lt.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TUnit) "contracts/assert_neq.tz"
+  roundtripPrintTest @('Tc 'CBool) @('TUnit) "contracts/assert.tz"
+  roundtripPrintTest @('TUnit) @('Tc 'CMutez) "contracts/at_least.tz"
+  roundtripPrintTest @('Tc 'CKeyHash) @('TPair ('Tc 'CTimestamp) ('TPair ('Tc 'CMutez) ('Tc 'CKeyHash))) "contracts/auction.tz"
+  roundtripPrintTest @('Tc 'CKeyHash) @('TPair ('Tc 'CTimestamp) ('TPair ('Tc 'CMutez) ('Tc 'CKeyHash))) "contracts/auction-buggy.tz"
+  roundtripPrintTest @('TUnit) @('TPair ('Tc 'CTimestamp) ('TPair ('TContract 'TUnit) ('TContract 'TUnit))) "contracts/bad_lockup.tz"
+  roundtripPrintTest @('TUnit) @('Tc 'CMutez) "contracts/balance.tz"
+  roundtripPrintTest @('TUnit) @('TList ('Tc 'CInt)) "contracts/basic1.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TList ('TPair ('Tc 'CInt) ('Tc 'CInt))) "contracts/basic2.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('TList ('TPair ('Tc 'CInt) ('Tc 'CInt))) "contracts/basic4.tz"
+  roundtripPrintTest @('TUnit) @('TList ('Tc 'CInt)) "contracts/basic5.tz"
+  roundtripPrintTest @('TPair ('TPair ('Tc 'CInt) ('TOption ('Tc 'CInt))) ('TPair ('Tc 'CInt) ('TOption ('Tc 'CInt)))) @('TPair ('TBigMap 'CInt ('Tc 'CInt)) 'TUnit) "contracts/big_map_get_add.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CBool)) @('TPair ('TBigMap 'CInt 'TUnit) 'TUnit) "contracts/big_map_mem.tz"
+  roundtripPrintTest @('TList ('TPair ('Tc 'CString) ('Tc 'CInt))) @('TPair ('TBigMap 'CString ('Tc 'CInt)) 'TUnit) "contracts/big_map_union.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TList ('Tc 'CNat)) "contracts/build_list.tz"
+  roundtripPrintTest @('TPair ('TPair 'TUnit ('Tc 'CString)) ('Tc 'CBool)) @'TUnit "contracts/cadr_annotation.tz"
+  roundtripPrintTest @('Tc 'CInt) @('Tc 'CNat) "contracts/call_self_several_times.tz"
+  roundtripPrintTest @('TKey) @('TPair 'TSignature ('Tc 'CString)) "contracts/check_signature.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBytes) ('Tc 'CBytes)) @('TList ('Tc 'CBool)) "contracts/compare_bytes.tz"
+  roundtripPrintTest @('TPair ('Tc 'CMutez) ('Tc 'CMutez)) @('TList ('Tc 'CBool)) "contracts/compare.tz"
+  roundtripPrintTest @('TList ('Tc 'CString))  @('TList ('Tc 'CString)) "contracts/concat_hello.tz"
+  roundtripPrintTest @('TList ('Tc 'CString))  @('Tc 'CString) "contracts/concat_list.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CString) "contracts/concat.tz"
+  roundtripPrintTest @('TOr ('Tc 'CString) ('TOption ('Tc 'CInt))) @('Tc 'CString) "contracts/conditionals.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TList ('Tc 'CNat)) "contracts/cons_twice.tz"
+  roundtripPrintTest @('TPair ('TList ('Tc 'CString)) ('TList ('Tc 'CString))) @('TOption ('Tc 'CBool)) "contracts/contains_all.tz"
+  roundtripPrintTest @('Tc 'CNat) @('Tc 'CNat) "contracts/cps_fact.tz"
+  roundtripPrintTest @('TOr ('Tc 'CKeyHash) ('Tc 'CAddress)) @('TOption ('TContract 'TUnit)) "contracts/create_account.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CAddress) "contracts/create_add1_lists.tz"
+  roundtripPrintTest @('TOr ('Tc 'CKeyHash) ('Tc 'CAddress)) @'TUnit "contracts/create_contract.tz"
+  roundtripPrintTest @('TPair 'TSignature ('TPair ('Tc 'CString) ('Tc 'CNat))) @('TPair ('TPair 'TKey ('Tc 'CNat)) ('Tc 'CString)) "contracts/data_publisher.tz"
+  roundtripPrintTest @('Tc 'CKeyHash) @'TUnit "contracts/default_account.tz"
+  roundtripPrintTest @('TPair ('Tc 'CTimestamp) ('Tc 'CTimestamp)) @('Tc 'CInt) "contracts/diff_timestamps.tz"
+  roundtripPrintTest @('TOr ('Tc 'CString) ('TPair ('Tc 'CString) ('TLambda 'TUnit ('Tc 'CString)))) @('TPair ('Tc 'CString) ('TMap 'CString ('TLambda 'TUnit ('Tc 'CString)))) "contracts/dispatch.tz"
+  roundtripPrintTest @'TUnit @('TMap 'CString ('Tc 'CString)) "contracts/empty_map.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/empty.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CString) "contracts/exec_concat.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/fail_amount.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/fail.tz"
+  roundtripPrintTest @('Tc 'CKeyHash) @('Tc 'CTimestamp) "contracts/faucet.tz"
+  roundtripPrintTest @('TList ('Tc 'CNat)) @('Tc 'CNat) "contracts/first.tz"
+  roundtripPrintTest @('TOr ('Tc 'CString) ('Tc 'CNat)) @('TPair ('TPair ('Tc 'CNat) ('TPair ('Tc 'CMutez) ('Tc 'CMutez))) ('TPair ('TPair ('Tc 'CNat) ('TPair ('Tc 'CTimestamp) ('Tc 'CTimestamp))) ('TPair ('TPair ('Tc 'CMutez) ('Tc 'CMutez)) ('TPair ('TPair ('TContract 'TUnit) ('TContract 'TUnit)) ('TContract 'TUnit))))) "contracts/forward.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CString) "contracts/gas_exhaustion.tz"
+  roundtripPrintTest @('Tc 'CString) @('TPair ('TOption ('Tc 'CString)) ('TMap 'CString ('Tc 'CString))) "contracts/get_map_value.tz"
+  roundtripPrintTest @('Tc 'CString) @('TMap 'CAddress ('TOption ('Tc 'CString))) "contracts/guestbook.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CInt) "contracts/hardlimit.tz"
+  roundtripPrintTest @('TPair ('Tc 'CMutez) ('TPair ('Tc 'CTimestamp) ('Tc 'CInt))) @('Tc 'CBytes) "contracts/hash_consistency_checker.tz"
+  roundtripPrintTest @'TKey @('TOption ('Tc 'CKeyHash)) "contracts/hash_key.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CBytes) "contracts/hash_string.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CString) "contracts/idString.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CString) "contracts/id.tz"
+  roundtripPrintTest @('TOption ('Tc 'CString)) @('Tc 'CString) "contracts/if_some.tz"
+  roundtripPrintTest @('Tc 'CBool) @('TOption ('Tc 'CBool)) "contracts/if.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CInt) "contracts/increment.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/infinite_loop.tz"
+  roundtripPrintTest @('TList ('Tc 'CInt)) @('TList ('Tc 'CInt)) "contracts/insertion_sort.tz"
+  roundtripPrintTest @('TOption ('TPair 'TSignature ('Tc 'CInt))) @('TPair 'TKey ('Tc 'CInt)) "contracts/int_publisher.tz"
+  roundtripPrintTest @('Tc 'CKeyHash) @('TPair ('Tc 'CTimestamp) ('TPair ('Tc 'CMutez) ('Tc 'CKeyHash))) "contracts/king_of_tez.tz"
+  roundtripPrintTest @('TList ('Tc 'CString)) @('TList ('Tc 'CString)) "contracts/list_id_map.tz"
+  roundtripPrintTest @('TList ('Tc 'CString)) @('TList ('Tc 'CString)) "contracts/list_id.tz"
+  roundtripPrintTest @('TList ('Tc 'CBytes)) @('Tc 'CBytes) "contracts/list_iter2_bytes.tz"
+  roundtripPrintTest @('TList ('Tc 'CString)) @('Tc 'CString) "contracts/list_iter2.tz"
+  roundtripPrintTest @('TList ('Tc 'CInt)) @('Tc 'CInt) "contracts/list_iter.tz"
+  roundtripPrintTest @('TList ('Tc 'CInt)) @('TList ('Tc 'CInt)) "contracts/list_map_block.tz"
+  roundtripPrintTest @'TUnit @('TList ('TContract 'TUnit)) "contracts/list_of_transactions.tz"
+  roundtripPrintTest @'TUnit @('TPair ('Tc 'CTimestamp) ('TPair ('Tc 'CMutez) ('TContract 'TUnit))) "contracts/lockup.tz"
+  roundtripPrintTest @('TList ('Tc 'CString)) @('TList ('Tc 'CString)) "contracts/loop_left.tz"
+  roundtripPrintTest @'TUnit @('TPair ('TUnit) ('TUnit)) "contracts/macro_annotations.tz"
+  roundtripPrintTest @'TUnit @('TPair ('TPair ('Tc 'CNat) ('TPair ('Tc 'CNat) ('TPair ('TPair ('TPair ('Tc 'CNat) ('Tc 'CMutez)) ('Tc 'CNat)) ('Tc 'CNat)))) ('Tc 'CNat)) "contracts/map_caddaadr.tz"
+  roundtripPrintTest @('Tc 'CBool) @('TPair ('Tc 'CBool) ('Tc 'CNat)) "contracts/map_car.tz"
+  roundtripPrintTest @('TMap 'CNat ('Tc 'CNat)) @('TMap 'CNat ('Tc 'CNat)) "contracts/map_id.tz"
+  roundtripPrintTest @('TMap 'CInt ('Tc 'CInt)) @('TPair ('Tc 'CInt) ('Tc 'CInt)) "contracts/map_iter.tz"
+  roundtripPrintTest @('TMap 'CString ('Tc 'CNat)) @('Tc 'CNat) "contracts/map_size.tz"
+  roundtripPrintTest @('TList ('Tc 'CInt)) @('TOption ('Tc 'CInt)) "contracts/max_in_list.tz"
+  roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @('Tc 'CInt) "contracts/min.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/mutez_add_overflow.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/mutez_sub_underflow.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/noop.tz"
+  roundtripPrintTest @('Tc 'CBool) @('TOption ('Tc 'CBool)) "contracts/not.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TList ('Tc 'CAddress)) "contracts/originator.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBool) ('Tc 'CBool)) @('TOption ('Tc 'CBool)) "contracts/or.tz"
+  roundtripPrintTest @('TPair ('TPair ('TPair ('Tc 'CString) ('TList ('Tc 'CInt))) ('TSet 'CNat)) ('Tc 'CBytes)) @'TUnit "contracts/packunpack.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBool) ('Tc 'CBool)) @('TOption ('TPair ('Tc 'CBool) ('Tc 'CBool))) "contracts/pair_id.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/pair_macro.tz"
+  roundtripPrintTest @('TOr ('Tc 'CNat) ('TPair 'TSignature ('Tc 'CNat))) @('TPair ('Tc 'CBool) ('TPair ('TMap 'CNat ('TPair ('Tc 'CBool) ('Tc 'CBool))) ('TPair 'TKey 'TKey))) "contracts/parameterized_multisig.tz"
+  roundtripPrintTest @('TOption ('Tc 'CString)) @('TPair ('TOption ('Tc 'CString)) ('TPair ('TPair ('Tc 'CNat) ('Tc 'CNat)) ('TMap 'CNat ('Tc 'CString)))) "contracts/queue.tz"
+  roundtripPrintTest @('TPair ('TLambda ('Tc 'CInt) ('Tc 'CInt)) ('TList ('Tc 'CInt))) @('TList ('Tc 'CInt)) "contracts/reduce_map.tz"
+  roundtripPrintTest @'TUnit @('TPair ('TContract 'TUnit) ('TContract 'TUnit)) "contracts/reentrancy.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/replay.tz"
+  roundtripPrintTest @'TUnit @('TPair ('TPair ('Tc 'CTimestamp) ('Tc 'CMutez)) ('TPair ('TContract 'TUnit) ('TContract 'TUnit))) "contracts/reservoir.tz"
+  roundtripPrintTest @'TUnit @('TOption ('Tc 'CNat)) "contracts/ret_int.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBytes) 'TSignature) @('TPair ('Tc 'CBytes) 'TKey) "contracts/reveal_signed_preimage.tz"
+  roundtripPrintTest @('TList ('Tc 'CString)) @('TList ('Tc 'CString)) "contracts/reverse_loop.tz"
+  roundtripPrintTest @('TList ('Tc 'CString)) @('TList ('Tc 'CString)) "contracts/reverse.tz"
+  roundtripPrintTest @'TUnit @('TPair ('Tc 'CString) ('TPair ('Tc 'CTimestamp) ('TPair ('TPair ('Tc 'CMutez) ('Tc 'CMutez)) ('TPair ('TContract 'TUnit) ('TPair ('TContract 'TUnit) ('TContract 'TUnit)))))) "contracts/scrutable_reservoir.tz"
+  roundtripPrintTest @'TUnit @('TContract 'TUnit) "contracts/self.tz"
+  roundtripPrintTest @('Tc 'CMutez) @('TPair ('TPair ('Tc 'CNat) ('TPair ('Tc 'CNat) ('TPair ('TPair ('TPair ('Tc 'CNat) ('Tc 'CMutez)) ('Tc 'CNat)) ('Tc 'CNat)))) ('Tc 'CNat)) "contracts/set_caddaadr.tz"
+  roundtripPrintTest @('Tc 'CString) @('TPair ('Tc 'CString) ('Tc 'CNat)) "contracts/set_car.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TPair ('Tc 'CString) ('Tc 'CNat)) "contracts/set_cdr.tz"
+  roundtripPrintTest @('TSet 'CString) @('TSet 'CString) "contracts/set_id.tz"
+  roundtripPrintTest @('TSet 'CInt) @('Tc 'CInt) "contracts/set_iter.tz"
+  roundtripPrintTest @('Tc 'CString) @('TPair ('TSet 'CString) ('TOption ('Tc 'CBool))) "contracts/set_member.tz"
+  roundtripPrintTest @('TSet 'CInt) @('Tc 'CNat) "contracts/set_size.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBytes) 'TSignature) @'TKey "contracts/slices.tz"
+  roundtripPrintTest @('Tc 'CNat) @('TList ('Tc 'CAddress)) "contracts/spawn_identities.tz"
+  roundtripPrintTest @('Tc 'CBytes) @('TList ('Tc 'CBytes)) "contracts/split_bytes.tz"
+  roundtripPrintTest @('Tc 'CString) @('TList ('Tc 'CString)) "contracts/split_string.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CNat) "contracts/steps_to_quota_test1.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CNat) "contracts/steps_to_quota_test2.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CNat) "contracts/steps_to_quota.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CString) "contracts/store_input.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CTimestamp) "contracts/store_now.tz"
+  roundtripPrintTest @('Tc 'CString) @('TOption ('Tc 'CString)) "contracts/str_id.tz"
+  roundtripPrintTest @('Tc 'CString) @('Tc 'CAddress) "contracts/stringCaller.tz"
+  roundtripPrintTest @('TPair ('TSet 'CString) ('TSet 'CString)) @('Tc 'CBool) "contracts/subset.tz"
+  roundtripPrintTest @('TPair ('Tc 'CTimestamp) ('Tc 'CInt)) @('Tc 'CTimestamp) "contracts/sub_timestamp_delta.tz"
+  roundtripPrintTest @('TOr ('Tc 'CBool) ('Tc 'CString)) @('TOr ('Tc 'CString) ('Tc 'CBool)) "contracts/swap_left_right.tz"
+  roundtripPrintTest @('Tc 'CKeyHash) @'TUnit "contracts/take_my_money.tz"
+  -- these two are broken
+  -- roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @'TUnit "contracts/testassert_different_stack.tz"
+  -- roundtripPrintTest @('TPair ('Tc 'CInt) ('Tc 'CInt)) @'TUnit "contracts/testassert_square.tz"
+  roundtripPrintTest @('TPair ('Tc 'CMutez) ('Tc 'CMutez)) @('TOption ('TPair ('Tc 'CMutez) ('Tc 'CMutez))) "contracts/tez_add_sub.tz"
+  roundtripPrintTest @'TUnit @('Tc 'CMutez) "contracts/transfer_amount.tz"
+  roundtripPrintTest @('TContract 'TUnit) @'TUnit "contracts/transfer_to.tz"
+  roundtripPrintTest @'TUnit @'TUnit "contracts/unpair_macro.tz"
+  roundtripPrintTest @('TOption ('Tc 'CKeyHash)) @('TPair ('TPair ('Tc 'CAddress) ('TOption ('Tc 'CKeyHash))) ('TPair ('Tc 'CAddress) ('TOption ('Tc 'CKeyHash)))) "contracts/vote_for_delegate.tz"
+  roundtripPrintTest @('TPair 'TSignature ('Tc 'CNat)) @('TPair ('TPair ('TContract 'TUnit) ('TContract 'TUnit)) ('TPair ('Tc 'CNat) 'TKey)) "contracts/weather_insurance.tz"
+  roundtripPrintTest @('TPair ('Tc 'CBool) ('Tc 'CBool)) @('TOption ('Tc 'CBool)) "contracts/xor.tz"
+
+-- | Read and typecheck a 'contract' from 'filePath', print 'contract'
+-- to 'printedContract'. Read and typecheck 'printedContract' to
+-- 'contract2', print 'contract2' and check that its result is equal
+-- to 'printedContract'. The contracts it compares are of type
+-- 'UntypedExpandedContract'.
+roundtripPrintTest
+  :: forall (cp :: T) (st :: T). (Typeable cp, Typeable st)
+  => FilePath
+  -> Spec
+roundtripPrintTest filePath =
+  specWithContract filePath $ \(contract,  _ :: (Contract cp st)) ->
+    it "roundtrip printUntypedContract test" $ do
+      let printedContract = printUntypedContract contract
+      either
+        (\t -> fail $ show printedContract ++ show t)
+        (flip shouldBe printedContract . printUntypedContract . (\(contract2,_) -> contract2))
+        (readContract
+           filePath
+           printedContract :: Either ImportContractError (UntypedContract, Contract cp st))
