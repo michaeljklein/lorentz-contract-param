@@ -14,10 +14,9 @@ import Data.Aeson (FromJSON(..), ToJSON(..))
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
 import qualified Data.List as L
-import qualified Data.Text.Lazy as LT
 import Formatting.Buildable (Buildable(build))
 import Text.Hex (encodeHex)
-import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, (<++>), (<+>))
+import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, textStrict, (<++>), (<+>))
 
 import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOps)
 
@@ -56,9 +55,9 @@ instance RenderDoc op => RenderDoc (Value op) where
   renderDoc =
     \case
       ValueNil       -> mempty
-      ValueInt x     -> text . LT.pack . show $ x
-      ValueString x  -> dquotes (text . LT.fromStrict $ x)
-      ValueBytes xs  -> "0x" <+> (text . LT.fromStrict . encodeHex . unInternalByteString $ xs)
+      ValueInt x     -> text . show $ x
+      ValueString x  -> dquotes (textStrict x)
+      ValueBytes xs  -> "0x" <+> (textStrict . encodeHex . unInternalByteString $ xs)
       ValueUnit      -> "Unit"
       ValueTrue      -> "True"
       ValueFalse     -> "False"
