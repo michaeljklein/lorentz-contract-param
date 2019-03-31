@@ -19,6 +19,15 @@ import Text.PrettyPrint.Leijen.Text
 -- and define Fmt.Buildable instances.
 class RenderDoc a where
   renderDoc :: a -> Doc
+  -- | Whether a value can be represented in Michelson code.
+  -- Normally either all values of some type are renderable or not renderable.
+  -- However, in case of instructions we have extra instructions which should
+  -- not be rendered.
+  -- Note: it's not suficcient to just return 'mempty' for such instructions,
+  -- because sometimes we want to print lists of instructions and we need to
+  -- ignore them complete (to avoid putting redundant separators).
+  isRenderable :: a -> Bool
+  isRenderable _ = True
 
 -- | Convert 'Doc' to 'Text' with a line width of 80.
 printDoc :: Doc -> LT.Text
@@ -30,7 +39,8 @@ renderOps :: (RenderDoc op) => NonEmpty op -> Doc
 renderOps = renderOpsList . toList
 
 renderOpsList :: (RenderDoc op) => [op] -> Doc
-renderOpsList ops = braces $ cat $ punctuate semi (renderDoc <$> ops)
+renderOpsList ops =
+  braces $ cat $ punctuate semi (renderDoc <$> filter isRenderable ops)
 
 -- | Create a specific number of spaces.
 spaces :: Int -> Doc

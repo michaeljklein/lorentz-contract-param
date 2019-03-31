@@ -257,6 +257,9 @@ instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
     SOURCE va             -> "SOURCE" <++> renderDoc va
     SENDER va             -> "SENDER" <++> renderDoc va
     ADDRESS va            -> "ADDRESS" <++> renderDoc va
+  isRenderable = \case
+    EXT {} -> False
+    _ -> True
 
 instance (RenderDoc op) => Buildable (InstrAbstract op) where
   build = buildRenderDoc
