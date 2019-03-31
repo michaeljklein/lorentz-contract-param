@@ -179,4 +179,4 @@ roundtripPrintTest filePath =
         (flip shouldBe printedContract . printUntypedContract . (\(contract2,_) -> contract2))
         (readContract
            filePath
-           printedContract :: Either ImportContractError (UntypedContract, Contract cp st))
+           (toText printedContract) :: Either ImportContractError (UntypedContract, Contract cp st))

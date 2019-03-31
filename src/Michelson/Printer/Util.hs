@@ -7,12 +7,12 @@ module Michelson.Printer.Util
   , wrapInParens
   ) where
 
+import qualified Data.Text.Lazy as LT
 import Text.PrettyPrint.Leijen.Text
   (Doc, braces, cat, displayT, hcat, isEmpty, parens, punctuate, renderPretty, semi, space, (<++>))
-import qualified Data.Text.Lazy as LT
 
 -- | Generalize converting a type into a
--- Text.PrettyPrint.Leijen.Text.Doc. Used to pretty print Michelons code
+-- Text.PrettyPrint.Leijen.Text.Doc. Used to pretty print Michelson code
 -- and define Fmt.Buildable instances.
 class RenderDoc a where
   renderDoc :: a -> Doc
@@ -24,7 +24,7 @@ printDoc = displayT . renderPretty 0.4 80
 -- | Generic way to render the different op types that get passed
 -- to a contract.
 renderOps :: (RenderDoc op) => NonEmpty op -> Doc
-renderOps = renderOpsList . toList 
+renderOps = renderOpsList . toList
 
 renderOpsList :: (RenderDoc op) => [op] -> Doc
 renderOpsList ops = braces $ cat $ punctuate semi (renderDoc <$> ops)

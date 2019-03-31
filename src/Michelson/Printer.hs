@@ -5,8 +5,11 @@ module Michelson.Printer
   ) where
 
 import qualified Data.Text.Lazy as TL
-import qualified Michelson.Untyped as Un
-import Michelson.Printer.Util (printDoc, RenderDoc(..))
 
-printUntypedContract :: (RenderDoc op) => Un.Contract op -> Text
-printUntypedContract = TL.toStrict . printDoc . renderDoc
+import Michelson.Printer.Util (RenderDoc(..), printDoc)
+import qualified Michelson.Untyped as Un
+
+-- | Convert an untyped contract into a textual representation which
+-- will be accepted by the OCaml reference client.
+printUntypedContract :: (RenderDoc op) => Un.Contract op -> TL.Text
+printUntypedContract = printDoc . renderDoc

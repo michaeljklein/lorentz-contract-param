@@ -306,8 +306,8 @@ main = do
           then pPrint $ expandContract contract
           else pPrint contract
       Print mFilename -> do
-        contract <- readAndParseContract mFilename
-        pPrint $ printUntypedContract $ expandContract contract
+        contract <- prepareContract mFilename
+        putStrLn $ printUntypedContract contract
       TypeCheck mFilename _hasVerboseFlag -> do
         michelsonContract <- prepareContract mFilename
         void $ either throwM pure $

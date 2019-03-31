@@ -20,10 +20,9 @@ import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
 import Data.Default (Default(..))
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
 import Fmt (Buildable(build))
+import Text.PrettyPrint.Leijen.Text (Doc, textStrict)
 import qualified Text.Show
-import Text.PrettyPrint.Leijen.Text (text)
 
 import Michelson.Printer.Util (RenderDoc(..), printDoc)
 
@@ -53,16 +52,18 @@ type VarAnn = Annotation VarTag
 
 
 instance RenderDoc TypeAnn where
-  renderDoc (Annotation "") = ""
-  renderDoc (Annotation a)  = ":" <> (text . LT.fromStrict $ a)
+  renderDoc = renderAnnotation ":"
 
 instance RenderDoc FieldAnn where
-  renderDoc (Annotation "") = ""
-  renderDoc (Annotation a)  = "%" <> (text . LT.fromStrict $ a)
+  renderDoc = renderAnnotation "%"
 
 instance RenderDoc VarAnn where
-  renderDoc (Annotation "") = ""
-  renderDoc (Annotation a)  = "@" <> (text . LT.fromStrict $ a)
+  renderDoc = renderAnnotation "@"
+
+renderAnnotation :: Doc -> Annotation tag -> Doc
+renderAnnotation prefix a@(Annotation text)
+  | a == noAnn = ""
+  | otherwise = prefix <> (textStrict text)
 
 instance Buildable TypeAnn where
   build = build . printDoc . renderDoc
