@@ -46,9 +46,9 @@ module Michelson.Untyped.Type
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
 import Formatting.Buildable (Buildable(build))
-import Text.PrettyPrint.Leijen.Text (Doc, parens, (<+>), (<++>))
+import Text.PrettyPrint.Leijen.Text (Doc, parens, (<++>), (<+>))
 
-import Michelson.Printer.Util (RenderDoc(..), printDoc, wrapInParens)
+import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, wrapInParens)
 import Michelson.Untyped.Annotation (Annotation(..), FieldAnn, TypeAnn)
 import Tezos.Address (Address)
 import Tezos.Core (Mutez, Timestamp)
@@ -129,14 +129,14 @@ instance RenderDoc CT where
     CAddress   -> "address"
 
 instance Buildable Type where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 -- Annotated Comparable Sub-type
 data Comparable = Comparable CT TypeAnn
   deriving (Eq, Show, Data, Generic)
 
 instance Buildable Comparable where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 compToType :: Comparable -> Type
 compToType (Comparable ct tn) = Type (Tc ct) tn
@@ -164,7 +164,7 @@ data T =
   deriving (Eq, Show, Data, Generic)
 
 instance Buildable T where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 -- Comparable Sub-Type
 data CT =
@@ -195,7 +195,7 @@ type family ToCT a :: CT where
   ToCT Timestamp = 'CTimestamp
 
 instance Buildable CT where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 pattern Tint :: T
 pattern Tint <- Tc CInt

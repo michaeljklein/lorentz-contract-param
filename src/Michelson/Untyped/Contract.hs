@@ -11,9 +11,9 @@ module Michelson.Untyped.Contract
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
 import Formatting.Buildable (Buildable(build))
-import Text.PrettyPrint.Leijen.Text (semi, (<+>), (<$$>))
+import Text.PrettyPrint.Leijen.Text (semi, (<$$>), (<+>))
 
-import Michelson.Printer.Util (RenderDoc(..), printDoc, renderOpsList)
+import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOpsList)
 import Michelson.Untyped.Type (Type)
 
 type Parameter = Type
@@ -31,6 +31,6 @@ instance (RenderDoc op) => RenderDoc (Contract op) where
     "code"      <+> renderOpsList code <> semi
 
 instance RenderDoc op => Buildable (Contract op) where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 deriveJSON defaultOptions ''Contract

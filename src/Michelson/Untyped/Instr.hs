@@ -25,7 +25,7 @@ import Fmt (Buildable(build), (+|), (|+))
 import Prelude hiding (EQ, GT, LT)
 import Text.PrettyPrint.Leijen.Text (braces, nest, (<$$>), (<++>), (<+>))
 
-import Michelson.Printer.Util (RenderDoc(..), printDoc, renderOpsList, spaces)
+import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOpsList, spaces)
 import Michelson.Untyped.Annotation (FieldAnn, TypeAnn, VarAnn)
 import Michelson.Untyped.Contract (Contract(..))
 import Michelson.Untyped.Type (Comparable, Type)
@@ -41,6 +41,7 @@ type InstrExtU = ExtU InstrAbstract Op
 type Instr = InstrAbstract Op
 newtype Op = Op {unOp :: Instr}
   deriving stock (Generic)
+  deriving newtype (RenderDoc, Buildable)
 
 deriving instance Eq (ExtU InstrAbstract Op) => Eq Op
 deriving instance Show (ExtU InstrAbstract Op) => Show Op
@@ -257,14 +258,8 @@ instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
     SENDER va             -> "SENDER" <++> renderDoc va
     ADDRESS va            -> "ADDRESS" <++> renderDoc va
 
-instance RenderDoc Op where
-  renderDoc (Op op) = renderDoc op
-
 instance (RenderDoc op) => Buildable (InstrAbstract op) where
-  build = build . printDoc . renderDoc
-
-instance Buildable Op where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 ----------------------------------------------------------------------------
 -- Contract's address computation

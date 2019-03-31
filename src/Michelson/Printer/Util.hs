@@ -5,11 +5,14 @@ module Michelson.Printer.Util
   , renderOpsList
   , spaces
   , wrapInParens
+  , buildRenderDoc
   ) where
 
 import qualified Data.Text.Lazy as LT
+import Data.Text.Lazy.Builder (Builder)
 import Text.PrettyPrint.Leijen.Text
-  (Doc, braces, cat, displayT, hcat, isEmpty, parens, punctuate, renderPretty, semi, space, (<++>))
+  (Doc, SimpleDoc, braces, cat, displayB, displayT, hcat, isEmpty, parens, punctuate, renderPretty,
+  semi, space, (<++>))
 
 -- | Generalize converting a type into a
 -- Text.PrettyPrint.Leijen.Text.Doc. Used to pretty print Michelson code
@@ -19,7 +22,7 @@ class RenderDoc a where
 
 -- | Convert 'Doc' to 'Text' with a line width of 80.
 printDoc :: Doc -> LT.Text
-printDoc = displayT . renderPretty 0.4 80
+printDoc = displayT . doRender
 
 -- | Generic way to render the different op types that get passed
 -- to a contract.
@@ -28,7 +31,6 @@ renderOps = renderOpsList . toList
 
 renderOpsList :: (RenderDoc op) => [op] -> Doc
 renderOpsList ops = braces $ cat $ punctuate semi (renderDoc <$> ops)
-
 
 -- | Create a specific number of spaces.
 spaces :: Int -> Doc
@@ -40,3 +42,11 @@ wrapInParens ds =
   if (length $ filter (not . isEmpty) (toList ds)) > 1
     then parens $ foldr (<++>) mempty ds
     else foldr (<++>) mempty ds
+
+-- | Turn something that is instance of `RenderDoc` into a `Builder`.
+-- It's formatted the same way as `printDoc` formats docs.
+buildRenderDoc :: RenderDoc a => a -> Builder
+buildRenderDoc = displayB . doRender . renderDoc
+
+doRender :: Doc -> SimpleDoc
+doRender = renderPretty 0.4 80

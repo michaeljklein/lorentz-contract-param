@@ -24,7 +24,7 @@ import Fmt (Buildable(build))
 import Text.PrettyPrint.Leijen.Text (Doc, textStrict)
 import qualified Text.Show
 
-import Michelson.Printer.Util (RenderDoc(..), printDoc)
+import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc)
 
 newtype Annotation tag = Annotation T.Text
   deriving stock (Eq, Data, Functor, Generic)
@@ -66,13 +66,13 @@ renderAnnotation prefix a@(Annotation text)
   | otherwise = prefix <> (textStrict text)
 
 instance Buildable TypeAnn where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 instance Buildable FieldAnn where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 instance Buildable VarAnn where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 noAnn :: Annotation a
 noAnn = Annotation ""

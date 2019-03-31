@@ -17,9 +17,9 @@ import qualified Data.List as L
 import qualified Data.Text.Lazy as LT
 import Formatting.Buildable (Buildable(build))
 import Text.Hex (encodeHex)
-import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, (<+>), (<++>))
+import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, (<++>), (<+>))
 
-import Michelson.Printer.Util (RenderDoc(..), printDoc, renderOps)
+import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOps)
 
 data Value op =
     ValueInt     Integer
@@ -56,7 +56,7 @@ instance RenderDoc op => RenderDoc (Value op) where
   renderDoc =
     \case
       ValueNil       -> mempty
-      ValueInt x     -> text . LT.pack . show $ x 
+      ValueInt x     -> text . LT.pack . show $ x
       ValueString x  -> dquotes (text . LT.fromStrict $ x)
       ValueBytes xs  -> "0x" <+> (text . LT.fromStrict . encodeHex . unInternalByteString $ xs)
       ValueUnit      -> "Unit"
@@ -75,10 +75,10 @@ instance RenderDoc op => RenderDoc (Elt op) where
   renderDoc (Elt k v) = "Elt" <+> renderDoc k <+> renderDoc v
 
 instance (RenderDoc op) => Buildable (Value op) where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 instance (RenderDoc op) => Buildable (Elt op) where
-  build = build . printDoc . renderDoc
+  build = buildRenderDoc
 
 ----------------------------------------------------------------------------
 -- JSON serialization
