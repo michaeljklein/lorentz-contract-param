@@ -28,7 +28,7 @@ instance (RenderDoc op) => RenderDoc (Contract op) where
   renderDoc (Contract parameter storage code) =
     "parameter" <+> renderDoc parameter  <> semi <$$>
     "storage"   <+> renderDoc storage    <> semi <$$>
-    "code"      <+> nest 6 (renderOpsList False code <> semi)
+    "code"      <+> nest (length ("code {" :: Text)) (renderOpsList False code <> semi)
 
 instance RenderDoc op => Buildable (Contract op) where
   build = buildRenderDoc
