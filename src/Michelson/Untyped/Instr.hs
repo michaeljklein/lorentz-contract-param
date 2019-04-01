@@ -11,6 +11,7 @@ module Michelson.Untyped.Instr
   , ExtU
   , InstrExtU
   , ExpandedInstrExtU
+  , SeqOp (..)
 
   -- * Contract's address
   , OriginationOperation (..)
@@ -63,8 +64,8 @@ deriving instance Show ExpandedInstr => Show ExpandedOp
 deriving instance Data ExpandedInstr => Data ExpandedOp
 
 instance RenderDoc ExpandedOp where
-  renderDoc (PrimEx i)  = renderDoc i
-  renderDoc (SeqEx i)   = renderOpsList True i
+  renderDoc (PrimEx i) = renderDoc i
+  renderDoc (SeqEx i)  = renderOpsList True i
   isRenderable =
     \case PrimEx i -> isRenderable i
           _ -> True
@@ -72,6 +73,19 @@ instance RenderDoc ExpandedOp where
 instance Buildable ExpandedOp where
   build (PrimEx expandedInstr) = "<PrimEx: "+|expandedInstr|+">"
   build (SeqEx expandedOps)    = "<SeqEx: "+|expandedOps|+">"
+
+-------------------------------------
+
+-- | Group several operations into one.
+--
+-- In some places we want to work on operations lists and then merge them
+-- while staying polymorphic over exact operation, and this typeclass
+-- may be handy there.
+class SeqOp op where
+  seqOp :: [op] -> op
+
+instance SeqOp ExpandedOp where
+  seqOp = SeqEx
 
 -------------------------------------
 -- Abstract instruction
@@ -94,32 +108,32 @@ data InstrAbstract op
   | SOME              TypeAnn VarAnn FieldAnn
   | NONE              TypeAnn VarAnn FieldAnn Type
   | UNIT              TypeAnn VarAnn
-  | IF_NONE           [op] [op]
+  | IF_NONE           op op
   | PAIR              TypeAnn VarAnn FieldAnn FieldAnn
   | CAR               VarAnn FieldAnn
   | CDR               VarAnn FieldAnn
   | LEFT              TypeAnn VarAnn FieldAnn FieldAnn Type
   | RIGHT             TypeAnn VarAnn FieldAnn FieldAnn Type
-  | IF_LEFT           [op] [op]
-  | IF_RIGHT          [op] [op]
+  | IF_LEFT           op op
+  | IF_RIGHT          op op
   | NIL               TypeAnn VarAnn Type
   | CONS              VarAnn -- TODO add TypeNote param
-  | IF_CONS           [op] [op]
+  | IF_CONS           op op
   | SIZE              VarAnn
   | EMPTY_SET         TypeAnn VarAnn Comparable
   | EMPTY_MAP         TypeAnn VarAnn Comparable Type
-  | MAP               VarAnn [op]
-  | ITER              [op]
+  | MAP               VarAnn op
+  | ITER              op
   | MEM               VarAnn
   | GET               VarAnn
   | UPDATE
-  | IF                [op] [op]
-  | LOOP              [op]
-  | LOOP_LEFT         [op]
-  | LAMBDA            VarAnn Type Type [op]
+  | IF                op op
+  | LOOP              op
+  | LOOP_LEFT         op
+  | LAMBDA            VarAnn Type Type op
   -- TODO check on alphanet whether we can pass TypeNote
   | EXEC              VarAnn
-  | DIP               [op]
+  | DIP               op
   | FAILWITH
   | CAST              VarAnn Type
   | RENAME            VarAnn
@@ -186,31 +200,31 @@ instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
     SOME ta va fa         -> "SOME" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa
     NONE ta va fa t       -> "NONE" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa <+> renderDoc t
     UNIT ta va            -> "UNIT" <+> renderDoc ta <+> renderDoc va
-    IF_NONE x y           -> "IF_NONE" <+> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
+    IF_NONE x y           -> "IF_NONE" <+> nest 9 (renderDoc x) <$$> spaces 8 <> nest 9 (renderDoc y)
     PAIR ta va fa1 fa2    -> "PAIR" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa1 <+> renderDoc fa2
     CAR va fa             -> "CAR" <+> renderDoc va <+> renderDoc fa
     CDR va fa             -> "CDR" <+> renderDoc va <+> renderDoc fa
     LEFT ta va fa1 fa2 t  -> "LEFT" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa1 <+> renderDoc fa2 <+> renderDoc t
     RIGHT ta va fa1 fa2 t -> "RIGHT" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa1 <+> renderDoc fa2 <+> renderDoc t
-    IF_LEFT x y           -> "IF_LEFT" <+> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
-    IF_RIGHT x y          -> "IF_RIGHT" <+> nest 10 (renderOps x) <$$> spaces 9 <> nest 10 (renderOps y)
+    IF_LEFT x y           -> "IF_LEFT" <+> nest 9 (renderDoc x) <$$> spaces 8 <> nest 9 (renderDoc y)
+    IF_RIGHT x y          -> "IF_RIGHT" <+> nest 10 (renderDoc x) <$$> spaces 9 <> nest 10 (renderDoc y)
     NIL ta va t           -> "NIL" <+> renderDoc ta <+> renderDoc va <+> renderDoc t
     CONS va               -> "CONS" <+> renderDoc va
-    IF_CONS x y           -> "IF_CONS" <+> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
+    IF_CONS x y           -> "IF_CONS" <+> nest 9 (renderDoc x) <$$> spaces 8 <> nest 9 (renderDoc y)
     SIZE va               -> "SIZE" <+> renderDoc va
     EMPTY_SET ta va t     -> "EMPTY_SET" <+> renderDoc ta <+> renderDoc va <+> renderDoc t
     EMPTY_MAP ta va c t   -> "EMPTY_MAP" <+> renderDoc ta <+> renderDoc va <+> renderDoc c <+> renderDoc t
-    MAP va s              -> "MAP" <+> renderDoc va <$$> spaces 4 <> nest 5 (renderOps s)
-    ITER s                -> "ITER" <+> nest 6 (renderOps s)
+    MAP va s              -> "MAP" <+> renderDoc va <$$> spaces 4 <> nest 5 (renderDoc s)
+    ITER s                -> "ITER" <+> nest 6 (renderDoc s)
     MEM va                -> "MEM" <+> renderDoc va
     GET va                -> "GET" <+> renderDoc va
     UPDATE                -> "UPDATE"
-    IF x y                -> "IF" <+> nest 4 (renderOps x) <$$> spaces 3 <> nest 4 (renderOps y)
-    LOOP s                -> "LOOP" <+> nest 6 (renderOps s)
-    LOOP_LEFT s           -> "LOOP_LEFT" <+> nest 11 (renderOps s)
-    LAMBDA va t r s       -> "LAMBDA" <+> renderDoc va <+> renderDoc t <+> renderDoc r <$$> spaces 7 <> nest 8 (renderOps s)
+    IF x y                -> "IF" <+> nest 4 (renderDoc x) <$$> spaces 3 <> nest 4 (renderDoc y)
+    LOOP s                -> "LOOP" <+> nest 6 (renderDoc s)
+    LOOP_LEFT s           -> "LOOP_LEFT" <+> nest 11 (renderDoc s)
+    LAMBDA va t r s       -> "LAMBDA" <+> renderDoc va <+> renderDoc t <+> renderDoc r <$$> spaces 7 <> nest 8 (renderDoc s)
     EXEC va               -> "EXEC" <+> renderDoc va
-    DIP s                 -> "DIP" <+> nest 5 (renderOps s)
+    DIP s                 -> "DIP" <+> nest 5 (renderDoc s)
     FAILWITH              -> "FAILWITH"
     CAST va t             -> "CAST" <+> renderDoc va <+> renderDoc t
     RENAME va             -> "RENAME" <+> renderDoc va
@@ -259,8 +273,6 @@ instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
     SOURCE va             -> "SOURCE" <+> renderDoc va
     SENDER va             -> "SENDER" <+> renderDoc va
     ADDRESS va            -> "ADDRESS" <+> renderDoc va
-    where
-      renderOps = renderOpsList True
 
   isRenderable = \case
     EXT {} -> False

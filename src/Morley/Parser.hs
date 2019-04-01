@@ -1,16 +1,13 @@
 module Morley.Parser
   ( program
   , parseNoEnv
-  , ops
   , ParserException (..)
   , stringLiteral
   , type_
   , value
   , stackType
   , printComment
-  , bytesLiteral
-  , pushOp
-  , intLiteral
+  , codeEntry
   ) where
 
 import Prelude hiding (many, note, some, try)
@@ -88,8 +85,14 @@ parameter = do void $ symbol "parameter"; type_
 storage :: Parser Mo.Type
 storage = do void $ symbol "storage"; type_
 
-code :: Parser [ParsedOp]
-code = do void $ symbol "code"; ops
+code :: Parser ParsedOp
+code = do void $ symbol "code"; codeEntry
+
+-- | Everything which goes after "code:", including surrounding braces.
+--
+-- This function is part of the module API and its semantics should not change.
+codeEntry :: Parser ParsedOp
+codeEntry = opsSeq
 
 -- Michelson expressions
 ------------------------
@@ -110,14 +113,14 @@ op' = do
     , Mo.Prim <$> prim
     , Mo.Mac <$> macro
     , primOrMac
-    , Mo.Seq <$> ops
+    , opsSeq
     ]
-
-ops :: Parser [Mo.ParsedOp]
-ops = braces $ sepEndBy op' semicolon
 
 ops1 :: Parser (NonEmpty Mo.ParsedOp)
 ops1 = braces $ sepEndBy1 op' semicolon
+
+opsSeq :: Parser Mo.ParsedOp
+opsSeq = braces $ Mo.Seq <$> sepEndBy op' semicolon
 
 -------------------------------------------------------------------------------
 -- Let block
@@ -161,7 +164,7 @@ letMacro = lexeme $ do
   symbol "::"
   s <- stackFn
   symbol "="
-  o <- ops
+  o <- opsSeq
   return $ Mo.LetMacro n s o
 
 letType :: Parser Mo.LetType
@@ -514,16 +517,16 @@ failWithOp :: Parser Mo.ParsedInstr
 failWithOp = do symbol' "FAILWITH"; return Mo.FAILWITH
 
 loopOp :: Parser Mo.ParsedInstr
-loopOp  = do void $ symbol' "LOOP"; Mo.LOOP <$> ops
+loopOp  = do void $ symbol' "LOOP"; Mo.LOOP <$> opsSeq
 
 loopLOp :: Parser Mo.ParsedInstr
-loopLOp = do void $ symbol' "LOOP_LEFT"; Mo.LOOP_LEFT <$> ops
+loopLOp = do void $ symbol' "LOOP_LEFT"; Mo.LOOP_LEFT <$> opsSeq
 
 execOp :: Parser Mo.ParsedInstr
 execOp = do void $ symbol' "EXEC"; Mo.EXEC <$> noteVDef
 
 dipOp :: Parser Mo.ParsedInstr
-dipOp = do void $ symbol' "DIP"; Mo.DIP <$> ops
+dipOp = do void $ symbol' "DIP"; Mo.DIP <$> opsSeq
 
 -- Stack Operations
 
@@ -553,7 +556,7 @@ unitOp = do symbol' "UNIT"; (t, v) <- notesTV; return $ Mo.UNIT t v
 
 lambdaOp :: Parser Mo.ParsedInstr
 lambdaOp = do symbol' "LAMBDA"; v <- noteVDef; a <- type_; b <- type_;
-              Mo.LAMBDA v a b <$> ops
+              Mo.LAMBDA v a b <$> opsSeq
 
 -- Generic comparison
 
@@ -657,13 +660,13 @@ updateOp :: Parser Mo.ParsedInstr
 updateOp = do symbol' "UPDATE"; return Mo.UPDATE
 
 iterOp :: Parser Mo.ParsedInstr
-iterOp = do void $ symbol' "ITER"; Mo.ITER <$> ops
+iterOp = do void $ symbol' "ITER"; Mo.ITER <$> opsSeq
 
 sizeOp :: Parser Mo.ParsedInstr
 sizeOp = do void $ symbol' "SIZE"; Mo.SIZE <$> noteVDef
 
 mapOp :: Parser Mo.ParsedInstr
-mapOp = do symbol' "MAP"; v <- noteVDef; Mo.MAP v <$> ops
+mapOp = do symbol' "MAP"; v <- noteVDef; Mo.MAP v <$> opsSeq
 
 getOp :: Parser Mo.ParsedInstr
 getOp = do void $ symbol' "GET"; Mo.GET <$> noteVDef
@@ -675,7 +678,7 @@ consOp :: Parser Mo.ParsedInstr
 consOp = do void $ symbol' "CONS"; Mo.CONS <$> noteVDef
 
 ifConsOp :: Parser Mo.ParsedInstr
-ifConsOp = do symbol' "IF_CONS"; a <- ops; Mo.IF_CONS a <$> ops
+ifConsOp = do void $ symbol' "IF_CONS"; Mo.IF_CONS <$> opsSeq <*> opsSeq
 
 -- Operations on options
 
@@ -686,7 +689,7 @@ noneOp :: Parser Mo.ParsedInstr
 noneOp = do symbol' "NONE"; (t, v, f) <- notesTVF; Mo.NONE t v f <$> type_
 
 ifNoneOp :: Parser Mo.ParsedInstr
-ifNoneOp = do symbol' "IF_NONE"; a <- ops; Mo.IF_NONE a <$> ops
+ifNoneOp = do void $ symbol' "IF_NONE"; Mo.IF_NONE <$> opsSeq <*> opsSeq
 
 -- Operations on unions
 
@@ -699,10 +702,10 @@ rightOp = do symbol' "RIGHT"; (t, v, (f, f')) <- notesTVF2;
                Mo.RIGHT t v f f' <$> type_
 
 ifLeftOp :: Parser Mo.ParsedInstr
-ifLeftOp = do symbol' "IF_LEFT"; a <- ops; Mo.IF_LEFT a <$> ops
+ifLeftOp = do void $ symbol' "IF_LEFT"; Mo.IF_LEFT <$> opsSeq <*> opsSeq
 
 ifRightOp :: Parser Mo.ParsedInstr
-ifRightOp = do symbol' "IF_RIGHT"; a <- ops; Mo.IF_RIGHT a <$> ops
+ifRightOp = do void $ symbol' "IF_RIGHT"; Mo.IF_RIGHT <$> opsSeq <*> opsSeq
 
 -- Operations on contracts
 
@@ -800,7 +803,7 @@ cmpOp = eqOp <|> neqOp <|> ltOp <|> gtOp <|> leOp <|> gtOp <|> geOp
 
 macro :: Parser Mo.Macro
 macro = do symbol' "CMP"; a <- cmpOp; Mo.CMP a <$> noteVDef
-  <|> do symbol' "IF_SOME"; a <- ops; Mo.IF_SOME a <$> ops
+  <|> do void $ symbol' "IF_SOME"; Mo.IF_SOME <$> opsSeq <*> opsSeq
   <|> do symbol' "FAIL"; return Mo.FAIL
   <|> do void $ symbol' "ASSERT_CMP"; Mo.ASSERT_CMP <$> cmpOp
   <|> do symbol' "ASSERT_NONE"; return Mo.ASSERT_NONE
@@ -809,7 +812,7 @@ macro = do symbol' "CMP"; a <- cmpOp; Mo.CMP a <$> noteVDef
   <|> do symbol' "ASSERT_RIGHT"; return Mo.ASSERT_RIGHT
   <|> do void $ symbol' "ASSERT_"; Mo.ASSERTX <$> cmpOp
   <|> do symbol' "ASSERT"; return Mo.ASSERT
-  <|> do string' "DI"; n <- num "I"; symbol' "P"; Mo.DIIP (n + 1) <$> ops
+  <|> do string' "DI"; n <- num "I"; symbol' "P"; Mo.DIIP (n + 1) <$> opsSeq
   <|> do string' "DU"; n <- num "U"; symbol' "P"; Mo.DUUP (n + 1) <$> noteVDef
   <|> unpairMac
   <|> cadrMac
@@ -866,18 +869,18 @@ mapCadrMac = do
   a <- some cadrInner
   symbol' "R"
   (v, f) <- notesVF
-  Mo.MAP_CADR a v f <$> ops
+  Mo.MAP_CADR a v f <$> opsSeq
 
 ifCmpMac :: Parser Mo.Macro
-ifCmpMac = symbol' "IFCMP" >> Mo.IFCMP <$> cmpOp <*> noteVDef <*> ops <*> ops
+ifCmpMac = symbol' "IFCMP" >> Mo.IFCMP <$> cmpOp <*> noteVDef <*> opsSeq <*> opsSeq
 
 ifOrIfX :: Parser Mo.ParsedOp
 ifOrIfX = do
   symbol' "IF"
-  a <- eitherP cmpOp ops
+  a <- eitherP cmpOp opsSeq
   case a of
-    Left cmp -> Mo.Mac <$> (Mo.IFX cmp <$> ops <*> ops)
-    Right op -> Mo.Prim <$> (Mo.IF op <$> ops)
+    Left cmp -> Mo.Mac <$> (Mo.IFX cmp <$> opsSeq <*> opsSeq)
+    Right op -> Mo.Prim <$> (Mo.IF op <$> opsSeq)
 
 -- Some of the operations and macros have the same prefixes in their names
 -- So this case should be handled separately
@@ -906,7 +909,7 @@ testAssert :: Parser Mo.ParsedUTestAssert
 testAssert = do
   n <- lexeme (T.pack <$> some alphaNumChar)
   c <- printComment
-  o <- ops
+  o <- opsSeq
   return $ Mo.UTestAssert n c o
 
 printComment :: Parser Mo.PrintComment

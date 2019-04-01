@@ -2,6 +2,7 @@
 
 module Michelson.Typed.Convert
   ( convertContract
+  , instrToOp
   , instrToOps
   , valToValue
   , Conversible (..)
@@ -35,7 +36,7 @@ convertContract contract =
   Un.Contract
     { para = toUType $ fromSingT (sing @param)
     , stor = toUType $ fromSingT (sing @store)
-    , code = instrToOps contract
+    , code = instrToOp contract
     }
 
 -- | Convert a typed 'Val' to an untyped 'Value'.
@@ -109,9 +110,12 @@ cValToValue cVal = case cVal of
   CvTimestamp t -> Un.ValueString $ show t
   CvAddress a -> Un.ValueString $ formatAddress a
 
+instrToOp :: ConversibleExt => Instr inp out -> Un.ExpandedOp
+instrToOp = Un.SeqEx . instrToOps
+
 instrToOps :: ConversibleExt => Instr inp out -> [Un.ExpandedOp]
 instrToOps instr = case instr of
-  Nested sq -> one $ Un.SeqEx $ instrToOps sq
+  Nested sq -> one $ instrToOp sq
   i -> Un.PrimEx <$> handleInstr i
   where
     handleInstr :: Instr inp out -> [Un.ExpandedInstr]
@@ -137,7 +141,7 @@ instrToOps instr = case instr of
         handle _ = error "unexcepted call"
     handleInstr SOME = [Un.SOME Un.noAnn Un.noAnn Un.noAnn]
     handleInstr UNIT = [Un.UNIT Un.noAnn Un.noAnn]
-    handleInstr (IF_NONE i1 i2) = [Un.IF_NONE (instrToOps i1) (instrToOps i2)]
+    handleInstr (IF_NONE i1 i2) = [Un.IF_NONE (instrToOp i1) (instrToOp i2)]
     handleInstr PAIR = [Un.PAIR Un.noAnn Un.noAnn Un.noAnn Un.noAnn]
     handleInstr CAR = [Un.CAR Un.noAnn Un.noAnn]
     handleInstr CDR = [Un.CDR Un.noAnn Un.noAnn]
@@ -153,8 +157,8 @@ instrToOps instr = case instr of
         handle (RIGHT :: Instr (b ': s) ('TOr a b ': s)) =
           [Un.RIGHT Un.noAnn Un.noAnn Un.noAnn Un.noAnn (toUType $ fromSingT (sing @a))]
         handle _ = error "unexcepted call"
-    handleInstr (IF_LEFT i1 i2) = [Un.IF_LEFT (instrToOps i1) (instrToOps i2)]
-    handleInstr (IF_RIGHT i1 i2) = [Un.IF_RIGHT (instrToOps i1) (instrToOps i2)]
+    handleInstr (IF_LEFT i1 i2) = [Un.IF_LEFT (instrToOp i1) (instrToOp i2)]
+    handleInstr (IF_RIGHT i1 i2) = [Un.IF_RIGHT (instrToOp i1) (instrToOp i2)]
     handleInstr i@(NIL) = handle i
       where
         handle :: Instr s ('TList p ': s) -> [Un.ExpandedInstr]
@@ -162,7 +166,7 @@ instrToOps instr = case instr of
           [Un.NIL Un.noAnn Un.noAnn (toUType $ fromSingT (sing @p))]
         handle _ = error "unexcepted call"
     handleInstr CONS = [Un.CONS Un.noAnn]
-    handleInstr (IF_CONS i1 i2) = [Un.IF_CONS (instrToOps i1) (instrToOps i2)]
+    handleInstr (IF_CONS i1 i2) = [Un.IF_CONS (instrToOp i1) (instrToOp i2)]
     handleInstr SIZE = [Un.SIZE Un.noAnn]
     handleInstr i@EMPTY_SET = handle i
       where
@@ -178,14 +182,14 @@ instrToOps instr = case instr of
            (toUType $ fromSingT (sing @b))
           ]
         handle _ = error "unexcepted call"
-    handleInstr (MAP op) = [Un.MAP Un.noAnn $ instrToOps op]
-    handleInstr (ITER op) = [Un.ITER $ instrToOps op]
+    handleInstr (MAP op) = [Un.MAP Un.noAnn $ instrToOp op]
+    handleInstr (ITER op) = [Un.ITER $ instrToOp op]
     handleInstr MEM = [Un.MEM Un.noAnn]
     handleInstr GET = [Un.GET Un.noAnn]
     handleInstr UPDATE = [Un.UPDATE]
-    handleInstr (IF op1 op2) = [Un.IF (instrToOps op1) (instrToOps op2)]
-    handleInstr (LOOP op) = [Un.LOOP (instrToOps op)]
-    handleInstr (LOOP_LEFT op) = [Un.LOOP_LEFT (instrToOps op)]
+    handleInstr (IF op1 op2) = [Un.IF (instrToOp op1) (instrToOp op2)]
+    handleInstr (LOOP op) = [Un.LOOP (instrToOp op)]
+    handleInstr (LOOP_LEFT op) = [Un.LOOP_LEFT (instrToOp op)]
     handleInstr i@(LAMBDA l) = handle i
       where
         handle :: Instr s ('TLambda i o ': s) -> [Un.ExpandedInstr]
@@ -194,10 +198,10 @@ instrToOps instr = case instr of
             (toUType $ fromSingT (sing @i)) (convertLambdaBody l)
           ]
         handle _ = error "unexcepted call"
-        convertLambdaBody :: Val Instr ('TLambda i o) -> [Un.ExpandedOp]
-        convertLambdaBody (VLam ops) = instrToOps ops
+        convertLambdaBody :: Val Instr ('TLambda i o) -> Un.ExpandedOp
+        convertLambdaBody (VLam ops) = instrToOp ops
     handleInstr EXEC = [Un.EXEC Un.noAnn]
-    handleInstr (DIP op) = [Un.DIP (instrToOps op)]
+    handleInstr (DIP op) = [Un.DIP (instrToOp op)]
     handleInstr FAILWITH = [Un.FAILWITH]
     handleInstr i@(CAST) = handle i
       where
@@ -261,7 +265,7 @@ instrToOps instr = case instr of
           case ops of
             (code :: Instr '[ 'TPair p g ] '[ 'TPair ('TList 'TOperation) g ]) ->
               let contract = Un.Contract (toUType $ fromSingT (sing @p))
-                    (toUType $ fromSingT (sing @g)) (instrToOps code) in
+                    (toUType $ fromSingT (sing @g)) (instrToOp code) in
               [Un.CREATE_CONTRACT2 Un.noAnn Un.noAnn contract]
         handle _ = error "unexcepted call"
     handleInstr IMPLICIT_ACCOUNT = [Un.IMPLICIT_ACCOUNT Un.noAnn]

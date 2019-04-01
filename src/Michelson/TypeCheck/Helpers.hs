@@ -181,30 +181,40 @@ typeCheckInstrErrM :: Un.ExpandedInstr -> SomeHST -> Text -> TypeCheckT a
 typeCheckInstrErrM = throwError ... TCFailedOnInstr
 
 typeCheckImpl
+  :: (Typeable inp)
+  => TcInstrHandler
+  -> Un.ExpandedOp
+  -> HST inp
+  -> TypeCheckT (SomeInstr inp)
+typeCheckImpl tcInstr instrs t =
+  case instrs of
+    Un.PrimEx i -> tcInstr i t
+    Un.SeqEx sq -> typeCheckImplList tcInstr sq t <&> \case
+      SiFail -> SiFail
+      instr ::: st -> Nested instr ::: st
+
+typeCheckImplList
   :: forall inp.
      (Typeable inp)
   => TcInstrHandler
   -> [Un.ExpandedOp]
   -> HST inp
   -> TypeCheckT (SomeInstr inp)
-typeCheckImpl tcInstr instrs t@(a :: HST a) =
+typeCheckImplList tcInstr instrs (a :: HST a) =
   case instrs of
-    [Un.PrimEx i]       -> tcInstr i t
-    (Un.SeqEx sq  : rs) -> typeCheckImplDo (typeCheckImpl tcInstr sq) Nested rs
-    (Un.PrimEx p_ : rs) -> typeCheckImplDo (tcInstr p_) id rs
-    []                   -> pure $ Nop ::: (a, a)
+    [] -> pure $ Nop ::: (a, a)
+    (sq : rs) -> typeCheckImplListDo (typeCheckImpl tcInstr sq) rs
   where
-    typeCheckImplDo
-      :: (HST inp -> TypeCheckT (SomeInstr inp))
-      -> (forall inp' out . Instr inp' out -> Instr inp' out)
+    typeCheckImplListDo
+      :: (forall inp'. Typeable inp' => HST inp' -> TypeCheckT (SomeInstr inp'))
       -> [Un.ExpandedOp]
       -> TypeCheckT (SomeInstr inp)
-    typeCheckImplDo f wrap rs =
-      f t >>= \case
-        p ::: ((_ :: HST a'), (b :: HST b)) ->
-          typeCheckImpl @b tcInstr rs b >>= \case
-            q ::: ((_ :: HST b'), c) ->
-              pure $ Seq (wrap p) q ::: (a, c)
+    typeCheckImplListDo f rs =
+      f a >>= \case
+        p ::: (_, (b :: HST b)) ->
+          typeCheckImplList tcInstr rs b >>= \case
+            q ::: (_, c) -> do
+              pure $ Seq p q ::: (a, c)
             SiFail -> pure SiFail
         SiFail -> pure SiFail
 

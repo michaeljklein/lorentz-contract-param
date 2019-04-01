@@ -13,10 +13,12 @@ import Test.QuickCheck.Instances.Semigroup ()
 import Test.QuickCheck.Instances.Text ()
 
 import Michelson.Untyped
-  (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, InstrAbstract(..),
-  InternalByteString(..), ExpandedOp (..), T(..), Type(..), TypeAnn, Value(..), VarAnn)
+  (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), ExpandedOp(..), FieldAnn,
+  InstrAbstract(..), InternalByteString(..), SeqOp(..), T(..), Type(..), TypeAnn, Value(..),
+  VarAnn)
 import Morley.Test ()
-import Morley.Types (StackTypePattern(..), TyVar(..), ExpandedUExtInstr, UExtInstrAbstract(..), Var(..))
+import Morley.Types
+  (ExpandedUExtInstr, StackTypePattern(..), TyVar(..), UExtInstrAbstract(..), Var(..))
 import Tezos.Core (Mutez(..))
 
 instance Arbitrary InternalByteString where
@@ -62,12 +64,16 @@ smallList = smallSize >>= vector
 smallList1 :: Arbitrary a => Gen (NonEmpty a)
 smallList1 = smallList `suchThatMap` nonEmpty
 
+smallSeq :: (SeqOp op, Arbitrary op) => Gen op
+smallSeq = seqOp <$> smallList
+
 instance (Arbitrary op, ToADTArbitrary op) => ToADTArbitrary (Contract op)
 instance (Arbitrary op) => Arbitrary (Contract op) where
   arbitrary = Contract <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance (Arbitrary op, ToADTArbitrary op, Arbitrary (UExtInstrAbstract op)) => ToADTArbitrary (InstrAbstract op)
-instance (Arbitrary op, Arbitrary (UExtInstrAbstract op)) => Arbitrary (InstrAbstract op) where
+instance (Arbitrary op, SeqOp op, Arbitrary (UExtInstrAbstract op)) =>
+         Arbitrary (InstrAbstract op) where
   arbitrary =
     oneof
       [ EXT <$> arbitrary
@@ -78,74 +84,31 @@ instance (Arbitrary op, Arbitrary (UExtInstrAbstract op)) => Arbitrary (InstrAbs
       , SOME <$> arbitrary <*> arbitrary <*> arbitrary
       , NONE <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
       , UNIT <$> arbitrary <*> arbitrary
-      , (do size1 <- smallSize
-            size2 <- smallSize
-            l1 <- vector size1
-            l2 <- vector size2
-            pure $ IF_NONE l1 l2
-        )
+      , IF_NONE <$> smallSeq <*> smallSeq
       , PAIR <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
       , CAR <$> arbitrary <*> arbitrary
       , CDR <$> arbitrary <*> arbitrary
       , LEFT <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
       , RIGHT <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
-      , (do size1 <- smallSize
-            size2 <- smallSize
-            l1 <- vector size1
-            l2 <- vector size2
-            pure $ IF_LEFT l1 l2
-        )
-      , (do size1 <- smallSize
-            size2 <- smallSize
-            l1 <- vector size1
-            l2 <- vector size2
-            pure $ IF_RIGHT l1 l2
-        )
+      , IF_LEFT <$> smallSeq <*> smallSeq
+      , IF_RIGHT <$> smallSeq <*> smallSeq
       , NIL <$> arbitrary <*> arbitrary <*> arbitrary
       , CONS <$> arbitrary
-      , (do size1 <- smallSize
-            size2 <- smallSize
-            l1 <- vector size1
-            l2 <- vector size2
-            pure $ IF_CONS l1 l2
-        )
+      , IF_CONS <$> smallSeq <*> smallSeq
       , SIZE <$> arbitrary
       , EMPTY_SET <$> arbitrary <*> arbitrary <*> arbitrary
       , EMPTY_MAP <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
-      , (do size1 <- smallSize
-            l1 <- vector size1
-            MAP <$> arbitrary <*> pure l1
-        )
-      , (do size1 <- smallSize
-            l1 <- vector size1
-            pure $ ITER l1
-        )
+      , MAP <$> arbitrary <*> smallSeq
+      , ITER <$> smallSeq
       , MEM <$> arbitrary
       , GET <$> arbitrary
       , pure UPDATE
-      , (do size1 <- smallSize
-            size2 <- smallSize
-            l1 <- vector size1
-            l2 <- vector size2
-            pure $ IF l1 l2
-        )
-      , (do size1 <- smallSize
-            l1 <- vector size1
-            pure $ LOOP l1
-        )
-      , (do size1 <- smallSize
-            l1 <- vector size1
-            pure $ LOOP_LEFT l1
-        )
-      , (do size1 <- smallSize
-            l1 <- vector size1
-            LAMBDA <$> arbitrary <*> arbitrary <*> arbitrary <*> pure l1
-        )
+      , IF <$> smallSeq <*> smallSeq
+      , LOOP <$> smallSeq
+      , LOOP_LEFT <$> smallSeq
+      , LAMBDA <$> arbitrary <*> arbitrary <*> arbitrary <*> smallSeq
       , EXEC <$> arbitrary
-      , (do size1 <- smallSize
-            l1 <- vector size1
-            pure $ DIP l1
-        )
+      , DIP <$> smallSeq
       , pure FAILWITH
       , CAST <$> arbitrary <*> arbitrary
       , RENAME <$> arbitrary

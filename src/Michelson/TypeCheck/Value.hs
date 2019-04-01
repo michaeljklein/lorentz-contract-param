@@ -159,7 +159,7 @@ typeCheckValImpl tcDo v t@(TLambda mi mo) = do
 
   withSomeSingT mi $ \(it :: Sing it) ->
     withSomeSingT mo $ \(ot :: Sing ot) ->
-      typeCheckImpl tcDo mp ((it, NStar, def) ::& SNil) >>= \case
+      typeCheckImpl tcDo (Un.SeqEx mp) ((it, NStar, def) ::& SNil) >>= \case
         SiFail -> pure $ VLam FAILWITH :::: (STLambda it ot, NStar)
         lam ::: (li, (lo :: HST lo)) -> do
           case eqT' @'[ ot ] @lo of

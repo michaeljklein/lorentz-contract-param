@@ -48,6 +48,7 @@ module Morley.Types
   , ParsedOp (..)
   , ParsedUTestAssert
   , ParsedUExtInstr
+  , emptyParsedOp
 
   -- * Morley Expanded instruction types
   , ExpandedInstr
@@ -94,12 +95,12 @@ import qualified Text.Show (show)
 
 import Michelson.EqParam (eqParam2)
 import Michelson.Printer (RenderDoc(..))
-import Michelson.Typed (instrToOps)
+import Michelson.Typed (instrToOp)
 import qualified Michelson.Typed as T
 import Michelson.Untyped
   (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), ExpandedInstr, ExpandedOp(..),
-  ExtU, FieldAnn, Instr, InstrAbstract(..), InternalByteString(..), Op(..), Parameter, Storage,
-  T(..), Type(..), TypeAnn, Value(..), VarAnn, ann, noAnn, unInternalByteString)
+  ExtU, FieldAnn, Instr, InstrAbstract(..), InternalByteString(..), Op(..), Parameter, SeqOp(..),
+  Storage, T(..), Type(..), TypeAnn, Value(..), VarAnn, ann, noAnn, unInternalByteString)
 import Morley.Default (Default(..))
 
 -------------------------------------
@@ -176,6 +177,9 @@ instance Buildable op => Buildable (UExtInstrAbstract op) where
 type instance ExtU InstrAbstract = UExtInstrAbstract
 type instance T.ExtT T.Instr = ExtInstr
 
+instance SeqOp ParsedOp where
+  seqOp = Seq
+
 ---------------------------------------------------
 
 type ParsedUTestAssert = UTestAssert ParsedOp
@@ -202,6 +206,10 @@ instance Buildable ParsedOp where
   build (Mac macro)       = "<Mac: "+|macro|+">"
   build (LMac letMacro)   = "<LMac: "+|letMacro|+">"
   build (Seq parsedOps)   = "<Seq: "+|parsedOps|+">"
+
+-- | Empty list of operations.
+emptyParsedOp :: ParsedOp
+emptyParsedOp = Seq []
 
 type ExpandedUExtInstr = UExtInstrAbstract ExpandedOp
 
@@ -235,7 +243,7 @@ data ExtInstr
 instance T.Conversible ExtInstr (UExtInstrAbstract ExpandedOp) where
   convert (PRINT pc) = UPRINT pc
   convert (TEST_ASSERT (TestAssert nm pc i)) =
-    UTEST_ASSERT $ UTestAssert nm pc (instrToOps i)
+    UTEST_ASSERT $ UTestAssert nm pc (instrToOp i)
 
 ---------------------------------------------------
 
@@ -269,15 +277,15 @@ instance Buildable CadrStruct where
 -- | Built-in Michelson Macros defined by the specification
 data Macro
   = CMP ParsedInstr VarAnn
-  | IFX ParsedInstr [ParsedOp] [ParsedOp]
-  | IFCMP ParsedInstr VarAnn [ParsedOp] [ParsedOp]
+  | IFX ParsedInstr ParsedOp ParsedOp
+  | IFCMP ParsedInstr VarAnn ParsedOp ParsedOp
   | FAIL
   | PAPAIR PairStruct TypeAnn VarAnn
   | UNPAIR PairStruct
   | CADR [CadrStruct] VarAnn FieldAnn
   | SET_CADR [CadrStruct] VarAnn FieldAnn
-  | MAP_CADR [CadrStruct] VarAnn FieldAnn [ParsedOp]
-  | DIIP Integer [ParsedOp]
+  | MAP_CADR [CadrStruct] VarAnn FieldAnn ParsedOp
+  | DIIP Integer ParsedOp
   | DUUP Integer VarAnn
   | ASSERT
   | ASSERTX ParsedInstr
@@ -286,7 +294,7 @@ data Macro
   | ASSERT_SOME
   | ASSERT_LEFT
   | ASSERT_RIGHT
-  | IF_SOME [ParsedOp] [ParsedOp]
+  | IF_SOME ParsedOp ParsedOp
   deriving (Eq, Show, Data, Generic)
 
 instance Buildable Macro where
@@ -378,7 +386,7 @@ varSet (StkCons _ stk) = varSet stk
 data LetMacro = LetMacro
   { lmName :: T.Text
   , lmSig :: StackFn
-  , lmExpr :: [ParsedOp]
+  , lmExpr :: ParsedOp
   } deriving (Eq, Show, Data, Generic)
 
 instance Buildable LetMacro where
@@ -409,7 +417,7 @@ instance Buildable PrintComment where
 data UTestAssert op = UTestAssert
   { tassName :: T.Text
   , tassComment :: PrintComment
-  , tassInstrs :: [op]
+  , tassInstrs :: op
   } deriving (Eq, Show, Functor, Data, Generic)
 
 instance Buildable code => Buildable (UTestAssert code) where

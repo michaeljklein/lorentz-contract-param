@@ -132,7 +132,7 @@ contractAux1 = ContractAux
     contract = Contract
       { para = Type tstring noAnn
       , stor = Type tbool noAnn
-      , code =
+      , code = seqOp
         [ PrimEx $ CDR noAnn noAnn
         , PrimEx $ NIL noAnn noAnn $ Type TOperation noAnn
         , PrimEx $ PAIR noAnn noAnn noAnn noAnn
@@ -142,7 +142,7 @@ contractAux1 = ContractAux
 contractAux2 :: ContractAux
 contractAux2 = contractAux1
   { caContract = (caContract contractAux1)
-    { code =
+    { code = seqOp
       [ PrimEx $ CDR noAnn noAnn
       , PrimEx $ NOT noAnn
       , PrimEx $ NIL noAnn noAnn $ Type TOperation noAnn
