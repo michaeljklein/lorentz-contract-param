@@ -66,6 +66,9 @@ instance RenderDoc ExpandedOp where
   renderDoc (PrimEx i)  = renderDoc i
   renderDoc (SeqEx [i]) = renderDoc i
   renderDoc (SeqEx i)   = renderOpsList i
+  isRenderable =
+    \case PrimEx i -> isRenderable i
+          _ -> True
 
 instance Buildable ExpandedOp where
   build (PrimEx expandedInstr) = "<PrimEx: "+|expandedInstr|+">"
