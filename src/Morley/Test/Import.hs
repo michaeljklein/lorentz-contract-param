@@ -2,9 +2,12 @@
 
 module Morley.Test.Import
   ( readContract
+  , readUntypedContract
   , specWithContract
   , specWithTypedContract
+  , specWithUntypedContract
   , importContract
+  , importUntypedContract
   , ImportContractError (..)
   ) where
 
@@ -31,7 +34,7 @@ import Morley.Types (ParserException(..))
 -- result will notify about problem).
 specWithContract
   :: (Typeable cp, Typeable st)
-  => FilePath -> ((U.UntypedContract, Contract cp st) -> Spec) -> Spec
+  => FilePath -> ((UntypedContract, Contract cp st) -> Spec) -> Spec
 specWithContract file execSpec =
   either errorSpec (describe ("Test contract " <> file) . execSpec)
     =<< runIO
@@ -48,6 +51,16 @@ specWithTypedContract
   => FilePath -> (Contract cp st -> Spec) -> Spec
 specWithTypedContract file execSpec = specWithContract file (execSpec . snd)
 
+specWithUntypedContract :: FilePath -> (UntypedContract -> Spec) -> Spec
+specWithUntypedContract file execSpec =
+  either errorSpec (describe ("Test contract " <> file) . execSpec)
+    =<< runIO
+          ( (Right <$> importUntypedContract file)
+            `catch` (\(e :: ImportContractError) -> pure $ Left $ displayException e)
+            `catch` \(e :: IOException) -> pure $ Left $ displayException e )
+  where
+    errorSpec = it ("Type check contract " <> file) . expectationFailure
+
 readContract
   :: forall cp st .
     (Typeable cp, Typeable st)
@@ -63,6 +76,14 @@ readContract filePath txt = do
       ICEUnexpectedParamType (U.para contract) (typeRep (Proxy @cp))
     _ -> Left (ICEUnexpectedStorageType (U.stor contract) (typeRep (Proxy @st)))
 
+readUntypedContract
+  :: FilePath
+  -> Text
+  -> Either ImportContractError UntypedContract
+readUntypedContract filePath txt =
+  expandContract <$>
+    (first (ICEParse . ParserException) $ parse Mo.program filePath txt)
+
 -- | Import contract from a given file path.
 --
 -- This function reads file, parses and type checks contract.
@@ -73,6 +94,10 @@ importContract
     (Typeable cp, Typeable st)
   => FilePath -> IO (UntypedContract, Contract cp st)
 importContract file = either throwM pure =<< readContract file <$> readFile file
+
+importUntypedContract :: FilePath -> IO UntypedContract
+importUntypedContract file =
+  either throwM pure =<< readUntypedContract file <$> readFile file
 
 -- | Error type for 'importContract' function.
 data ImportContractError
