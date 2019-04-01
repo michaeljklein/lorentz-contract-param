@@ -91,7 +91,6 @@ instance (Arbitrary op, SeqOp op, Arbitrary (UExtInstrAbstract op)) =>
       , LEFT <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
       , RIGHT <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
       , IF_LEFT <$> smallSeq <*> smallSeq
-      , IF_RIGHT <$> smallSeq <*> smallSeq
       , NIL <$> arbitrary <*> arbitrary <*> arbitrary
       , CONS <$> arbitrary
       , IF_CONS <$> smallSeq <*> smallSeq
