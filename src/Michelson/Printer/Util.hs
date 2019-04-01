@@ -11,8 +11,8 @@ module Michelson.Printer.Util
 import qualified Data.Text.Lazy as LT
 import Data.Text.Lazy.Builder (Builder)
 import Text.PrettyPrint.Leijen.Text
-  (Doc, SimpleDoc, braces, displayB, displayT, hcat, isEmpty, parens, punctuate, renderPretty,
-  semi, space, vcat, (<++>))
+  (Doc(..), SimpleDoc, braces, cat, displayB, displayT, hcat, isEmpty, parens, punctuate,
+  renderPretty, semi, space, vcat, (<++>))
 
 -- | Generalize converting a type into a
 -- Text.PrettyPrint.Leijen.Text.Doc. Used to pretty print Michelson code
@@ -35,12 +35,14 @@ printDoc = displayT . doRender
 
 -- | Generic way to render the different op types that get passed
 -- to a contract.
-renderOps :: (RenderDoc op) => NonEmpty op -> Doc
-renderOps = renderOpsList . toList
+renderOps :: (RenderDoc op) => Bool -> NonEmpty op -> Doc
+renderOps oneLine = renderOpsList oneLine . toList
 
-renderOpsList :: (RenderDoc op) => [op] -> Doc
-renderOpsList ops =
-  braces $ vcat $ punctuate semi (renderDoc <$> filter isRenderable ops)
+renderOpsList :: (RenderDoc op) => Bool -> [op] -> Doc
+renderOpsList oneLine ops =
+  braces $ cat' $ punctuate semi (renderDoc <$> filter isRenderable ops)
+  where
+    cat' = if oneLine then cat else vcat
 
 -- | Create a specific number of spaces.
 spaces :: Int -> Doc
@@ -60,4 +62,3 @@ buildRenderDoc = displayB . doRender . renderDoc
 
 doRender :: Doc -> SimpleDoc
 doRender = renderPretty 0.4 80
--- renderCompact

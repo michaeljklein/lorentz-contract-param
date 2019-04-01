@@ -68,7 +68,7 @@ instance RenderDoc op => RenderDoc (Value op) where
       ValueNone      -> "None"
       ValueSeq xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
       ValueMap xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
-      ValueLambda xs -> renderOps xs
+      ValueLambda xs -> renderOps True xs
 
 instance RenderDoc op => RenderDoc (Elt op) where
   renderDoc (Elt k v) = "Elt" <+> renderDoc k <+> renderDoc v

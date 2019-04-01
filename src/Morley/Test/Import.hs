@@ -2,7 +2,6 @@
 
 module Morley.Test.Import
   ( readContract
-  , readUntypedContract
   , specWithContract
   , specWithTypedContract
   , specWithUntypedContract
@@ -24,6 +23,7 @@ import Michelson.Untyped.Aliases (UntypedContract)
 import Morley.Ext (typeCheckMorleyContract)
 import Morley.Macro (expandContract)
 import qualified Morley.Parser as Mo
+import Morley.Runtime (prepareContract)
 import Morley.Types (ParserException(..))
 
 -- | Import contract and use it in the spec. Both versions of contract are
@@ -76,14 +76,6 @@ readContract filePath txt = do
       ICEUnexpectedParamType (U.para contract) (typeRep (Proxy @cp))
     _ -> Left (ICEUnexpectedStorageType (U.stor contract) (typeRep (Proxy @st)))
 
-readUntypedContract
-  :: FilePath
-  -> Text
-  -> Either ImportContractError UntypedContract
-readUntypedContract filePath txt =
-  expandContract <$>
-    (first (ICEParse . ParserException) $ parse Mo.program filePath txt)
-
 -- | Import contract from a given file path.
 --
 -- This function reads file, parses and type checks contract.
@@ -96,8 +88,7 @@ importContract
 importContract file = either throwM pure =<< readContract file <$> readFile file
 
 importUntypedContract :: FilePath -> IO UntypedContract
-importUntypedContract file =
-  either throwM pure =<< readUntypedContract file <$> readFile file
+importUntypedContract = prepareContract . Just
 
 -- | Error type for 'importContract' function.
 data ImportContractError

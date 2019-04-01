@@ -23,10 +23,11 @@ roundtripPrintTest filePath =
       case readUntypedContract filePath (toText $ printUntypedContract contract1) of
         Left err -> fail ("Failed to read 'printUntypedContract contract1': " ++ show err)
         Right contract2 -> do
-          case readUntypedContract filePath (toText $ printUntypedContract contract2) of
-            Left err -> fail ("Failed to read 'printUntypedContract contract2': " ++ show err)
-            Right contract3 -> do
-              printUntypedContract contract1 `shouldBe` printUntypedContract contract2
-              printUntypedContract contract2 `shouldBe` printUntypedContract contract3
+          contract1 `shouldBe` contract2
+          -- case readUntypedContract filePath (toText $ printUntypedContract contract2) of
+          --   Left err -> fail ("Failed to read 'printUntypedContract contract2': " ++ show err)
+          --   Right contract3 -> do
+              -- printUntypedContract contract1 `shouldBe` printUntypedContract contract2
+              -- printUntypedContract contract2 `shouldBe` printUntypedContract contract3
               -- contract1 `shouldBe` contract2
-              contract2 `shouldBe` contract3
+              -- contract2 `shouldBe` contract3
