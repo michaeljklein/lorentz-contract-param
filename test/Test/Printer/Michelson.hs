@@ -3,21 +3,17 @@ module Test.Printer.Michelson
   ) where
 
 import Prelude hiding (bool)
-import System.Directory (getDirectoryContents)
-import System.FilePath (splitExtension)
 import Test.Hspec (Spec, describe, it, runIO, shouldBe)
 
 import Michelson.Printer (printUntypedContract)
 import Morley.Test (readUntypedContract, specWithUntypedContract)
 
+import Test.Util.Contracts (getWellTypedContracts)
+
 spec :: Spec
 spec = describe "Michelson.TzPrinter.printUntypedContract" $ do
-  filePaths <- runIO $ getDirectoryContents "contracts"
-  let contractFiles =
-        (\(f,ext) -> f <> ext) <$>
-          filter (\(_,ext) -> ext == ".tz") -- || ext == ".mtz")
-                 (splitExtension <$> filePaths)
-  sequence_ (roundtripPrintTest . ("contracts/" ++) <$> contractFiles)
+  contractFiles <- runIO getWellTypedContracts
+  sequence_ (roundtripPrintTest <$> contractFiles)
 
 roundtripPrintTest :: FilePath -> Spec
 roundtripPrintTest filePath =
@@ -32,4 +28,5 @@ roundtripPrintTest filePath =
             Right contract3 -> do
               printUntypedContract contract1 `shouldBe` printUntypedContract contract2
               printUntypedContract contract2 `shouldBe` printUntypedContract contract3
+              -- contract1 `shouldBe` contract2
               contract2 `shouldBe` contract3
