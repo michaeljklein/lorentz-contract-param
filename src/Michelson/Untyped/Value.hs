@@ -54,7 +54,7 @@ unInternalByteString (InternalByteString bs) = bs
 instance RenderDoc op => RenderDoc (Value op) where
   renderDoc =
     \case
-      ValueNil       -> mempty
+      ValueNil       -> "{ }"
       ValueInt x     -> text . show $ x
       ValueString x  -> dquotes (textStrict x)
       ValueBytes xs  -> "0x" <+> (textStrict . encodeHex . unInternalByteString $ xs)
