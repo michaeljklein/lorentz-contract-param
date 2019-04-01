@@ -11,8 +11,8 @@ module Michelson.Printer.Util
 import qualified Data.Text.Lazy as LT
 import Data.Text.Lazy.Builder (Builder)
 import Text.PrettyPrint.Leijen.Text
-  (Doc, SimpleDoc, braces, cat, displayB, displayT, hcat, isEmpty, parens, punctuate, renderPretty,
-  semi, space, (<++>))
+  (Doc, SimpleDoc, braces, displayB, displayT, hcat, isEmpty, parens, punctuate, renderPretty,
+  semi, space, vcat, (<++>))
 
 -- | Generalize converting a type into a
 -- Text.PrettyPrint.Leijen.Text.Doc. Used to pretty print Michelson code
@@ -40,7 +40,7 @@ renderOps = renderOpsList . toList
 
 renderOpsList :: (RenderDoc op) => [op] -> Doc
 renderOpsList ops =
-  braces $ cat $ punctuate semi (renderDoc <$> filter isRenderable ops)
+  braces $ vcat $ punctuate semi (renderDoc <$> filter isRenderable ops)
 
 -- | Create a specific number of spaces.
 spaces :: Int -> Doc
@@ -60,3 +60,4 @@ buildRenderDoc = displayB . doRender . renderDoc
 
 doRender :: Doc -> SimpleDoc
 doRender = renderPretty 0.4 80
+-- renderCompact

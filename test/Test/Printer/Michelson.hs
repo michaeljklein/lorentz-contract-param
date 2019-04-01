@@ -2,16 +2,13 @@ module Test.Printer.Michelson
   ( spec
   ) where
 
-import Data.Text (append)
 import Prelude hiding (bool)
 import System.Directory (getDirectoryContents)
 import System.FilePath (splitExtension)
 import Test.Hspec (Spec, describe, it, runIO, shouldBe)
 
 import Michelson.Printer (printUntypedContract)
-import Michelson.Typed
-import Michelson.Untyped (UntypedContract)
-import Morley.Test (ImportContractError, readUntypedContract, specWithUntypedContract)
+import Morley.Test (readUntypedContract, specWithUntypedContract)
 
 spec :: Spec
 spec = describe "Michelson.TzPrinter.printUntypedContract" $ do
