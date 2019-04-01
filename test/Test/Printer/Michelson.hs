@@ -2,11 +2,12 @@ module Test.Printer.Michelson
   ( spec
   ) where
 
-import Prelude hiding (bool)
+import Fmt (pretty)
 import Test.Hspec (Spec, describe, it, runIO, shouldBe)
 
 import Michelson.Printer (printUntypedContract)
-import Morley.Test (readUntypedContract, specWithUntypedContract)
+import Morley.Runtime (parseExpandContract)
+import Morley.Test (specWithUntypedContract)
 
 import Test.Util.Contracts (getWellTypedContracts)
 
@@ -20,7 +21,7 @@ roundtripPrintTest filePath =
   -- these are untyped and expanded contracts, they might have macros
   specWithUntypedContract filePath $ \contract1 ->
     it "roundtrip printUntypedContract test" $ do
-      case readUntypedContract filePath (toText $ printUntypedContract contract1) of
-        Left err -> fail ("Failed to read 'printUntypedContract contract1': " ++ show err)
+      case parseExpandContract (Just filePath) (toText $ printUntypedContract contract1) of
+        Left err -> fail ("Failed to read 'printUntypedContract contract1': " ++ pretty err)
         Right contract2 ->
           printUntypedContract contract1 `shouldBe` printUntypedContract contract2

@@ -64,7 +64,7 @@ deriving instance Data ExpandedInstr => Data ExpandedOp
 
 instance RenderDoc ExpandedOp where
   renderDoc (PrimEx i)  = renderDoc i
-  renderDoc (SeqEx i)   = renderOpsList i
+  renderDoc (SeqEx i)   = renderOpsList True i
   isRenderable =
     \case PrimEx i -> isRenderable i
           _ -> True

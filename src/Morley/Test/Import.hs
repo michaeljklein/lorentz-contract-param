@@ -14,16 +14,13 @@ import Control.Exception (IOException)
 import Data.Typeable ((:~:)(..), TypeRep, eqT, typeRep)
 import Fmt (Buildable(build), pretty, (+|), (|+), (||+))
 import Test.Hspec (Spec, describe, expectationFailure, it, runIO)
-import Text.Megaparsec (parse)
 
 import Michelson.TypeCheck (SomeContract(..), TCError)
 import Michelson.Typed (Contract)
 import qualified Michelson.Untyped as U
 import Michelson.Untyped.Aliases (UntypedContract)
 import Morley.Ext (typeCheckMorleyContract)
-import Morley.Macro (expandContract)
-import qualified Morley.Parser as Mo
-import Morley.Runtime (prepareContract)
+import Morley.Runtime (parseExpandContract, prepareContract)
 import Morley.Types (ParserException(..))
 
 -- | Import contract and use it in the spec. Both versions of contract are
@@ -35,43 +32,39 @@ import Morley.Types (ParserException(..))
 specWithContract
   :: (Typeable cp, Typeable st)
   => FilePath -> ((UntypedContract, Contract cp st) -> Spec) -> Spec
-specWithContract file execSpec =
-  either errorSpec (describe ("Test contract " <> file) . execSpec)
-    =<< runIO
-          ( (Right <$> importContract file)
-            `catch` (\(e :: ImportContractError) -> pure $ Left $ displayException e)
-            `catch` \(e :: IOException) -> pure $ Left $ displayException e )
-  where
-    errorSpec = it ("Type check contract " <> file) . expectationFailure
+specWithContract = specWithContractImpl importContract
 
 -- | A version of 'specWithContract' which passes only the typed
 -- representation of the contract.
 specWithTypedContract
   :: (Typeable cp, Typeable st)
   => FilePath -> (Contract cp st -> Spec) -> Spec
-specWithTypedContract file execSpec = specWithContract file (execSpec . snd)
+specWithTypedContract = specWithContractImpl (fmap snd . importContract)
 
 specWithUntypedContract :: FilePath -> (UntypedContract -> Spec) -> Spec
-specWithUntypedContract file execSpec =
+specWithUntypedContract = specWithContractImpl importUntypedContract
+
+specWithContractImpl
+  :: (FilePath -> IO contract) -> FilePath -> (contract -> Spec) -> Spec
+specWithContractImpl doImport file execSpec =
   either errorSpec (describe ("Test contract " <> file) . execSpec)
     =<< runIO
-          ( (Right <$> importUntypedContract file)
+          ( (Right <$> doImport file)
             `catch` (\(e :: ImportContractError) -> pure $ Left $ displayException e)
             `catch` \(e :: IOException) -> pure $ Left $ displayException e )
   where
-    errorSpec = it ("Type check contract " <> file) . expectationFailure
+    errorSpec = it ("Import contract " <> file) . expectationFailure
 
 readContract
   :: forall cp st .
     (Typeable cp, Typeable st)
   => FilePath -> Text -> Either ImportContractError (UntypedContract, Contract cp st)
 readContract filePath txt = do
-  contract <- first (ICEParse . ParserException) $ parse Mo.program filePath txt
-  let expanded = expandContract contract
+  contract <- first ICEParse $ parseExpandContract (Just filePath) txt
   SomeContract (instr :: Contract cp' st') _ _
-    <- first ICETypeCheck $ typeCheckMorleyContract expanded
+    <- first ICETypeCheck $ typeCheckMorleyContract contract
   case (eqT @cp @cp', eqT @st @st') of
-    (Just Refl, Just Refl) -> pure (expanded, instr)
+    (Just Refl, Just Refl) -> pure (contract, instr)
     (Nothing, _) -> Left $
       ICEUnexpectedParamType (U.para contract) (typeRep (Proxy @cp))
     _ -> Left (ICEUnexpectedStorageType (U.stor contract) (typeRep (Proxy @st)))
