@@ -11,8 +11,8 @@ module Michelson.Printer.Util
 import qualified Data.Text.Lazy as LT
 import Data.Text.Lazy.Builder (Builder)
 import Text.PrettyPrint.Leijen.Text
-  (Doc, SimpleDoc, braces, displayB, displayT, hcat, isEmpty, parens, punctuate, renderPretty,
-  semi, space, vcat, (<++>))
+  (Doc, SimpleDoc, braces, displayB, displayT, hcat, isEmpty, parens, punctuate, renderOneLine,
+  semi, space, vcat, (<+>))
 
 -- | Generalize converting a type into a
 -- Text.PrettyPrint.Leijen.Text.Doc. Used to pretty print Michelson code
@@ -38,11 +38,15 @@ printDoc = displayT . doRender
 renderOps :: (RenderDoc op) => Bool -> NonEmpty op -> Doc
 renderOps oneLine = renderOpsList oneLine . toList
 
+spacecat :: NonEmpty Doc -> Doc
+spacecat = foldr (<+>) mempty
+  
 renderOpsList :: (RenderDoc op) => Bool -> [op] -> Doc
 renderOpsList oneLine ops =
+--  braces (nest 2 vcat $ punctuate semi (renderDoc <$> filter isRenderable ops))
   braces $ cat' $ punctuate semi (renderDoc <$> filter isRenderable ops)
   where
-    cat' = if oneLine then hcat else vcat
+    cat' = if oneLine then maybe "" spacecat . nonEmpty else vcat
 
 -- | Create a specific number of spaces.
 spaces :: Int -> Doc
@@ -52,8 +56,8 @@ spaces x = hcat $ replicate x space
 wrapInParens :: NonEmpty Doc -> Doc
 wrapInParens ds =
   if (length $ filter (not . isEmpty) (toList ds)) > 1
-    then parens $ foldr (<++>) mempty ds
-    else foldr (<++>) mempty ds
+    then parens $ foldr (<+>) mempty ds
+    else foldr (<+>) mempty ds
 
 -- | Turn something that is instance of `RenderDoc` into a `Builder`.
 -- It's formatted the same way as `printDoc` formats docs.
@@ -61,4 +65,6 @@ buildRenderDoc :: RenderDoc a => a -> Builder
 buildRenderDoc = displayB . doRender . renderDoc
 
 doRender :: Doc -> SimpleDoc
-doRender = renderPretty 0.4 80
+doRender = renderOneLine
+-- doRender = renderPretty 0.4 80
+-- doRender = renderPretty 0.1 maxBound

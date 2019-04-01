@@ -16,7 +16,7 @@ import Data.Data (Data(..))
 import qualified Data.List as L
 import Formatting.Buildable (Buildable(build))
 import Text.Hex (encodeHex)
-import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, textStrict, (<++>), (<+>))
+import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, textStrict, (<+>))
 
 import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOps)
 
@@ -57,14 +57,14 @@ instance RenderDoc op => RenderDoc (Value op) where
       ValueNil       -> "{ }"
       ValueInt x     -> text . show $ x
       ValueString x  -> dquotes (textStrict x)
-      ValueBytes xs  -> "0x" <+> (textStrict . encodeHex . unInternalByteString $ xs)
+      ValueBytes xs  -> "0x" <> (textStrict . encodeHex . unInternalByteString $ xs)
       ValueUnit      -> "Unit"
       ValueTrue      -> "True"
       ValueFalse     -> "False"
-      ValuePair l r  -> parens $ ("Pair"  <++> renderDoc l <++> renderDoc r)
-      ValueLeft l    -> parens $ ("Left"  <++> renderDoc l)
-      ValueRight r   -> parens $ ("Right" <++> renderDoc r)
-      ValueSome x    -> parens $ ("Some"  <++> renderDoc x)
+      ValuePair l r  -> parens $ ("Pair"  <+> renderDoc l <+> renderDoc r)
+      ValueLeft l    -> parens $ ("Left"  <+> renderDoc l)
+      ValueRight r   -> parens $ ("Right" <+> renderDoc r)
+      ValueSome x    -> parens $ ("Some"  <+> renderDoc x)
       ValueNone      -> "None"
       ValueSeq xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
       ValueMap xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))

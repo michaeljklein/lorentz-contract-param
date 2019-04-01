@@ -180,85 +180,85 @@ instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
   renderDoc = \case
     EXT _                 -> ""
     DROP                  -> "DROP"
-    DUP va                -> "DUP" <++> renderDoc va
+    DUP va                -> "DUP" <+> renderDoc va
     SWAP                  -> "SWAP"
-    PUSH va t v           -> "PUSH" <++> renderDoc va <++> renderDoc t <+> renderDoc v
-    SOME ta va fa         -> "SOME" <++> renderDoc ta <++> renderDoc va <++> renderDoc fa
-    NONE ta va fa t       -> "NONE" <++> renderDoc ta <++> renderDoc va <++> renderDoc fa <++> renderDoc t
-    UNIT ta va            -> "UNIT" <++> renderDoc ta <++> renderDoc va
+    PUSH va t v           -> "PUSH" <+> renderDoc va <+> renderDoc t <+> renderDoc v
+    SOME ta va fa         -> "SOME" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa
+    NONE ta va fa t       -> "NONE" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa <+> renderDoc t
+    UNIT ta va            -> "UNIT" <+> renderDoc ta <+> renderDoc va
     IF_NONE x y           -> "IF_NONE" <+> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
-    PAIR ta va fa1 fa2    -> "PAIR" <++> renderDoc ta <++> renderDoc va <++> renderDoc fa1 <++> renderDoc fa2
-    CAR va fa             -> "CAR" <++> renderDoc va <++> renderDoc fa
-    CDR va fa             -> "CDR" <++> renderDoc va <++> renderDoc fa
-    LEFT ta va fa1 fa2 t  -> "LEFT" <++> renderDoc ta <++> renderDoc va <++> renderDoc fa1 <++> renderDoc fa2 <++> renderDoc t
-    RIGHT ta va fa1 fa2 t -> "RIGHT" <++> renderDoc ta <++> renderDoc va <++> renderDoc fa1 <++> renderDoc fa2 <++> renderDoc t
-    IF_LEFT x y           -> "IF_LEFT" <++> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
-    IF_RIGHT x y          -> "IF_RIGHT" <++> nest 10 (renderOps x) <$$> spaces 9 <> nest 10 (renderOps y)
-    NIL ta va t           -> "NIL" <++> renderDoc ta <++> renderDoc va <++> renderDoc t
-    CONS va               -> "CONS" <++> renderDoc va
-    IF_CONS x y           -> "IF_CONS" <++> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
-    SIZE va               -> "SIZE" <++> renderDoc va
-    EMPTY_SET ta va t     -> "EMPTY_SET" <++> renderDoc ta <++> renderDoc va <++> renderDoc t
-    EMPTY_MAP ta va c t   -> "EMPTY_MAP" <++> renderDoc ta <++> renderDoc va <++> renderDoc c <++> renderDoc t
-    MAP va s              -> "MAP" <++> renderDoc va <$$> spaces 4 <> nest 5 (renderOps s)
-    ITER s                -> "ITER" <++> nest 6 (renderOps s)
-    MEM va                -> "MEM" <++> renderDoc va
-    GET va                -> "GET" <++> renderDoc va
+    PAIR ta va fa1 fa2    -> "PAIR" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa1 <+> renderDoc fa2
+    CAR va fa             -> "CAR" <+> renderDoc va <+> renderDoc fa
+    CDR va fa             -> "CDR" <+> renderDoc va <+> renderDoc fa
+    LEFT ta va fa1 fa2 t  -> "LEFT" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa1 <+> renderDoc fa2 <+> renderDoc t
+    RIGHT ta va fa1 fa2 t -> "RIGHT" <+> renderDoc ta <+> renderDoc va <+> renderDoc fa1 <+> renderDoc fa2 <+> renderDoc t
+    IF_LEFT x y           -> "IF_LEFT" <+> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
+    IF_RIGHT x y          -> "IF_RIGHT" <+> nest 10 (renderOps x) <$$> spaces 9 <> nest 10 (renderOps y)
+    NIL ta va t           -> "NIL" <+> renderDoc ta <+> renderDoc va <+> renderDoc t
+    CONS va               -> "CONS" <+> renderDoc va
+    IF_CONS x y           -> "IF_CONS" <+> nest 9 (renderOps x) <$$> spaces 8 <> nest 9 (renderOps y)
+    SIZE va               -> "SIZE" <+> renderDoc va
+    EMPTY_SET ta va t     -> "EMPTY_SET" <+> renderDoc ta <+> renderDoc va <+> renderDoc t
+    EMPTY_MAP ta va c t   -> "EMPTY_MAP" <+> renderDoc ta <+> renderDoc va <+> renderDoc c <+> renderDoc t
+    MAP va s              -> "MAP" <+> renderDoc va <$$> spaces 4 <> nest 5 (renderOps s)
+    ITER s                -> "ITER" <+> nest 6 (renderOps s)
+    MEM va                -> "MEM" <+> renderDoc va
+    GET va                -> "GET" <+> renderDoc va
     UPDATE                -> "UPDATE"
     IF x y                -> "IF" <+> nest 4 (renderOps x) <$$> spaces 3 <> nest 4 (renderOps y)
-    LOOP s                -> "LOOP" <++>  nest 6 (renderOps s)
-    LOOP_LEFT s           -> "LOOP_LEFT" <++> nest 11 (renderOps s)
-    LAMBDA va t r s       -> "LAMBDA" <++> renderDoc va <++> renderDoc t <++> renderDoc r <$$> spaces 7 <> nest 8 (renderOps s)
-    EXEC va               -> "EXEC" <++> renderDoc va
+    LOOP s                -> "LOOP" <+> nest 6 (renderOps s)
+    LOOP_LEFT s           -> "LOOP_LEFT" <+> nest 11 (renderOps s)
+    LAMBDA va t r s       -> "LAMBDA" <+> renderDoc va <+> renderDoc t <+> renderDoc r <$$> spaces 7 <> nest 8 (renderOps s)
+    EXEC va               -> "EXEC" <+> renderDoc va
     DIP s                 -> "DIP" <+> nest 5 (renderOps s)
     FAILWITH              -> "FAILWITH"
-    CAST va t             -> "CAST" <++> renderDoc va <++> renderDoc t
-    RENAME va             -> "RENAME" <++> renderDoc va
-    PACK va               -> "PACK" <++> renderDoc va
-    UNPACK va t           -> "UNPACK" <++> renderDoc va <+> renderDoc t
-    CONCAT va             -> "CONCAT" <++> renderDoc va
-    SLICE va              -> "SLICE" <++> renderDoc va
-    ISNAT va              -> "ISNAT" <++> renderDoc va
-    ADD va                -> "ADD" <++> renderDoc va
-    SUB va                -> "SUB" <++> renderDoc va
-    MUL va                -> "MUL" <++> renderDoc va
-    EDIV va               -> "EDIV" <++> renderDoc va
-    ABS va                -> "ABS" <++> renderDoc va
+    CAST va t             -> "CAST" <+> renderDoc va <+> renderDoc t
+    RENAME va             -> "RENAME" <+> renderDoc va
+    PACK va               -> "PACK" <+> renderDoc va
+    UNPACK va t           -> "UNPACK" <+> renderDoc va <+> renderDoc t
+    CONCAT va             -> "CONCAT" <+> renderDoc va
+    SLICE va              -> "SLICE" <+> renderDoc va
+    ISNAT va              -> "ISNAT" <+> renderDoc va
+    ADD va                -> "ADD" <+> renderDoc va
+    SUB va                -> "SUB" <+> renderDoc va
+    MUL va                -> "MUL" <+> renderDoc va
+    EDIV va               -> "EDIV" <+> renderDoc va
+    ABS va                -> "ABS" <+> renderDoc va
     NEG                   -> "NEG"
-    LSL va                -> "LSL" <++> renderDoc va
-    LSR va                -> "LSR" <++> renderDoc va
-    OR  va                -> "OR" <++> renderDoc va
-    AND va                -> "AND" <++> renderDoc va
-    XOR va                -> "XOR" <++> renderDoc va
-    NOT va                -> "NOT" <++> renderDoc va
-    COMPARE va            -> "COMPARE" <++> renderDoc va
-    EQ va                 -> "EQ" <++> renderDoc va
-    NEQ va                -> "NEQ" <++> renderDoc va
-    LT va                 -> "LT" <++> renderDoc va
-    GT va                 -> "GT" <++> renderDoc va
-    LE va                 -> "LE" <++> renderDoc va
-    GE va                 -> "GE" <++> renderDoc va
-    INT va                -> "INT" <++> renderDoc va
-    SELF va               -> "SELF" <++> renderDoc va
-    CONTRACT va t         -> "CONTRACT" <++> renderDoc va <+> renderDoc t
-    TRANSFER_TOKENS va    -> "TRANSFER_TOKENS" <++> renderDoc va
-    SET_DELEGATE va       -> "SET_DELEGATE" <++> renderDoc va
-    CREATE_ACCOUNT va1 va2  -> "CREATE_ACCOUNT" <++> renderDoc va1 <++> renderDoc va2
-    CREATE_CONTRACT va1 va2 -> "CREATE_CONTRACT" <++> renderDoc va1 <++> renderDoc va2
-    CREATE_CONTRACT2 va1 va2 contract -> "CREATE_CONTRACT" <++> renderDoc va1 <++> renderDoc va2 <++> braces (renderDoc contract)
-    IMPLICIT_ACCOUNT va   -> "IMPLICIT_ACCOUNT" <++> renderDoc va
-    NOW va                -> "NOW" <++> renderDoc va
-    AMOUNT va             -> "AMOUNT" <++> renderDoc va
-    BALANCE va            -> "BALANCE" <++> renderDoc va
-    CHECK_SIGNATURE va    -> "CHECK_SIGNATURE" <++> renderDoc va
-    SHA256 va             -> "SHA256" <++> renderDoc va
-    SHA512 va             -> "SHA512" <++> renderDoc va
-    BLAKE2B va            -> "BLAKE2B" <++> renderDoc va
-    HASH_KEY va           -> "HASH_KEY" <++> renderDoc va
-    STEPS_TO_QUOTA va     -> "STEPS_TO_QUOTA" <++> renderDoc va
-    SOURCE va             -> "SOURCE" <++> renderDoc va
-    SENDER va             -> "SENDER" <++> renderDoc va
-    ADDRESS va            -> "ADDRESS" <++> renderDoc va
+    LSL va                -> "LSL" <+> renderDoc va
+    LSR va                -> "LSR" <+> renderDoc va
+    OR  va                -> "OR" <+> renderDoc va
+    AND va                -> "AND" <+> renderDoc va
+    XOR va                -> "XOR" <+> renderDoc va
+    NOT va                -> "NOT" <+> renderDoc va
+    COMPARE va            -> "COMPARE" <+> renderDoc va
+    EQ va                 -> "EQ" <+> renderDoc va
+    NEQ va                -> "NEQ" <+> renderDoc va
+    LT va                 -> "LT" <+> renderDoc va
+    GT va                 -> "GT" <+> renderDoc va
+    LE va                 -> "LE" <+> renderDoc va
+    GE va                 -> "GE" <+> renderDoc va
+    INT va                -> "INT" <+> renderDoc va
+    SELF va               -> "SELF" <+> renderDoc va
+    CONTRACT va t         -> "CONTRACT" <+> renderDoc va <+> renderDoc t
+    TRANSFER_TOKENS va    -> "TRANSFER_TOKENS" <+> renderDoc va
+    SET_DELEGATE va       -> "SET_DELEGATE" <+> renderDoc va
+    CREATE_ACCOUNT va1 va2  -> "CREATE_ACCOUNT" <+> renderDoc va1 <+> renderDoc va2
+    CREATE_CONTRACT va1 va2 -> "CREATE_CONTRACT" <+> renderDoc va1 <+> renderDoc va2
+    CREATE_CONTRACT2 va1 va2 contract -> "CREATE_CONTRACT" <+> renderDoc va1 <+> renderDoc va2 <$$> braces (renderDoc contract)
+    IMPLICIT_ACCOUNT va   -> "IMPLICIT_ACCOUNT" <+> renderDoc va
+    NOW va                -> "NOW" <+> renderDoc va
+    AMOUNT va             -> "AMOUNT" <+> renderDoc va
+    BALANCE va            -> "BALANCE" <+> renderDoc va
+    CHECK_SIGNATURE va    -> "CHECK_SIGNATURE" <+> renderDoc va
+    SHA256 va             -> "SHA256" <+> renderDoc va
+    SHA512 va             -> "SHA512" <+> renderDoc va
+    BLAKE2B va            -> "BLAKE2B" <+> renderDoc va
+    HASH_KEY va           -> "HASH_KEY" <+> renderDoc va
+    STEPS_TO_QUOTA va     -> "STEPS_TO_QUOTA" <+> renderDoc va
+    SOURCE va             -> "SOURCE" <+> renderDoc va
+    SENDER va             -> "SENDER" <+> renderDoc va
+    ADDRESS va            -> "ADDRESS" <+> renderDoc va
     where
       renderOps = renderOpsList True
 

@@ -46,7 +46,7 @@ module Michelson.Untyped.Type
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
 import Formatting.Buildable (Buildable(build))
-import Text.PrettyPrint.Leijen.Text (Doc, parens, (<++>), (<+>))
+import Text.PrettyPrint.Leijen.Text (Doc, parens, (<+>))
 
 import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, wrapInParens)
 import Michelson.Untyped.Annotation (Annotation(..), FieldAnn, TypeAnn)
@@ -59,7 +59,7 @@ data Type = Type T TypeAnn
   deriving (Eq, Show, Data, Generic)
 
 instance RenderDoc Comparable where
-  renderDoc (Comparable ct ta) = renderDoc ct <++> renderDoc ta
+  renderDoc (Comparable ct ta) = renderDoc ct <+> renderDoc ta
 
 instance RenderDoc Type where
   renderDoc (Type t ta) = renderType t (Just ta) Nothing
@@ -85,34 +85,34 @@ renderType t mta mfa =
     TSignature        -> wrapInParens $ "signature" :| [rta, rfa]
     TOperation        -> wrapInParens $ "operation" :| [rta, rfa]
     TOption fa1 (Type t1 ta1) ->
-      parens ("option" <++> rta <++> rfa
-              <++> renderType t1 (Just ta1) (Just fa1))
-    TList (Type t1 ta1)       -> parens ("list" <++> rta <++> rfa <++> renderType t1 (Just ta1) Nothing)
-    TSet (Comparable ct1 ta1) -> parens ("set" <++> rta <++> rfa <++> renderType (Tc ct1) (Just ta1) Nothing)
-    TContract (Type t1 ta1)   -> parens ("contract" <++> rta <++> rfa <++> renderType t1 (Just ta1) Nothing)
+      parens ("option" <+> rta <+> rfa
+              <+> renderType t1 (Just ta1) (Just fa1))
+    TList (Type t1 ta1)       -> parens ("list" <+> rta <+> rfa <+> renderType t1 (Just ta1) Nothing)
+    TSet (Comparable ct1 ta1) -> parens ("set" <+> rta <+> rfa <+> renderType (Tc ct1) (Just ta1) Nothing)
+    TContract (Type t1 ta1)   -> parens ("contract" <+> rta <+> rfa <+> renderType t1 (Just ta1) Nothing)
 
     TPair fa1 fa2 (Type t1 ta1) (Type t2 ta2) ->
-      parens ("pair" <++> rta <++> rfa
+      parens ("pair" <+> rta <+> rfa
               <+> (renderType t1 (Just ta1) (Just fa1))
               <+> (renderType t2 (Just ta2) (Just fa2)))
 
     TOr fa1 fa2 (Type t1 ta1) (Type t2 ta2) ->
-      parens ("or" <++> rta <++> rfa
+      parens ("or" <+> rta <+> rfa
               <+> (renderType t1 (Just ta1) (Just fa1))
               <+> (renderType t2 (Just ta2) (Just fa2)))
 
     TLambda (Type t1 ta1) (Type t2 ta2) ->
-      parens ("lambda" <++> rta <++> rfa
+      parens ("lambda" <+> rta <+> rfa
               <+> (renderType t1 (Just ta1) Nothing)
               <+> (renderType t2 (Just ta2) Nothing))
 
     TMap (Comparable ct1 ta1) (Type t2 ta2) ->
-      parens ("map" <++> rta <++> rfa
+      parens ("map" <+> rta <+> rfa
               <+> (renderType (Tc ct1) (Just ta1) Nothing)
               <+> (renderType t2 (Just ta2) Nothing))
 
     TBigMap (Comparable ct1 ta1) (Type t2 ta2) ->
-      parens ("big_map" <++> rta <++> rfa
+      parens ("big_map" <+> rta <+> rfa
               <+> (renderType (Tc ct1) (Just ta1) Nothing)
               <+> (renderType t2 (Just ta2) Nothing))
 
