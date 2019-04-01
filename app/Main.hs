@@ -97,7 +97,8 @@ argParser = subparser $
     printSubCmd =
       mkCommandParser "print"
       (Print <$> printOptions)
-      "Parse and print passed contract"
+      ("Parse a Morley contract and print corresponding Michelson " <>
+       "contract that can be parsed the OCaml reference client")
 
     runSubCmd =
       mkCommandParser "run"
