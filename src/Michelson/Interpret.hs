@@ -233,6 +233,10 @@ runInstrNoGas
   => T.Instr a b -> Rec (Val T.Instr) a -> EvalOp state (Rec (Val T.Instr) b)
 runInstrNoGas = runInstrImpl runInstrNoGas
 
+
+
+
+
 -- | Function to interpret Michelson instruction(s) against given stack.
 runInstrImpl
     :: forall state .
