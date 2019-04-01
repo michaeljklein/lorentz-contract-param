@@ -13,7 +13,7 @@ import Test.Util.Contracts (getWellTypedContracts)
 spec :: Spec
 spec = describe "Michelson.TzPrinter.printUntypedContract" $ do
   contractFiles <- runIO getWellTypedContracts
-  sequence_ (roundtripPrintTest <$> contractFiles)
+  mapM_ roundtripPrintTest contractFiles
 
 roundtripPrintTest :: FilePath -> Spec
 roundtripPrintTest filePath =
