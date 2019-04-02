@@ -4,6 +4,7 @@
 
 module Michelson.Untyped.Instr
   ( InstrAbstract (..)
+  , InstrNoAnn (..)
   , Op (..)
   , Instr
   , ExpandedOp (..)
@@ -15,18 +16,22 @@ module Michelson.Untyped.Instr
   -- * Contract's address
   , OriginationOperation (..)
   , mkContractAddress
+
+  -- * Helpers
+  , dropAnnotations
   ) where
 
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as BSL
 import Data.Data (Data(..))
+import Data.Generics (mkT, everywhere)
 import qualified Data.Kind as K
 import Fmt (Buildable(build), (+|), (|+))
 import Prelude hiding (EQ, GT, LT)
 import Text.PrettyPrint.Leijen.Text (braces, nest, (<$$>), (<+>))
 
 import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOpsList, spaces)
-import Michelson.Untyped.Annotation (FieldAnn, TypeAnn, VarAnn)
+import Michelson.Untyped.Annotation (FieldAnn, TypeAnn, VarAnn, noAnn)
 import Michelson.Untyped.Contract (Contract(..))
 import Michelson.Untyped.Type (Comparable, Type)
 import Michelson.Untyped.Value (Value(..))
@@ -269,6 +274,21 @@ instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
 instance (RenderDoc op) => Buildable (InstrAbstract op) where
   build = buildRenderDoc
 
+newtype InstrNoAnn op = InstrNoAnn (InstrAbstract op) deriving (Generic)
+deriving instance (Eq (InstrAbstract op)) => Eq (InstrNoAnn op)
+deriving instance (Show (InstrAbstract op)) => Show (InstrNoAnn op)
+
+dropAnnotations
+  :: (Data op, Data (ExtU InstrAbstract op))
+  => InstrAbstract op -> InstrAbstract op
+dropAnnotations =
+  (everywhere $ mkT $ \(x :: TypeAnn) -> case x of
+    _ -> noAnn) .
+  (everywhere $ mkT $ \(x :: FieldAnn) -> case x of
+    _ -> noAnn) .
+  (everywhere $ mkT $ \(x :: VarAnn) -> case x of
+    _ -> noAnn)
+
 ----------------------------------------------------------------------------
 -- Contract's address computation
 --
@@ -302,7 +322,7 @@ deriving instance Show ExpandedInstrExtU => Show OriginationOperation
 -- TODO [TM-62] It's certainly imprecise, real Tezos implementation doesn't
 -- use JSON, but we don't need precise format yet, so we just use some
 -- serialization format (JSON because we have necessary instances already).
-mkContractAddress :: Aeson.ToJSON ExpandedInstrExtU => OriginationOperation -> Address
+mkContractAddress :: Data ExpandedInstrExtU => Aeson.ToJSON ExpandedInstrExtU => OriginationOperation -> Address
 mkContractAddress = mkContractAddressRaw . BSL.toStrict . Aeson.encode
 
 ----------------------------------------------------------------------------
@@ -313,7 +333,11 @@ instance Aeson.ToJSON Instr => Aeson.ToJSON Op
 instance Aeson.FromJSON Instr => Aeson.FromJSON Op
 instance Aeson.ToJSON ExpandedInstr => Aeson.ToJSON ExpandedOp
 instance Aeson.FromJSON ExpandedInstr => Aeson.FromJSON ExpandedOp
-instance (Aeson.ToJSON op, Aeson.ToJSON (ExtU InstrAbstract op)) => Aeson.ToJSON (InstrAbstract op)
+instance (Data op, Data (ExtU InstrAbstract op), Aeson.ToJSON op, Aeson.ToJSON (ExtU InstrAbstract op))
+  => Aeson.ToJSON (InstrAbstract op) where
+  toEncoding = (Aeson.genericToEncoding Aeson.defaultOptions) . dropAnnotations
 instance (Aeson.FromJSON op, Aeson.FromJSON (ExtU InstrAbstract op)) => Aeson.FromJSON (InstrAbstract op)
 instance Aeson.FromJSON ExpandedOp => Aeson.FromJSON OriginationOperation
 instance Aeson.ToJSON ExpandedOp => Aeson.ToJSON OriginationOperation
+instance (Aeson.ToJSON op, Aeson.ToJSON (InstrAbstract op)) => Aeson.ToJSON (InstrNoAnn op)
+instance (Aeson.FromJSON op, Aeson.FromJSON (InstrAbstract op)) => Aeson.FromJSON (InstrNoAnn op)

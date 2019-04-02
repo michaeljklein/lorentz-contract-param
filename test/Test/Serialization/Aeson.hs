@@ -2,17 +2,18 @@ module Test.Serialization.Aeson
   ( spec
   ) where
 
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
 import Test.Aeson.GenericSpecs (roundtripADTSpecs, roundtripSpecs)
 import Test.Hspec (Spec)
 import Test.QuickCheck (Arbitrary)
 
 import Michelson.Untyped
-  (Elt, FieldAnn, InstrAbstract, TypeAnn, UntypedContract, UntypedValue,
-  VarAnn, ExpandedOp)
+  (Elt, FieldAnn, InstrAbstract, InstrNoAnn, TypeAnn, UntypedContract,
+  UntypedValue, VarAnn, ExpandedOp, dropAnnotations)
 import Tezos.Core (Mutez, Timestamp)
 
 import Test.Arbitrary ()
+import Test.Util.QuickCheck (roundtripSpecWithPostprocessing)
 import Test.QuickCheck.Arbitrary.ADT (ToADTArbitrary)
 
 -- Note: if we want to enforce a particular JSON format, we can extend
@@ -50,6 +51,8 @@ spec = do
   test (Proxy @VarAnn)
 
   test (Proxy @UntypedContract)
-  testADT (Proxy @(InstrAbstract ExpandedOp))
+  testADT (Proxy @(InstrNoAnn ExpandedOp))
+  roundtripSpecWithPostprocessing @(InstrAbstract ExpandedOp)
+    encode eitherDecode dropAnnotations
   test (Proxy @UntypedValue)
   test (Proxy @(Elt ExpandedOp))

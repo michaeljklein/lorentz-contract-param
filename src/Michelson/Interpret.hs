@@ -26,6 +26,7 @@ import Prelude hiding (EQ, GT, LT)
 import Control.Monad.Except (throwError)
 import qualified Data.Aeson as Aeson
 import qualified Data.Map as Map
+import Data.Data (Data)
 import qualified Data.Set as Set
 import Data.Singletons (SingI(..))
 import Data.Typeable ((:~:)(..))
@@ -124,7 +125,7 @@ deriving instance Show s => Show (InterpretUntypedResult s)
 
 -- | Interpret a contract without performing any side effects.
 interpretUntyped
-  :: forall s . (ExtC, Aeson.ToJSON U.ExpandedInstrExtU)
+  :: forall s . (Data U.ExpandedInstrExtU, ExtC, Aeson.ToJSON U.ExpandedInstrExtU)
   => TcExtHandler
   -> U.UntypedContract
   -> U.UntypedValue
@@ -164,7 +165,7 @@ type ContractReturn s st =
   (Either MichelsonFailed ([Operation Instr], Val Instr st), InterpreterState s)
 
 interpret
-  :: (ExtC, Aeson.ToJSON U.ExpandedInstrExtU, Typeable cp, Typeable st)
+  :: (Data U.ExpandedInstrExtU, ExtC, Aeson.ToJSON U.ExpandedInstrExtU, Typeable cp, Typeable st)
   => Contract cp st
   -> Val Instr cp
   -> Val Instr st
@@ -215,7 +216,7 @@ runEvalOp act env initSt =
 
 -- | Function to change amount of remaining steps stored in State monad
 runInstr
-  :: (ExtC, Aeson.ToJSON U.ExpandedInstrExtU, Typeable inp)
+  :: (Data U.ExpandedInstrExtU, ExtC, Aeson.ToJSON U.ExpandedInstrExtU, Typeable inp)
   => Instr inp out
   -> Rec (Val Instr) inp
   -> EvalOp state (Rec (Val Instr) out)
@@ -232,14 +233,14 @@ runInstr i r = do
 
 runInstrNoGas
   :: forall a b state .
-  (ExtC, Aeson.ToJSON U.ExpandedInstrExtU, Typeable a)
+  (Data U.ExpandedInstrExtU, ExtC, Aeson.ToJSON U.ExpandedInstrExtU, Typeable a)
   => T.Instr a b -> Rec (Val T.Instr) a -> EvalOp state (Rec (Val T.Instr) b)
 runInstrNoGas = runInstrImpl runInstrNoGas
 
 -- | Function to interpret Michelson instruction(s) against given stack.
 runInstrImpl
     :: forall state .
-    (ExtC, Aeson.ToJSON U.ExpandedInstrExtU)
+    (Data U.ExpandedInstrExtU, ExtC, Aeson.ToJSON U.ExpandedInstrExtU)
     => (forall inp1 out1 . Typeable inp1 =>
       Instr inp1 out1
     -> Rec (Val Instr) inp1

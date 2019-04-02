@@ -14,7 +14,7 @@ import Test.QuickCheck.Instances.Text ()
 
 import Michelson.Untyped
   (Annotation(..), CT(..), Comparable(..), Contract(..), Elt(..), FieldAnn, InstrAbstract(..),
-  InternalByteString(..), ExpandedOp (..), T(..), Type(..), TypeAnn, Value(..), VarAnn)
+  InstrNoAnn (..), InternalByteString(..), ExpandedOp (..), T(..), Type(..), TypeAnn, Value(..), VarAnn, noAnn)
 import Morley.Test ()
 import Morley.Types (StackTypePattern(..), TyVar(..), ExpandedUExtInstr, UExtInstrAbstract(..), Var(..))
 import Tezos.Core (Mutez(..))
@@ -195,6 +195,137 @@ instance (Arbitrary op, Arbitrary (UExtInstrAbstract op)) => Arbitrary (InstrAbs
       , SENDER <$> arbitrary
       , ADDRESS <$> arbitrary
       ]
+
+instance (Arbitrary op, ToADTArbitrary op, Arbitrary (UExtInstrAbstract op)) => ToADTArbitrary (InstrNoAnn op)
+instance (Arbitrary op, Arbitrary (UExtInstrAbstract op)) => Arbitrary (InstrNoAnn op) where
+  arbitrary =
+    oneof $ (fmap . fmap) InstrNoAnn
+      [ EXT <$> arbitrary
+      , pure DROP
+      , pure $ DUP noAnn
+      , pure SWAP
+      , PUSH <$> pure noAnn <*> arbitrary <*> arbitrary
+      , pure $ SOME noAnn noAnn noAnn
+      , NONE noAnn noAnn noAnn <$> arbitrary
+      , pure $ UNIT noAnn noAnn
+      , (do size1 <- smallSize
+            size2 <- smallSize
+            l1 <- vector size1
+            l2 <- vector size2
+            pure $ IF_NONE l1 l2
+        )
+      , pure $ PAIR noAnn noAnn noAnn noAnn
+      , pure $ CAR noAnn noAnn
+      , pure $ CDR noAnn noAnn
+      , LEFT noAnn noAnn noAnn noAnn <$> arbitrary
+      , RIGHT noAnn noAnn noAnn noAnn <$> arbitrary
+      , (do size1 <- smallSize
+            size2 <- smallSize
+            l1 <- vector size1
+            l2 <- vector size2
+            pure $ IF_LEFT l1 l2
+        )
+      , (do size1 <- smallSize
+            size2 <- smallSize
+            l1 <- vector size1
+            l2 <- vector size2
+            pure $ IF_RIGHT l1 l2
+        )
+      , NIL noAnn noAnn <$> arbitrary
+      , pure $ CONS noAnn
+      , (do size1 <- smallSize
+            size2 <- smallSize
+            l1 <- vector size1
+            l2 <- vector size2
+            pure $ IF_CONS l1 l2
+        )
+      , pure $ SIZE noAnn
+      , EMPTY_SET noAnn noAnn <$> arbitrary
+      , EMPTY_MAP noAnn noAnn <$> arbitrary <*> arbitrary
+      , (do size1 <- smallSize
+            l1 <- vector size1
+            MAP noAnn <$> pure l1
+        )
+      , (do size1 <- smallSize
+            l1 <- vector size1
+            pure $ ITER l1
+        )
+      , pure $ MEM noAnn
+      , pure $ GET noAnn
+      , pure UPDATE
+      , (do size1 <- smallSize
+            size2 <- smallSize
+            l1 <- vector size1
+            l2 <- vector size2
+            pure $ IF l1 l2
+        )
+      , (do size1 <- smallSize
+            l1 <- vector size1
+            pure $ LOOP l1
+        )
+      , (do size1 <- smallSize
+            l1 <- vector size1
+            pure $ LOOP_LEFT l1
+        )
+      , (do size1 <- smallSize
+            l1 <- vector size1
+            LAMBDA noAnn <$> arbitrary <*> arbitrary <*> pure l1
+        )
+      , pure $ EXEC noAnn
+      , (do size1 <- smallSize
+            l1 <- vector size1
+            pure $ DIP l1
+        )
+      , pure FAILWITH
+      , CAST noAnn <$> arbitrary
+      , pure $ RENAME noAnn
+      , pure $ PACK noAnn
+      , UNPACK noAnn <$> arbitrary
+      , pure $ CONCAT noAnn
+      , pure $ SLICE noAnn
+      , pure $ ISNAT noAnn
+      , pure $ ADD noAnn
+      , pure $ SUB noAnn
+      , pure $ MUL noAnn
+      , pure $ EDIV noAnn
+      , pure $ ABS noAnn
+      , pure NEG
+      , pure $ LSL noAnn
+      , pure $ LSR noAnn
+      , pure $ OR noAnn
+      , pure $ AND noAnn
+      , pure $ XOR noAnn
+      , pure $ NOT noAnn
+      , pure $ COMPARE noAnn
+      , pure $ EQ noAnn
+      , pure $ NEQ noAnn
+      , pure $ LT noAnn
+      , pure $ GT noAnn
+      , pure $ LE noAnn
+      , pure $ GE noAnn
+      , pure $ INT noAnn
+      , pure $ SELF noAnn
+      , CONTRACT noAnn <$> arbitrary
+      , pure $ TRANSFER_TOKENS noAnn
+      , pure $ SET_DELEGATE noAnn
+      , pure $ CREATE_ACCOUNT noAnn noAnn
+      , pure $ CREATE_CONTRACT noAnn noAnn
+      , CREATE_CONTRACT2 noAnn noAnn <$> arbitrary
+      , pure $ IMPLICIT_ACCOUNT noAnn
+      , pure $ NOW noAnn
+      , pure $ AMOUNT noAnn
+      , pure $ BALANCE noAnn
+      , pure $ CHECK_SIGNATURE noAnn
+      , pure $ SHA256 noAnn
+      , pure $ SHA512 noAnn
+      , pure $ BLAKE2B noAnn
+      , pure $ HASH_KEY noAnn
+      , pure $ STEPS_TO_QUOTA noAnn
+      , pure $ SOURCE noAnn
+      , pure $ SENDER noAnn
+      , pure $ ADDRESS noAnn
+      ]
+
 
 instance (Arbitrary op, ToADTArbitrary op) => ToADTArbitrary (Value op)
 instance (Arbitrary op) => Arbitrary (Value op) where

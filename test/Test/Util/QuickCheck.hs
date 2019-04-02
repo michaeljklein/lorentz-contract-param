@@ -28,6 +28,7 @@ module Test.Util.QuickCheck
 
   -- * Roundtrip properties
   , roundtripSpec
+  , roundtripSpecWithPostprocessing
   , roundtripSpecSTB
   , aesonRoundtrip
 
@@ -80,11 +81,29 @@ roundtripSpec ::
   => (x -> y)
   -> (y -> Either err x)
   -> Spec
-roundtripSpec xToY yToX = prop typeName check
+roundtripSpec xToY yToX = roundtripSpecWithPostprocessing xToY yToX id
+
+-- | This 'Spec' contains a property based test for conversion from
+-- some @x@ to some @y@ and back to postprocessed @x@.
+roundtripSpecWithPostprocessing ::
+     forall x y err.
+     ( Show x
+     , Typeable x
+     , Arbitrary x
+     , Eq x
+     , Show err
+     , Eq err
+     )
+  => (x -> y)
+  -> (y -> Either err x)
+  -> (x -> x)
+  -> Spec
+roundtripSpecWithPostprocessing xToY yToX postprocessing = prop typeName check
   where
     typeName = show $ typeRep (Proxy @x)
     check :: x -> Property
-    check x = yToX (xToY x) === Right x
+    check x = yToX (xToY x) === Right (postprocessing x)
+
 
 -- | Version of 'roundtripSpec' which shows values using 'Buildable' instance.
 roundtripSpecSTB ::
