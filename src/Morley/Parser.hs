@@ -240,9 +240,8 @@ intLiteral :: Parser (Mo.Value a)
 intLiteral = try $ Mo.ValueInt <$> (L.signed (return ()) L.decimal)
 
 bytesLiteral :: Parser (Mo.Value a)
-bytesLiteral = try $ do
-  symbol "0x"
-  hexdigits <- takeWhileP Nothing Char.isHexDigit
+bytesLiteral = do
+  hexdigits <- try $ symbol "0x" *> takeWhileP Nothing Char.isHexDigit
   let (bytes, remain) = B16.decode $ encodeUtf8 hexdigits
   if remain == ""
   then return . Mo.ValueBytes . Mo.InternalByteString $ bytes

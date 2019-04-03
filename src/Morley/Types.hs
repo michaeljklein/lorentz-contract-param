@@ -114,7 +114,7 @@ data CustomParserException
 
 instance ShowErrorComponent CustomParserException where
   showErrorComponent UnknownTypeException = "unknown type"
-  showErrorComponent OddNumberBytesException = "odd number bytes"
+  showErrorComponent OddNumberBytesException = "odd-lengthed bytes"
   showErrorComponent UnexpectedLineBreak = "unexpected linebreak"
 
 type Parser = ReaderT LetEnv (Parsec CustomParserException T.Text)
