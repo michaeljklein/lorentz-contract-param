@@ -91,7 +91,8 @@ type IntegrationalScenario = IntegrationalScenarioM Validated
 -- It starts with 'initGState' and some reasonable dummy values for
 -- gas limit and current timestamp. You can update blockchain state
 -- by performing some operations.
-integrationalTestExpectation :: IntegrationalScenario -> Expectation
+integrationalTestExpectation ::
+  HasCallStack => IntegrationalScenario -> Expectation
 integrationalTestExpectation =
   integrationalTest (maybe pass (expectationFailure . toString))
 

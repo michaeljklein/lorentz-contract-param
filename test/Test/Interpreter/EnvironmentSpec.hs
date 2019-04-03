@@ -54,10 +54,11 @@ shouldReturn fixture
   | fMaxSteps fixture - consumedGas > 1000 = Untyped.ValueTrue
   | otherwise = Untyped.ValueFalse
   where
-    consumedGas = 19
+    consumedGas = 20
 
 specImpl ::
-    (UntypedContract, Contract ('Tc 'CAddress) ('Tc 'CBool))
+     HasCallStack
+  => (UntypedContract, Contract ('Tc 'CAddress) ('Tc 'CBool))
   -> Spec
 specImpl (uEnvironment, _environment)  = do
   let scenario = integrationalScenario uEnvironment
