@@ -27,6 +27,7 @@ module Tezos.Core
   , getCurrentTime
   ) where
 
+import Data.Aeson (FromJSON(..), ToJSON(..))
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
 import Data.Time.Clock (UTCTime)
@@ -160,4 +161,10 @@ getCurrentTime = Timestamp <$> getPOSIXTime
 ----------------------------------------------------------------------------
 
 deriveJSON defaultOptions ''Mutez
-deriveJSON defaultOptions ''Timestamp
+-- In order to make serialization of typed and untyped values identical
+-- we always serialize Timestamp as a number
+instance ToJSON Timestamp where
+  toEncoding = toEncoding . timestampToSeconds @Integer
+
+instance FromJSON Timestamp where
+   parseJSON val = timestampFromSeconds @Integer <$> parseJSON @Integer val

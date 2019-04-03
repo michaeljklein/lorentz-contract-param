@@ -20,7 +20,7 @@ import Michelson.Typed.T (CT(..), T(..))
 import Michelson.Typed.Value
 import qualified Michelson.Untyped as Un
 import Tezos.Address (formatAddress)
-import Tezos.Core (unMutez)
+import Tezos.Core (timestampToSeconds, unMutez)
 import Tezos.Crypto (formatKeyHash, formatPublicKey, formatSignature)
 
 class Conversible ext1 ext2 where
@@ -91,7 +91,7 @@ cValToValue cVal = case cVal of
   CvBool True -> Un.ValueTrue
   CvBool False -> Un.ValueFalse
   CvKeyHash h -> Un.ValueString $ formatKeyHash h
-  CvTimestamp t -> Un.ValueString $ show t
+  CvTimestamp t -> Un.ValueInt $ timestampToSeconds t
   CvAddress a -> Un.ValueString $ formatAddress a
 
 instrToOps :: ConversibleExt => Instr inp out -> [Un.ExpandedOp]
