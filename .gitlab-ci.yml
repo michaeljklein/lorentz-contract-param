@@ -21,7 +21,6 @@ build-and-test:
     - docker-executor
   only:
     refs:
-      - merge_requests
       - master
       - production
     changes: &changes
@@ -65,8 +64,6 @@ test-shell-script:
   dependencies:
     - build-and-test
   only:
-    refs:
-      - merge_requests
     changes: *changes
   script:
     - apk add bats
