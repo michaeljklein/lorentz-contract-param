@@ -19,10 +19,6 @@ build-and-test:
   stage: test
   tags:
     - docker-executor
-  only:
-    refs:
-      - master
-      - production
     changes: &changes
       - Dockerfile
       - .dockerignore
@@ -86,8 +82,6 @@ build-docker-latest:
   dependencies:
     - build-and-test
   only:
-    refs:
-      - master
     changes: *changes
   script: &docker_script
     - docker build -t $IMAGE_TAG .
@@ -108,7 +102,5 @@ build-docker-production:
   dependencies:
     - build-and-test
   only:
-    refs:
-      - production
     changes: *changes
   script: *docker_script
