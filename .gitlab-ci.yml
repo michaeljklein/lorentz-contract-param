@@ -19,6 +19,7 @@ build-and-test:
   stage: test
   tags:
     - docker-executor
+  only:
     changes: &changes
       - Dockerfile
       - .dockerignore

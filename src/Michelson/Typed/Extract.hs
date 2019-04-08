@@ -19,6 +19,7 @@ import Michelson.Typed.Sing (Sing(..), fromSingCT, fromSingT)
 import Michelson.Typed.T (T(..))
 import qualified Michelson.Untyped as Un
 
+
 -- | Extracts 'T' type from 'Michelson.Untyped.Type'.
 fromUType :: Un.Type -> T
 fromUType (Un.Type wholeT _) = conv wholeT
