@@ -1,4 +1,4 @@
-module Morley.Parser.Annotations
+module Michelson.Parser.Annotations
   ( note
   , noteT
   , noteV
@@ -18,17 +18,16 @@ module Morley.Parser.Annotations
 
 import Prelude hiding (many, note, some, try)
 
-import Control.Applicative.Permutations
-  (runPermutation, toPermutationWithDefault)
+import Control.Applicative.Permutations (runPermutation, toPermutationWithDefault)
 import Data.Char (isAlpha, isAlphaNum, isAscii)
 import qualified Data.Text as T
 import Text.Megaparsec (satisfy, takeWhileP, try)
 import Text.Megaparsec.Char (string)
 
-import Morley.Default
-import Morley.Lexer
+import Michelson.Lexer
 import Morley.Types (Parser)
 import qualified Morley.Types as Mo
+import Util.Default
 
 -- General T/V/F Annotation parser
 note :: T.Text -> Parser T.Text
