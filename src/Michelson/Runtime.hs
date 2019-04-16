@@ -36,17 +36,17 @@ import Text.Megaparsec (parse)
 import Michelson.Interpret
   (ContractEnv(..), InterpretUntypedError(..), InterpretUntypedResult(..), InterpreterState(..),
   RemainingSteps(..))
+import Michelson.Interpret (interpretUntyped)
 import Michelson.Macro (expandContract)
 import qualified Michelson.Parser as P
 import Michelson.Runtime.GState
 import Michelson.Runtime.TxData
-import Michelson.TypeCheck (SomeContract, TCError)
+import Michelson.TypeCheck (SomeContract, TCError, typeCheckContract)
 import Michelson.Typed
   (CreateContract(..), Instr, Operation(..), TransferTokens(..), convertContract, untypeValue)
 import qualified Michelson.Typed as T
 import Michelson.Untyped (Contract, OriginationOperation(..), mkContractAddress)
 import qualified Michelson.Untyped as U
-import Morley.Ext (interpretMorleyUntyped, typeCheckMorleyContract)
 import Morley.Types (MorleyLogs(..), ParsedOp)
 import Tezos.Address (Address(..))
 import Tezos.Core (Mutez, Timestamp(..), getCurrentTime, unsafeAddMutez, unsafeSubMutez)
@@ -317,7 +317,7 @@ interpretOneOp
   -> Either InterpreterError InterpreterRes
 interpretOneOp _ remainingSteps _ gs (OriginateOp origination) = do
   void $ first IEIllTypedContract $
-    typeCheckMorleyContract (extractAllContracts gs) (ooContract origination)
+    typeCheckContract (extractAllContracts gs) (ooContract origination)
   let originatorAddress = KeyAddress (ooManager origination)
   originatorBalance <- case gsAddresses gs ^. at (originatorAddress) of
     Nothing -> Left (IEUnknownManager originatorAddress)
@@ -400,7 +400,7 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
           , iurNewState = InterpreterState _ newRemainingSteps
           }
           <- first (IEInterpreterFailed addr) $
-                interpretMorleyUntyped contract (tdParameter txData)
+                interpretUntyped contract (tdParameter txData)
                                  (csStorage cs) contractEnv
         let
           newValueU = untypeValue newValue
@@ -441,7 +441,7 @@ typeCheckWithDb
   -> IO (Either TCError SomeContract)
 typeCheckWithDb dbPath morleyContract = do
   gState <- readGState dbPath
-  pure . typeCheckMorleyContract (extractAllContracts gState) $ morleyContract
+  pure . typeCheckContract (extractAllContracts gState) $ morleyContract
 
 ----------------------------------------------------------------------------
 -- Simple helpers
