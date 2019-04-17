@@ -35,7 +35,7 @@ import Text.Megaparsec (parse)
 
 import Michelson.Interpret
   (ContractEnv(..), InterpretUntypedError(..), InterpretUntypedResult(..), InterpreterState(..),
-  RemainingSteps(..))
+  MorleyLogs(..), RemainingSteps(..))
 import Michelson.Interpret (interpretUntyped)
 import Michelson.Macro (expandContract)
 import qualified Michelson.Parser as P
@@ -47,7 +47,7 @@ import Michelson.Typed
 import qualified Michelson.Typed as T
 import Michelson.Untyped (Contract, OriginationOperation(..), mkContractAddress)
 import qualified Michelson.Untyped as U
-import Morley.Types (MorleyLogs(..), ParsedOp)
+import Morley.Types (ParsedOp)
 import Tezos.Address (Address(..))
 import Tezos.Core (Mutez, Timestamp(..), getCurrentTime, unsafeAddMutez, unsafeSubMutez)
 import Tezos.Crypto (parseKeyHash)
@@ -80,7 +80,7 @@ data InterpreterRes = InterpreterRes
   -- ^ List of operations to be added to the operations queue.
   , _irUpdates :: ![GStateUpdate]
   -- ^ Updates applied to 'GState'.
-  , _irInterpretResults :: [(Address, InterpretUntypedResult MorleyLogs)]
+  , _irInterpretResults :: [(Address, InterpretUntypedResult)]
   -- ^ During execution a contract can print logs and in the end it returns
   -- a pair. All logs and returned values are kept until all called contracts
   -- are executed. In the end they are printed.
@@ -98,7 +98,7 @@ data InterpreterError
   = IEUnknownContract !Address
   -- ^ The interpreted contract hasn't been originated.
   | IEInterpreterFailed !Address
-                        !(InterpretUntypedError MorleyLogs)
+                        !InterpretUntypedError
   -- ^ Interpretation of Michelson contract failed.
   | IEAlreadyOriginated !Address
                         !ContractState
@@ -256,7 +256,7 @@ interpreter maybeNow maxSteps dbPath operations
     writeGState dbPath _irGState
   where
     printInterpretResult
-      :: (Address, InterpretUntypedResult MorleyLogs) -> IO ()
+      :: (Address, InterpretUntypedResult) -> IO ()
     printInterpretResult (addr, InterpretUntypedResult {..}) = do
       putTextLn $ "Executed contract " <> pretty addr
       case iurOps of
@@ -264,7 +264,7 @@ interpreter maybeNow maxSteps dbPath operations
         _ -> fmt $ nameF "It returned operations:" (blockListF iurOps)
       putTextLn $
         "It returned storage: " <> pretty (untypeValue iurNewStorage)
-      let MorleyLogs logs = isExtState iurNewState
+      let MorleyLogs logs = isMorleyLogs iurNewState
       unless (null logs) $
         mapM_ putTextLn logs
       putTextLn "" -- extra break line to separate logs from two sequence contracts

@@ -8,7 +8,6 @@ module Michelson.Untyped.Instr
   , Instr
   , ExpandedOp (..)
   , ExpandedInstr
-  , ExtU
   , InstrExtU
   , ExpandedInstrExtU
 
@@ -20,7 +19,6 @@ module Michelson.Untyped.Instr
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as BSL
 import Data.Data (Data(..))
-import qualified Data.Kind as K
 import Fmt (Buildable(build), (+|), (|+))
 import Prelude hiding (EQ, GT, LT)
 import Text.PrettyPrint.Leijen.Text (braces, nest, (<$$>), (<+>))
@@ -28,6 +26,7 @@ import Text.PrettyPrint.Leijen.Text (braces, nest, (<$$>), (<+>))
 import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOpsList, spaces)
 import Michelson.Untyped.Annotation (FieldAnn, TypeAnn, VarAnn)
 import Michelson.Untyped.Contract (Contract'(..))
+import Michelson.Untyped.Ext (ExtInstrAbstract)
 import Michelson.Untyped.Type (Comparable, Type)
 import Michelson.Untyped.Value (Value'(..))
 import Tezos.Address (Address, mkContractAddressRaw)
@@ -37,20 +36,20 @@ import Tezos.Crypto (KeyHash)
 -------------------------------------
 -- Flattened types after macroexpander
 -------------------------------------
-type InstrExtU = ExtU InstrAbstract Op
+type InstrExtU = ExtInstrAbstract Op
 type Instr = InstrAbstract Op
 newtype Op = Op {unOp :: Instr}
   deriving stock (Generic)
   deriving newtype (RenderDoc, Buildable)
 
-deriving instance Eq (ExtU InstrAbstract Op) => Eq Op
-deriving instance Show (ExtU InstrAbstract Op) => Show Op
+deriving instance Eq (ExtInstrAbstract Op) => Eq Op
+deriving instance Show (ExtInstrAbstract Op) => Show Op
 
 -------------------------------------
 -- Types after macroexpander
 -------------------------------------
 
-type ExpandedInstrExtU = ExtU InstrAbstract ExpandedOp
+type ExpandedInstrExtU = ExtInstrAbstract ExpandedOp
 type ExpandedInstr = InstrAbstract ExpandedOp
 
 data ExpandedOp
@@ -77,16 +76,13 @@ instance Buildable ExpandedOp where
 -- Abstract instruction
 -------------------------------------
 
--- | ExtU is extension of InstrAbstract by Morley instructions
-type family ExtU (instr :: K.Type -> K.Type) :: K.Type -> K.Type
-
 -- | Michelson instruction with abstract parameter `op`.  This
 -- parameter is necessary, because at different stages of our pipeline
 -- it will be different. Initially it can contain macros and
 -- non-flattened instructions, but then it contains only vanilla
 -- Michelson instructions.
 data InstrAbstract op
-  = EXT               (ExtU InstrAbstract op)
+  = EXT               (ExtInstrAbstract op)
   | DROP
   | DUP               VarAnn
   | SWAP
@@ -169,10 +165,10 @@ data InstrAbstract op
   | ADDRESS           VarAnn
   deriving (Generic)
 
-deriving instance (Eq op, Eq (ExtU InstrAbstract op)) => Eq (InstrAbstract op)
-deriving instance (Show op, Show (ExtU InstrAbstract op)) => Show (InstrAbstract op)
-deriving instance Functor (ExtU InstrAbstract) => Functor InstrAbstract
-deriving instance (Data op, Data (ExtU InstrAbstract op)) => Data (InstrAbstract op)
+deriving instance (Eq op, Eq (ExtInstrAbstract op)) => Eq (InstrAbstract op)
+deriving instance (Show op, Show (ExtInstrAbstract op)) => Show (InstrAbstract op)
+deriving instance Functor (ExtInstrAbstract) => Functor InstrAbstract
+deriving instance (Data op, Data (ExtInstrAbstract op)) => Data (InstrAbstract op)
 
 instance (RenderDoc op) => RenderDoc (InstrAbstract op) where
   renderDoc = \case
@@ -310,7 +306,7 @@ instance Aeson.ToJSON Instr => Aeson.ToJSON Op
 instance Aeson.FromJSON Instr => Aeson.FromJSON Op
 instance Aeson.ToJSON ExpandedInstr => Aeson.ToJSON ExpandedOp
 instance Aeson.FromJSON ExpandedInstr => Aeson.FromJSON ExpandedOp
-instance (Aeson.ToJSON op, Aeson.ToJSON (ExtU InstrAbstract op)) => Aeson.ToJSON (InstrAbstract op)
-instance (Aeson.FromJSON op, Aeson.FromJSON (ExtU InstrAbstract op)) => Aeson.FromJSON (InstrAbstract op)
+instance (Aeson.ToJSON op, Aeson.ToJSON (ExtInstrAbstract op)) => Aeson.ToJSON (InstrAbstract op)
+instance (Aeson.FromJSON op, Aeson.FromJSON (ExtInstrAbstract op)) => Aeson.FromJSON (InstrAbstract op)
 instance Aeson.FromJSON ExpandedOp => Aeson.FromJSON OriginationOperation
 instance Aeson.ToJSON ExpandedOp => Aeson.ToJSON OriginationOperation

@@ -55,7 +55,6 @@ library
                      , Tezos.Crypto
                      , Util.Default
                      , Util.Peano
-                     , Util.Lens
   other-modules:
                        Michelson.EqParam
                      , Michelson.TypeCheck.Error
@@ -78,6 +77,7 @@ library
                      , Michelson.Untyped.Aliases
                      , Michelson.Untyped.Annotation
                      , Michelson.Untyped.Contract
+                     , Michelson.Untyped.Ext
                      , Michelson.Untyped.Instr
                      , Michelson.Untyped.Type
                      , Michelson.Untyped.Value
