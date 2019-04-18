@@ -1,0 +1,11 @@
+parameter
+  (or
+    (unit %bump_counter)
+    (nat %reset_counter)
+  );
+storage nat;
+code {DUP; CAR; DIP {CDR};
+      IF_LEFT
+        {DROP; PUSH nat 1; ADD; NIL operation; PAIR}
+        {DIP {DROP}; NIL operation; PAIR};
+     };

@@ -1,0 +1,22 @@
+let {
+  type Parameter =
+    ( Unit %bump_counter
+    | Nat %reset_counter
+    );
+  type Storage = Nat;
+
+  bumpCounter :: '[Unit, Storage] -> '[ ([Operation], Storage) ]
+  = {DROP; PUSH nat 1; ADD; NIL operation; PAIR};
+
+  resetCounter :: '[Nat, Storage] -> '[ ([Operation], Storage) ]
+  = {DIP {DROP}; NIL operation; PAIR};
+
+};
+
+parameter Parameter;
+storage Storage;
+code {UNPAIR;
+      CASE
+        { bumpCounter }
+        { resetCounter };
+     };

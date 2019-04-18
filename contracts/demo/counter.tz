@@ -1,0 +1,22 @@
+parameter
+  (or
+    (unit %bump_counter)
+    (or
+      (nat %reset_counter)
+      (pair %getCount unit (contract (pair unit (option nat))))
+    )
+  );
+storage nat;
+code {DUP; CAR; DIP {CDR};
+      IF_LEFT
+        {DROP; PUSH nat 1; ADD; NIL operation; PAIR}
+        {IF_LEFT
+          {DIP {DROP}; NIL operation; PAIR}
+          {UNPAIR; DIP {DUUP};
+           DUP; DIP {PAIR; CDR; SOME};
+           PAIR; DIP {AMOUNT};
+           TRANSFER_TOKENS;
+           NIL operation; SWAP; CONS; PAIR
+          };
+        };
+     };
