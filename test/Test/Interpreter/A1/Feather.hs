@@ -46,12 +46,17 @@ type family MultiOr (ts :: [T.T]) :: T.T where
 type family View (a :: T.T) (r :: T.T) :: T.T where
   View a r = 'T.TPair a ('T.TContract ('T.TPair a ('T.TOption r)))
 
+-- TODO: add to Lorenz
+-- type family Void' (a :: T.T) (b :: T.T) :: T.T where
+--   Void' a b = 'T.TPair a ('T.TLambda b b)
+
 type CounterParameter =
   MultiOr
   [ 'T.TUnit
   , 'T.TUnit
   , 'T.Tc 'T.CNat
   , View 'T.TUnit ('T.Tc 'T.CNat)
+  -- , Void' 'T.TUnit ('T.Tc 'T.CBytes)
   ]
 type CounterStorage = T.ToT Natural
 
