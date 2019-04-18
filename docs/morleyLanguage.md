@@ -18,7 +18,10 @@ enabled
 
 In Michelson, all letters in all instructions must be CAPITAL and all letters in types and type constructors must be lowercase.
 In Morley, one can also use lowercase letters in instructions.
+For example, `ABS` and `abs` are both valid names of the same instruction.
+
 Types and type constructors can start with a capital letter (like in Haskell).
+For example, both `Unit` and `unit` are valid names of the unit type.
 
 ## Macros and Type synonyms
 
