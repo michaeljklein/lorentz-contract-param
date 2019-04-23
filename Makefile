@@ -16,7 +16,7 @@ dev:
 # Run tests in all packages which have them.
 test:
 	stack test morley $(STACK_DEV_TEST_OPTIONS) \
-		--test-arguments "--color $(TEST_ARGUMENTS)"
+		--test-arguments "--color always $(TEST_ARGUMENTS)"
 
 # Run haddock for all packages.
 haddock:
