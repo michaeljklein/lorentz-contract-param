@@ -1,9 +1,12 @@
 module Test.Ext
-  ( spec_ExtTypeCheck
-  , spec_ExtIntepreter
+  ( spec_ExtIntepreter
+  , test_STACKTYPE
   ) where
 
-import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldSatisfy)
+import Test.Hspec (Spec, describe, it, shouldSatisfy)
+import Test.HUnit (Assertion, assertFailure)
+import Test.Tasty (TestTree)
+import Test.Tasty.HUnit (testCase)
 
 import Michelson.Interpret (InterpreterState(..), MorleyLogs(..), interpret)
 import Michelson.Test (specWithTypedContract)
@@ -40,18 +43,19 @@ spec_ExtIntepreter = describe "PRINT/TEST_ASSERT tests" $ do
             else isLeft a && s == MorleyLogs ["Sides are " <> show x' <> " x " <> show y']
       interpret contract (T.VPair (x', y')) T.VUnit dummyContractEnv `shouldSatisfy` check
 
-spec_ExtTypeCheck :: Spec
-spec_ExtTypeCheck = describe "STACKTYPE tests" $ do
-  it "Correct test on [] pattern" $ runNopTest test1 True
-  it "Correct test on [a, b] pattern" $ runNopTest test2 True
-  it "Correct test on [a, b, ...] pattern" $ runNopTest test3 True
-  it "Correct test on [a, b, ...] pattern and stack [a, b]" $ runNopTest test4 True
+test_STACKTYPE :: [TestTree]
+test_STACKTYPE =
+  [ testCase "Correct test on [] pattern" $ runExtTest test1 True
+  , testCase "Correct test on [a, b] pattern" $ runExtTest test2 True
+  , testCase "Correct test on [a, b, ...] pattern" $ runExtTest test3 True
+  , testCase "Correct test on [a, b, ...] pattern and stack [a, b]" $ runExtTest test4 True
 
-  it "Failed test on [] pattern and stack [a]" $ runNopTest test5 False
-  it "Failed test on [a, b] pattern and stack [a, b, c]" $ runNopTest test6 False
-  it "Failed test on [a, b] pattern and stack [a]" $ runNopTest test7 False
-  it "Failed test on [a, b, ...] pattern and stack [a]" $ runNopTest test8 False
-  it "Failed test on [a, b] pattern and stack [a, c]" $ runNopTest test9 False
+  , testCase "Failed test on [] pattern and stack [a]" $ runExtTest test5 False
+  , testCase "Failed test on [a, b] pattern and stack [a, b, c]" $ runExtTest test6 False
+  , testCase "Failed test on [a, b] pattern and stack [a]" $ runExtTest test7 False
+  , testCase "Failed test on [a, b, ...] pattern and stack [a]" $ runExtTest test8 False
+  , testCase "Failed test on [a, b] pattern and stack [a, c]" $ runExtTest test9 False
+  ]
   where
     p2 = StkCons (TyCon t1) (StkCons (TyCon t2) StkEmpty)
     p3 = StkCons (TyCon t1) (StkCons (TyCon t2) StkRest)
@@ -81,8 +85,8 @@ spec_ExtTypeCheck = describe "STACKTYPE tests" $ do
     nh (ni, si) =
       runTypeCheckT (Type TKey noAnn) mempty $ typeCheckExt typeCheckList ni si
 
-    runNopTest :: (ExpandedExtInstr, SomeHST) -> Bool -> Expectation
-    runNopTest (ui, SomeHST hst) correct = case (nh (ui, hst), correct) of
-      (Right _, False) -> expectationFailure $ "Test expected to fail but it passed"
-      (Left e, True)   -> expectationFailure $ "Test expected to pass but it failed with error: " <> show e
+    runExtTest :: (ExpandedExtInstr, SomeHST) -> Bool -> Assertion
+    runExtTest (ui, SomeHST hst) correct = case (nh (ui, hst), correct) of
+      (Right _, False) -> assertFailure $ "Test expected to fail but it passed"
+      (Left e, True)   -> assertFailure $ "Test expected to pass but it failed with error: " <> show e
       _                -> pass
