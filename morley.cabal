@@ -285,10 +285,12 @@ test-suite morley-test
                      , Test.Tezos.Crypto
                      , Test.Typecheck
                      , Test.Util.Contracts
+                     , Test.Util.Ingredients
                      , Test.Util.Parser
                      , Test.Util.QuickCheck
                      , Test.ValConversion
 
+                     , Tree
                      -- Workaround
                      , Test.Tasty.HUnit
   build-depends:
@@ -317,6 +319,7 @@ test-suite morley-test
                      , quickcheck-instances
                      , singletons
                      , tasty
+                     , tasty-fail-fast
                      , tasty-hspec
                      , tasty-quickcheck
                      , text

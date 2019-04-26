@@ -43,6 +43,7 @@ extra-deps:
 - aeson-options-0.1.0
 - base58-bytestring-0.1.0
 - hex-text-0.1.0.0
+- tasty-fail-fast-0.0.3
 
 nix:
   shell-file: shell.nix
