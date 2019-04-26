@@ -24,6 +24,14 @@ All Haskell code uses
 [Universum](https://hackage.haskell.org/package/universum) as a
 replacement for the default prelude.
 
+### Tests
+
+We use [`tasty`](https://hackage.haskell.org/package/tasty) as our primary top-level testing framework.
+Some old code may use `hspec` instead, but all new code must use `tasty`.
+We use [`tasty-discover`](https://hackage.haskell.org/package/tasty-discover) to automatically find all tests.
+We still require explicit exports to ensure that we don't accidentally miss some test.
+If we accidentally name some test in a way which will be ignored by `tasty-discover`, `weeder` will detect a useless export.
+
 ## Makefile
 
 We have a [Makefile](/Makefile) which provides shortcuts for the most
