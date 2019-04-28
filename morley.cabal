@@ -32,9 +32,6 @@ library
                      , Tezos.Address
                      , Tezos.Core
                      , Tezos.Crypto
-                     , Util.Named
-                     , Util.Peano
-                     , Util.TypeTuple
 
   other-modules:       Michelson.EqParam
                      , Michelson.Printer.Util
