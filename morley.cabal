@@ -28,19 +28,14 @@ library
   exposed-modules:
                        Michelson.Typed
                      , Michelson.Typed.Value
-                     , Michelson.Untyped
                      , Tezos.Address
                      , Tezos.Core
                      , Tezos.Crypto
 
   other-modules:       Michelson.Typed.CValue
                      , Michelson.Typed.T
-                     , Michelson.Untyped.Aliases
                      , Michelson.Untyped.Annotation
-                     , Michelson.Untyped.Ext
-                     , Michelson.Untyped.Instr
                      , Michelson.Untyped.Type
-                     , Michelson.Untyped.Value
 
   build-depends:       aeson
                      , aeson-options
