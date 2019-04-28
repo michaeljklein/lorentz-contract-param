@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 parameter (map (int :k) (int :e));
 storage (pair (int :k) (int :e));
 code { CAR; PUSH @acc_e (int :e) 0; PUSH @acc_k (int :k) 0; PAIR % %r; SWAP;

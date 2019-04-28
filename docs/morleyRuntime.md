@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # Morley Runtime
 
 Morley runtime (`Morley.Runtime*` modules) provides a high-level interface to Morley functionality.

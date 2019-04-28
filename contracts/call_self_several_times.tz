@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # Parameter is number of times this contract will be called in total.
 # Note: parameter must be positive, 0 doesn't work (consumes all gas).
 # Storage is a number which is simply incremented every time the contract is called.

@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Module containing some utilities for testing Michelson contracts using
 -- Haskell testing frameworks (hspec and QuickCheck in particular).
 -- It's Morley testing EDSL.

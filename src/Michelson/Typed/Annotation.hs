@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 {-# LANGUAGE DataKinds, GADTs #-}
 
 -- | Module, providing @Notes t@ data type, which holds annotations for a

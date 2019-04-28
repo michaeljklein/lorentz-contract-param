@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Module, providing functions for conversion from
 -- instruction and value representation from @Michelson.Type@ module
 -- to strictly-typed GADT-based representation from @Michelson.Value@ module.

@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # Morley NOP Instructions
 
 Morley adds some additional instructions of its own to the existing set of

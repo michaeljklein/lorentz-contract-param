@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Utility functions to read sample contracts (for testing).
 
 module Test.Util.Contracts

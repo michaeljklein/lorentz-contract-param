@@ -1,3 +1,9 @@
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # This contract takes a string as parameter and an address as storage.
 # It transfers 300 mutez to the given address and passes its parameter as
 # parameter for this transfer.

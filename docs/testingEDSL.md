@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # EDSL for Testing Michelson Contracts in Haskell
 
 One possible way to test your Michelson contracts is to write tests in Haskell using Morley Testing EDSL.

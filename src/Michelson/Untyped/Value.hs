@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 {-# LANGUAGE DeriveDataTypeable, DerivingStrategies #-}
 
 -- | Untyped Michelson values (i. e. type of a value is not statically known).

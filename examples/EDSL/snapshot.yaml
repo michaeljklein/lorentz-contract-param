@@ -1,3 +1,9 @@
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 resolver: lts-13.3
 
 name: edsl-example

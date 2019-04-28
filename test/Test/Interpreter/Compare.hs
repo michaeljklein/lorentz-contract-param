@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Module, containing spec to test compare.tz contract.
 module Test.Interpreter.Compare
   ( compareSpec

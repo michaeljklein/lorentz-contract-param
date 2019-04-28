@@ -1,3 +1,10 @@
+#
+# © 2017-2018 Serokell
+#
+# SPDX-License-Identifier: MPL-2.0
+#
+
+
 # This is a custom hlint config with rules that suggest
 # using Universum functions whenever it has a suitable
 # alternative.

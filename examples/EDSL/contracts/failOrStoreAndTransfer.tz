@@ -1,3 +1,9 @@
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # This contract takes a string as parameter and updates its storage to
 # this string.
 # However, it fails if its balance is greater than 1000.

@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # Morley Typechecker
 
 In Morley, we have a typechecker for the core Michelson language, i. e. without macros.

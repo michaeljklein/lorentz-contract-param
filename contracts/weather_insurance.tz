@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 parameter (pair (signature %signed_weather_data) (nat :rain %actual_level));
 # (pair (under_key over_key) (pair weather_service_key (pair rain_level days_in_future)))
 storage (pair (pair (contract %under_key unit)

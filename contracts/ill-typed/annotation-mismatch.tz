@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # This contract is ill-typed, it replaces storage with parameter,
 # but they have incompatible types (due to annotations).
 

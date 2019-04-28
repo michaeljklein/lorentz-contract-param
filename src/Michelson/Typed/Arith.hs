@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 {-# LANGUAGE DataKinds, MultiParamTypeClasses, TypeFamilies #-}
 
 -- | Module, containing some boilerplate for support of

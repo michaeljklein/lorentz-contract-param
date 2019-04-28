@@ -1,3 +1,9 @@
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # This contract's behavior heavily depends on the environment in which it's executed.
 # 1. It fails if its balance is greater than 1000.
 # 2. It fails if NOW is less than 100500.

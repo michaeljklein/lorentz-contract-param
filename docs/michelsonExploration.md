@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # Michelson Exploration
 
 While we were familiarizing with Michelson we were making some experiments to better understand how it works.

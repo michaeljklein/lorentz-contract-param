@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 parameter (pair (pair %set_pair int (option int)) (pair %check_pair int (option int))) ;
 storage (pair (big_map int int) unit) ;
 code { DUP ; DIP { CDAR } ;

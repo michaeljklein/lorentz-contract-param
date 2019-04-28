@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Functions to check whether two values are equal if their types
 -- have parameters and it's not statically known whether they these
 -- parameters have the same types.

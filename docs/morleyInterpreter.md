@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # Morley Interpreter
 
 Morley interpreter takes a well-typed Morley contract (in [typed representation](./michelsonTypes.md#typed-types)), interprets all its instructions according to the Michelson specification and then performs side effects.

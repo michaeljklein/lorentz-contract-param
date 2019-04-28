@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Serokell
+
+SPDX-License-Identifier: MPL-2.0
+
+-->
+
+
 # Haskell Style Guide
 
 This style guide is derived from [Johan Tibell's

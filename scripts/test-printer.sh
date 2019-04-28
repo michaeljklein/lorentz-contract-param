@@ -1,3 +1,9 @@
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # Run it from the root of the repository. Assumes the following:
 # 1. `morley` is build using `stack` and `stack exec -- morley` works
 # 2. `alphanet.sh` is in `..`

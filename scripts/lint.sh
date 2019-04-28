@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 hlint --hint .hlint.yaml --hint .hlint-universum.yaml src
 
 ex=$?

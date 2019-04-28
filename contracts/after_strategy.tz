@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 parameter nat;
 storage (pair (pair nat bool) timestamp);
 code {DUP; CAR; DIP{CDDR; DUP; NOW; CMPGT}; PAIR; PAIR ; NIL operation ; PAIR};

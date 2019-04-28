@@ -1,3 +1,11 @@
+{-
+ - © 2019 Tocqueville Group
+ - © 2016 IOHK
+ -        (original license: LicenseRef-MIT-IOHK)
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Testing utility functions used by testing framework itself or
 -- intended to be used by test writers.
 

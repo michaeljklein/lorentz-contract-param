@@ -1,6 +1,12 @@
 #! /usr/bin/env bash
 set -e
 
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 docker_dir="$HOME/.morley"
 mnt_dir="/mnt"
 mkdir -p "$docker_dir"

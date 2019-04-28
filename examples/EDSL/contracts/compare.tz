@@ -1,3 +1,9 @@
+#
+# © 2019 Tocqueville Group
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # compare.tz
 # Accepts a pair of values of type Mutez (Pair a b).
 # Returns a bool list:

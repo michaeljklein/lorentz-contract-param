@@ -1,3 +1,11 @@
+#
+# © 2019 Tocqueville Group
+# © 2018 Dynamic Ledger Solutions, Inc. <contact@tezos.com>
+#        (original license: LicenseRef-MIT-DynamicLedgerSolutions)
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 # This is a very simple accounts system.
 # (Left key) initializes or deposits into an account
 # (Right key (pair mutez (signed mutez))) withdraws mutez amount to a

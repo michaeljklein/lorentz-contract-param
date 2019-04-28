@@ -1,3 +1,9 @@
+{-
+ - © 2019 Tocqueville Group
+ -
+ - SPDX-License-Identifier: AGPL-3.0-or-later
+ -}
+
 -- | Utilities for integrational testing.
 -- Example tests can be found in the 'morley-test' test suite.
 

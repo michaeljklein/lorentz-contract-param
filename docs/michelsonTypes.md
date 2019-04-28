@@ -1,3 +1,12 @@
+<!--
+
+© 2019 Tocqueville Group
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+-->
+
+
 # Michelson Types
 
 We have two representations of types that assemble a Michelson contract: typed and untyped representations.
