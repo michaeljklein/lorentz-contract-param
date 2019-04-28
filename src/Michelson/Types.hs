@@ -60,7 +60,7 @@ import qualified Data.Text as T
 import Fmt (Buildable(build), genericF, (+|), (|+))
 import qualified Text.PrettyPrint.Leijen.Text as PP (empty)
 
-import Michelson.Printer (RenderDoc(..))
+import Michelson.Printer.Util (RenderDoc(..))
 import qualified Michelson.Untyped as U
 
 -------------------------------------
