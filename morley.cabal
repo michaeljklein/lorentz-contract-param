@@ -31,8 +31,6 @@ library
                      , Michelson.Typed.T
 
   build-depends:       base >= 4.7 && < 5
-                     , bytestring
-                     , text
                      , universum
   ghc-options:        -Weverything
                       -Wno-missing-exported-signatures
