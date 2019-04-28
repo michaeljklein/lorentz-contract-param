@@ -1,11 +1,16 @@
-module Main
-  ( main
-  ) where
+module Main where
 
-import Test.Tasty (defaultMainWithIngredients)
+import Test.Hspec (Expectation, shouldBe)
+import qualified Test.Tasty as T
+import qualified Test.Tasty.HUnit as HU
 
-import Test.Util.Ingredients (ourIngredients)
-import Tree (tests)
+import Michelson.Typed
+
+e :: Expectation
+e = do
+  let x = -64 :: Integer
+      x' = VC (CvInt -63)
+  toVal x `shouldBe` x'
 
 main :: IO ()
-main = tests >>= defaultMainWithIngredients ourIngredients
+main = T.defaultMain $ HU.testCase "e" e

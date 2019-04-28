@@ -76,7 +76,7 @@ instance FromCVal Address where
   fromCVal (CvAddress a) = a
 
 instance ToCVal Integer where
-  toCVal = CvInt . succ
+  toCVal = CvInt
 
 instance ToCVal Int where
   toCVal = CvInt . fromIntegral
