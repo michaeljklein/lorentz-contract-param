@@ -29,7 +29,6 @@ library
                        Michelson.Typed.Value
   other-modules:       Michelson.Typed.CValue
                      , Michelson.Typed.T
-                     , Michelson.Untyped.Type
 
   build-depends:       base >= 4.7 && < 5
                      , bytestring
@@ -92,7 +91,6 @@ test-suite morley-test
   other-modules:       Test.Tasty.HUnit
   build-depends:
                        base >= 4.7 && < 5
-                     , hspec-expectations
                      , HUnit
                      , morley
                      , tasty

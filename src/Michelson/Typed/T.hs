@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-
--- | Module, providing 'CT' and 'T' data types, representing Michelson
--- language types without annotations.
 module Michelson.Typed.T
   ( CT (..)
   , T (..)
@@ -10,22 +6,13 @@ module Michelson.Typed.T
 
 import Universum
 
-import Michelson.Untyped.Type (CT(..), ToCT)
+data CT =
+    CInt
+  deriving (Eq, Ord, Show, Enum, Bounded, Generic)
 
--- | Michelson language type with annotations stripped off.
+type family ToCT a :: CT where
+  ToCT Integer = 'CInt
+
 data T =
-    Tc CT
-  | TKey
-  | TUnit
-  | TSignature
-  | TOption T
-  | TList T
-  | TSet CT
-  | TOperation
-  | TContract T
-  | TPair T T
-  | TOr T T
-  | TLambda T T
-  | TMap CT T
-  | TBigMap CT T
+  Tc CT
   deriving (Eq, Show)
