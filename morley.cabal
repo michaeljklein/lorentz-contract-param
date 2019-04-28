@@ -28,9 +28,6 @@ library
   exposed-modules:
                        Michelson.Typed
                      , Michelson.Typed.Value
-                     , Tezos.Address
-                     , Tezos.Core
-                     , Tezos.Crypto
 
   other-modules:       Michelson.Typed.CValue
                      , Michelson.Typed.T

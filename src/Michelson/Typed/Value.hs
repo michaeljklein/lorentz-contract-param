@@ -9,8 +9,6 @@ module Michelson.Typed.Value
 
 import Michelson.Typed.CValue (CValue(..), toCVal)
 import Michelson.Typed.T
-import Tezos.Address (Address)
-import Tezos.Crypto (PublicKey, Signature)
 
 -- | Representation of Michelson value.
 --
@@ -19,14 +17,10 @@ import Tezos.Crypto (PublicKey, Signature)
 
 data Value' instr t where
   VC :: CValue t -> Value' instr ('Tc t)
-  VKey :: PublicKey -> Value' instr 'TKey
   VUnit :: Value' instr 'TUnit
-  VSignature :: Signature -> Value' instr 'TSignature
   VOption :: forall t instr. Maybe (Value' instr t) -> Value' instr ('TOption t)
   VList :: forall t instr. [Value' instr t] -> Value' instr ('TList t)
   VSet :: forall t instr. Set (CValue t) -> Value' instr ('TSet t)
-  VOp :: Value' instr 'TOperation
-  VContract :: forall p instr. Address -> Value' instr ('TContract p)
   VPair :: forall l r instr. (Value' instr l, Value' instr r) -> Value' instr ('TPair l r)
   VOr :: forall l r instr. Either (Value' instr l) (Value' instr r) -> Value' instr ('TOr l r)
   VLam
