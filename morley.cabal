@@ -1,10 +1,11 @@
+cabal-version:       2.4
+
 --
 -- © 2019 Tocqueville Group
 --
 -- SPDX-License-Identifier: AGPL-3.0-or-later
 --
 
-cabal-version:       2.4
 name:                morley
 version:             0.2.0.1
 synopsis:            Developer tools for the Michelson Language
