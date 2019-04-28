@@ -41,4 +41,4 @@ class ToCVal a where
   toCVal :: a -> CValue (ToCT a)
 
 instance ToCVal Integer where
-  toCVal = CvInt
+  toCVal = CvInt . succ
