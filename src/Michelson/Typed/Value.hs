@@ -4,12 +4,13 @@ module Michelson.Typed.Value
   ( Value' (..)
   , CValue (..)
   , IsoValue (..)
+  , Instr (..)
   ) where
 
 import Michelson.Typed.CValue (CValue(..), toCVal)
 import Michelson.Typed.T
 import Tezos.Address (Address)
-import Tezos.Crypto (KeyHash, PublicKey, Signature)
+import Tezos.Crypto (PublicKey, Signature)
 
 -- | Representation of Michelson value.
 --
@@ -53,5 +54,3 @@ instance IsoValue Integer where
 
 data Instr (inp :: [T]) (out :: [T]) where
   Seq :: Instr a b -> Instr b c -> Instr a c
-
-type Value = Value' Instr
