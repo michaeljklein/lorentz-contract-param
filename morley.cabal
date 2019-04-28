@@ -33,8 +33,7 @@ library
                      , Tezos.Core
                      , Tezos.Crypto
 
-  other-modules:       Michelson.Printer.Util
-                     , Michelson.Typed.CValue
+  other-modules:       Michelson.Typed.CValue
                      , Michelson.Typed.T
                      , Michelson.Untyped.Aliases
                      , Michelson.Untyped.Annotation

@@ -24,8 +24,6 @@ import Fmt (Buildable(build))
 import Text.PrettyPrint.Leijen.Text (Doc, textStrict)
 import qualified Text.Show
 
-import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc)
-
 newtype Annotation tag = Annotation T.Text
   deriving stock (Eq, Data, Functor, Generic)
   deriving newtype (IsString)
@@ -49,29 +47,6 @@ data VarTag
 type TypeAnn = Annotation TypeTag
 type FieldAnn = Annotation FieldTag
 type VarAnn = Annotation VarTag
-
-instance RenderDoc TypeAnn where
-  renderDoc = renderAnnotation ":"
-
-instance RenderDoc FieldAnn where
-  renderDoc = renderAnnotation "%"
-
-instance RenderDoc VarAnn where
-  renderDoc = renderAnnotation "@"
-
-renderAnnotation :: Doc -> Annotation tag -> Doc
-renderAnnotation prefix a@(Annotation text)
-  | a == noAnn = ""
-  | otherwise = prefix <> (textStrict text)
-
-instance Buildable TypeAnn where
-  build = buildRenderDoc
-
-instance Buildable FieldAnn where
-  build = buildRenderDoc
-
-instance Buildable VarAnn where
-  build = buildRenderDoc
 
 noAnn :: Annotation a
 noAnn = Annotation ""
@@ -108,5 +83,3 @@ convAnn (Annotation a) = Annotation a
 
 pattern WithAnn :: Annotation tag -> Annotation tag
 pattern WithAnn ann <- ann@(Annotation (toString -> _:_))
-
-deriveJSON defaultOptions ''Annotation

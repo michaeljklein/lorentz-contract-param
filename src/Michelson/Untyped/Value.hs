@@ -16,9 +16,6 @@ import Data.Data (Data(..))
 import qualified Data.List as L
 import Formatting.Buildable (Buildable(build))
 import Text.Hex (encodeHex)
-import Text.PrettyPrint.Leijen.Text (braces, dquotes, parens, semi, text, textStrict, (<+>))
-
-import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, renderOps)
 
 data Value' op =
     ValueInt     Integer
@@ -50,47 +47,3 @@ newtype InternalByteString = InternalByteString ByteString
 
 unInternalByteString :: InternalByteString -> ByteString
 unInternalByteString (InternalByteString bs) = bs
-
-instance RenderDoc op => RenderDoc (Value' op) where
-  renderDoc =
-    \case
-      ValueNil       -> "{ }"
-      ValueInt x     -> text . show $ x
-      ValueString x  -> dquotes (textStrict x)
-      ValueBytes xs  -> "0x" <> (textStrict . encodeHex . unInternalByteString $ xs)
-      ValueUnit      -> "Unit"
-      ValueTrue      -> "True"
-      ValueFalse     -> "False"
-      ValuePair l r  -> parens $ ("Pair"  <+> renderDoc l <+> renderDoc r)
-      ValueLeft l    -> parens $ ("Left"  <+> renderDoc l)
-      ValueRight r   -> parens $ ("Right" <+> renderDoc r)
-      ValueSome x    -> parens $ ("Some"  <+> renderDoc x)
-      ValueNone      -> "None"
-      ValueSeq xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
-      ValueMap xs    -> braces $ mconcat $ (L.intersperse semi (renderDoc <$> toList xs))
-      ValueLambda xs -> renderOps True xs
-
-instance RenderDoc op => RenderDoc (Elt op) where
-  renderDoc (Elt k v) = "Elt" <+> renderDoc k <+> renderDoc v
-
-instance (RenderDoc op) => Buildable (Value' op) where
-  build = buildRenderDoc
-
-instance (RenderDoc op) => Buildable (Elt op) where
-  build = buildRenderDoc
-
-----------------------------------------------------------------------------
--- JSON serialization
-----------------------------------------------------------------------------
-
--- it is not possible to derives these automatically because
--- ByteString does not have a ToJSON or FromJSON instance
-
-instance ToJSON InternalByteString where
-  toJSON = toJSON @Text . decodeUtf8 . unInternalByteString
-
-instance FromJSON InternalByteString where
-  parseJSON = fmap (InternalByteString . encodeUtf8 @Text) . parseJSON
-
-deriveJSON defaultOptions ''Value'
-deriveJSON defaultOptions ''Elt

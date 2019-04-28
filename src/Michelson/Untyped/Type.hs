@@ -45,10 +45,7 @@ module Michelson.Untyped.Type
 
 import Data.Aeson.TH (defaultOptions, deriveJSON)
 import Data.Data (Data(..))
-import Formatting.Buildable (Buildable(build))
-import Text.PrettyPrint.Leijen.Text (Doc, parens, (<+>))
 
-import Michelson.Printer.Util (RenderDoc(..), buildRenderDoc, wrapInParens)
 import Michelson.Untyped.Annotation (Annotation(..), FieldAnn, TypeAnn)
 import Tezos.Address (Address)
 import Tezos.Core (Mutez, Timestamp)
@@ -58,85 +55,9 @@ import Tezos.Crypto (KeyHash)
 data Type = Type T TypeAnn
   deriving (Eq, Show, Data, Generic)
 
-instance RenderDoc Comparable where
-  renderDoc (Comparable ct ta) = renderDoc ct <+> renderDoc ta
-
-instance RenderDoc Type where
-  renderDoc (Type t ta) = renderType t (Just ta) Nothing
-
-instance RenderDoc T where
-  renderDoc t = renderType t Nothing Nothing
-
--- Ordering between different kinds of annotations is not significant,
--- but ordering among annotations of the same kind is. Annotations
--- of a same kind must be grouped together.
--- (prim @v :t %x arg1 arg2 ...)
--- these are equivalent
--- PAIR :t @my_pair %x %y
--- PAIR %x %y :t @my_pair
-renderType :: T -> Maybe TypeAnn -> Maybe FieldAnn -> Doc
-renderType t mta mfa =
-  let rta = case mta of Just ta -> renderDoc ta; Nothing -> ""
-      rfa = case mfa of Just fa -> renderDoc fa; Nothing -> "" in
-  case t of
-    Tc ct             -> wrapInParens $ renderDoc ct :| [rta, rfa]
-    TKey              -> wrapInParens $ "key"  :| [rta, rfa]
-    TUnit             -> wrapInParens $ "unit" :| [rta, rfa]
-    TSignature        -> wrapInParens $ "signature" :| [rta, rfa]
-    TOperation        -> wrapInParens $ "operation" :| [rta, rfa]
-    TOption fa1 (Type t1 ta1) ->
-      parens ("option" <+> rta <+> rfa
-              <+> renderType t1 (Just ta1) (Just fa1))
-    TList (Type t1 ta1)       -> parens ("list" <+> rta <+> rfa <+> renderType t1 (Just ta1) Nothing)
-    TSet (Comparable ct1 ta1) -> parens ("set" <+> rta <+> rfa <+> renderType (Tc ct1) (Just ta1) Nothing)
-    TContract (Type t1 ta1)   -> parens ("contract" <+> rta <+> rfa <+> renderType t1 (Just ta1) Nothing)
-
-    TPair fa1 fa2 (Type t1 ta1) (Type t2 ta2) ->
-      parens ("pair" <+> rta <+> rfa
-              <+> (renderType t1 (Just ta1) (Just fa1))
-              <+> (renderType t2 (Just ta2) (Just fa2)))
-
-    TOr fa1 fa2 (Type t1 ta1) (Type t2 ta2) ->
-      parens ("or" <+> rta <+> rfa
-              <+> (renderType t1 (Just ta1) (Just fa1))
-              <+> (renderType t2 (Just ta2) (Just fa2)))
-
-    TLambda (Type t1 ta1) (Type t2 ta2) ->
-      parens ("lambda" <+> rta <+> rfa
-              <+> (renderType t1 (Just ta1) Nothing)
-              <+> (renderType t2 (Just ta2) Nothing))
-
-    TMap (Comparable ct1 ta1) (Type t2 ta2) ->
-      parens ("map" <+> rta <+> rfa
-              <+> (renderType (Tc ct1) (Just ta1) Nothing)
-              <+> (renderType t2 (Just ta2) Nothing))
-
-    TBigMap (Comparable ct1 ta1) (Type t2 ta2) ->
-      parens ("big_map" <+> rta <+> rfa
-              <+> (renderType (Tc ct1) (Just ta1) Nothing)
-              <+> (renderType t2 (Just ta2) Nothing))
-
-instance RenderDoc CT where
-  renderDoc = \case
-    CInt       -> "int"
-    CNat       -> "nat"
-    CString    -> "string"
-    CMutez     -> "mutez"
-    CBool      -> "bool"
-    CKeyHash   -> "key_hash"
-    CTimestamp -> "timestamp"
-    CBytes     -> "bytes"
-    CAddress   -> "address"
-
-instance Buildable Type where
-  build = buildRenderDoc
-
 -- Annotated Comparable Sub-type
 data Comparable = Comparable CT TypeAnn
   deriving (Eq, Show, Data, Generic)
-
-instance Buildable Comparable where
-  build = buildRenderDoc
 
 compToType :: Comparable -> Type
 compToType (Comparable ct tn) = Type (Tc ct) tn
@@ -162,9 +83,6 @@ data T =
   | TMap Comparable Type
   | TBigMap Comparable Type
   deriving (Eq, Show, Data, Generic)
-
-instance Buildable T where
-  build = buildRenderDoc
 
 -- Comparable Sub-Type
 data CT =
@@ -193,9 +111,6 @@ type family ToCT a :: CT where
   ToCT Address = 'CAddress
   ToCT KeyHash = 'CKeyHash
   ToCT Timestamp = 'CTimestamp
-
-instance Buildable CT where
-  build = buildRenderDoc
 
 pattern Tint :: T
 pattern Tint <- Tc CInt
@@ -310,12 +225,3 @@ isInt _ = False
 isBytes :: Type -> Bool
 isBytes (Type (Tc CBytes) _) = True
 isBytes _ = False
-
-----------------------------------------------------------------------------
--- JSON serialization
-----------------------------------------------------------------------------
-
-deriveJSON defaultOptions ''Type
-deriveJSON defaultOptions ''Comparable
-deriveJSON defaultOptions ''T
-deriveJSON defaultOptions ''CT
