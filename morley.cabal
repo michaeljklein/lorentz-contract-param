@@ -34,7 +34,6 @@ library
 
   other-modules:       Michelson.Typed.CValue
                      , Michelson.Typed.T
-                     , Michelson.Untyped.Annotation
                      , Michelson.Untyped.Type
 
   build-depends:       aeson
