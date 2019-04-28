@@ -10,15 +10,16 @@ module Michelson.Typed.Value
   , Operation' (..)
   , SetDelegate (..)
   , TransferTokens (..)
+  , IsoValue (..)
   ) where
 
 import Data.Singletons (SingI)
 import Fmt (Buildable(build), (+|), (|+))
 
 import Michelson.EqParam
-import Michelson.Typed.CValue (CValue(..))
+import Michelson.Typed.CValue (CValue(..), toCVal)
 import Michelson.Typed.Scope (HasNoOp)
-import Michelson.Typed.T (T(..))
+import Michelson.Typed.T
 import Tezos.Address (Address)
 import Tezos.Core (Mutez)
 import Tezos.Crypto (KeyHash, PublicKey, Signature)
@@ -151,16 +152,13 @@ data Value' instr t where
 deriving instance Show (Value' instr t)
 deriving instance Eq (Value' instr t)
 
--- TODO: actually we should handle big maps with something close
--- to following:
---
---  VBigMap :: BigMap op ref k v -> Value' cp ('TBigMap k v)
---
--- data Value'Op v
---     = New v
---     | Upd v
---     | Rem
---     | NotExisted
---
--- data BigMap op ref k v = BigMap
---  { bmRef :: ref k v, bmChanges :: Map (CValue k) (Value'Op (Value' cp v)) }
+class IsoValue a where
+  -- | Type function that converts a regular Haskell type into a @T@ type.
+  type ToT a :: T
+
+  -- | Converts a Haskell structure into @Value@ representation.
+  toVal :: a -> Value' instr (ToT a)
+
+instance IsoValue Integer where
+  type ToT Integer = 'Tc (ToCT Integer)
+  toVal = VC . toCVal

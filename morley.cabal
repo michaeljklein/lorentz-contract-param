@@ -33,9 +33,6 @@ library
                      , Tezos.Address
                      , Tezos.Core
                      , Tezos.Crypto
-                     , Util.Alternative
-                     , Util.Default
-                     , Util.Lens
                      , Util.Named
                      , Util.Peano
                      , Util.TypeTuple
@@ -45,12 +42,9 @@ library
                      , Michelson.Typed.Aliases
                      , Michelson.Typed.Annotation
                      , Michelson.Typed.Arith
-                     , Michelson.Typed.Convert
                      , Michelson.Typed.CValue
                      , Michelson.Typed.Extract
-                     , Michelson.Typed.Haskell.Value
                      , Michelson.Typed.Instr
-                     , Michelson.Typed.Polymorphic
                      , Michelson.Typed.Scope
                      , Michelson.Typed.Sing
                      , Michelson.Typed.T
