@@ -31,7 +31,7 @@ library
                      , Michelson.Typed.T
                      , Michelson.Untyped.Type
 
-  build-depends:       base-noprelude >= 4.7 && < 5
+  build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , text
                      , universum
