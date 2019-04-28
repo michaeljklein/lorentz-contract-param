@@ -1,10 +1,10 @@
 module Main where
 
-import Test.Hspec (Expectation, shouldBe)
+import Test.Hspec.Expectations (Expectation, shouldBe)
 import qualified Test.Tasty as T
 import qualified Test.Tasty.HUnit as HU
 
-import Michelson.Typed
+import Michelson.Typed.Value
 
 e :: Expectation
 e = do

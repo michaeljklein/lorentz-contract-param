@@ -7,7 +7,7 @@ module Michelson.Untyped.Type
   , ToCT
   ) where
 
-import Data.Data (Data(..))
+import Universum
 
 -- Comparable Sub-Type
 data CT =
@@ -16,7 +16,7 @@ data CT =
   | CString
   | CBytes
   | CBool
-  deriving (Eq, Ord, Show, Data, Enum, Bounded, Generic)
+  deriving (Eq, Ord, Show, Enum, Bounded, Generic)
 
 -- | Type function that converts a regular Haskell type into a comparable type
 -- (which has kind @CT@)

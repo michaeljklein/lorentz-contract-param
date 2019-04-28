@@ -8,10 +8,9 @@
 
 module Test.Tasty.HUnit
   ( testCase
-  , testCaseInfo
-  , testCaseSteps
   ) where
 
+import Control.Exception (try)
 import GHC.Stack (prettySrcLoc)
 import Test.HUnit (Assertion)
 import Test.HUnit.Lang (HUnitFailure(..), formatFailureReason)
@@ -21,13 +20,6 @@ import Test.Tasty.Providers (IsTest(..), singleTest, testFailed, testPassed)
 -- | Turn an 'Assertion' into a tasty test case
 testCase :: TestName -> Assertion -> TestTree
 testCase name = singleTest name . TestCaseWrapper . fmap (const "")
-
-testCaseInfo :: TestName -> IO String -> TestTree
-testCaseInfo name = singleTest name . TestCaseWrapper
-
--- We don't use this feature, so it's the same as simple 'testCase'.
-testCaseSteps :: TestName -> ((String -> IO ()) -> Assertion) -> TestTree
-testCaseSteps name f = testCase name (f $ const pass)
 
 newtype TestCaseWrapper = TestCaseWrapper (IO String)
 
@@ -42,7 +34,7 @@ instance IsTest TestCaseWrapper where
   -- tasty-rerun
   --
   -- So we do it ourselves.
-    hunitResult <- try @_ @HUnitFailure assertion
+    hunitResult <- try @HUnitFailure assertion
     return $
       case hunitResult of
         Right info -> testPassed info

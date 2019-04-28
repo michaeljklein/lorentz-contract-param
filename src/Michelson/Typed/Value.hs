@@ -7,6 +7,8 @@ module Michelson.Typed.Value
   , Instr (..)
   ) where
 
+import Universum
+
 import Michelson.Typed.CValue (CValue(..), toCVal)
 import Michelson.Typed.T
 

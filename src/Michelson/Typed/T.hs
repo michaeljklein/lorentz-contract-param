@@ -8,6 +8,8 @@ module Michelson.Typed.T
   , ToCT
   ) where
 
+import Universum
+
 import Michelson.Untyped.Type (CT(..), ToCT)
 
 -- | Michelson language type with annotations stripped off.

@@ -7,6 +7,8 @@ module Michelson.Typed.CValue
   , toCVal
   ) where
 
+import Universum
+
 import Michelson.Typed.T (CT(..), ToCT)
 
 data CValue t where
