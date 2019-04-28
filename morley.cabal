@@ -33,9 +33,7 @@ library
                      , Tezos.Core
                      , Tezos.Crypto
 
-  other-modules:       Michelson.EqParam
-                     , Michelson.Printer.Util
-                     , Michelson.Typed.Annotation
+  other-modules:       Michelson.Printer.Util
                      , Michelson.Typed.Arith
                      , Michelson.Typed.CValue
                      , Michelson.Typed.T

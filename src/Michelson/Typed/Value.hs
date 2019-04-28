@@ -2,24 +2,14 @@
 
 module Michelson.Typed.Value
   ( Value' (..)
-  , ContractInp
-  , ContractOut
   , CValue (..)
   , IsoValue (..)
   ) where
 
-import Data.Singletons (SingI)
-import Fmt (Buildable(build), (+|), (|+))
-
-import Michelson.EqParam
 import Michelson.Typed.CValue (CValue(..), toCVal)
 import Michelson.Typed.T
 import Tezos.Address (Address)
-import Tezos.Core (Mutez)
 import Tezos.Crypto (KeyHash, PublicKey, Signature)
-
-type ContractInp param st = '[ 'TPair param st ]
-type ContractOut st = '[ 'TPair ('TList 'TOperation) st ]
 
 -- | Representation of Michelson value.
 --
