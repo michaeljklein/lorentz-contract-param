@@ -34,7 +34,6 @@ library
                      , Tezos.Crypto
 
   other-modules:       Michelson.Printer.Util
-                     , Michelson.Typed.Arith
                      , Michelson.Typed.CValue
                      , Michelson.Typed.T
                      , Michelson.Untyped.Aliases
