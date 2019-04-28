@@ -8,8 +8,19 @@ module Michelson.Typed.Value
 
 import Universum
 
-import Michelson.Typed.CValue (CValue(..), toCVal)
 import Michelson.Typed.T
+
+data CValue t where
+  CvInt       :: Integer -> CValue 'CInt
+
+deriving instance Show (CValue t)
+deriving instance Eq (CValue t)
+
+class ToCVal a where
+  toCVal :: a -> CValue (ToCT a)
+
+instance ToCVal Integer where
+  toCVal = CvInt
 
 data Value' t where
   VC :: CValue t -> Value' ('Tc t)

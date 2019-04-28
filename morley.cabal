@@ -27,8 +27,7 @@ library
   default-language:    Haskell2010
   exposed-modules:
                        Michelson.Typed.Value
-  other-modules:       Michelson.Typed.CValue
-                     , Michelson.Typed.T
+  other-modules:       Michelson.Typed.T
 
   build-depends:       base >= 4.7 && < 5
                      , universum
