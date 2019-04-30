@@ -23,4 +23,4 @@ import Lorentz.Base
 
 -- | Aliases for '(#)' used by do-blocks.
 (>>) :: (a :-> b) -> (b :-> c) -> (a :-> c)
-(>>) = (#)
+(>>) = (>>>)

@@ -32,7 +32,7 @@ checkIfAuctionHasEnded = do dup; cdar; dup; now; gt; if_ fail_ nop; swap
 
 setupReplacementStorage :: '[ Input, Timestamp] :-> '[ Bid, Storage ]
 setupReplacementStorage =
-  do dup; car; dip cddr; amount; pair; swap; dip (swap # pair)
+  do dup; car; dip cddr; amount; pair; swap; dip (swap >>> pair)
 
 checkNewBidIsGreater :: '[ Bid, Storage ] :-> '[ Bid, Storage ]
 checkNewBidIsGreater = do dup; car; amount; le; if_ fail_ nop
@@ -41,7 +41,7 @@ getRefund :: '[ Bid, Storage ] :-> '[ Mutez, Bid, Storage ]
 getRefund = do dup; car
 
 makeRefund :: '[ Mutez, Bid, Storage ] :-> '[ Operation, Storage ]
-makeRefund = do dip (cdr # implicitAccount); unit; transferTokens
+makeRefund = do dip (cdr >>> implicitAccount); unit; transferTokens
 
 callingConvention :: '[ Operation, Storage ] :-> '[ Output Storage ]
 callingConvention = do nil; swap; cons; pair

@@ -88,27 +88,27 @@ import Util.Peano
 
 eq :: (ArithOpHs Compare n m, UnaryArithOpHs Eq' (ArithResHs Compare n m))
    => n & m & s :-> (UnaryArithResHs Eq' (ArithResHs Compare n m)) & s
-eq = compare # eq0
+eq = compare >>> eq0
 
 neq :: (ArithOpHs Compare n m, UnaryArithOpHs Neq (ArithResHs Compare n m))
    => n & m & s :-> (UnaryArithResHs Neq (ArithResHs Compare n m)) & s
-neq = compare # neq0
+neq = compare >>> neq0
 
 gt :: (ArithOpHs Compare n m, UnaryArithOpHs Gt (ArithResHs Compare n m))
    => n & m & s :-> (UnaryArithResHs Gt (ArithResHs Compare n m)) & s
-gt = compare # gt0
+gt = compare >>> gt0
 
 le :: (ArithOpHs Compare n m, UnaryArithOpHs Le (ArithResHs Compare n m))
    => n & m & s :-> (UnaryArithResHs Le (ArithResHs Compare n m)) & s
-le = compare # le0
+le = compare >>> le0
 
 ge :: (ArithOpHs Compare n m, UnaryArithOpHs Ge (ArithResHs Compare n m))
    => n & m & s :-> (UnaryArithResHs Ge (ArithResHs Compare n m)) & s
-ge = compare # ge0
+ge = compare >>> ge0
 
 lt :: (ArithOpHs Compare n m, UnaryArithOpHs Lt (ArithResHs Compare n m))
    => n & m & s :-> (UnaryArithResHs Lt (ArithResHs Compare n m)) & s
-lt = compare # lt0
+lt = compare >>> lt0
 
 type IfCmp0Constraints a op =
   (UnaryArithOpHs op a, (UnaryArithResHs op a ~ Bool))
@@ -116,32 +116,32 @@ type IfCmp0Constraints a op =
 ifEq0
   :: (IfCmp0Constraints a Eq')
   => (s :-> s') -> (s :-> s') -> (a & s :-> s')
-ifEq0 l r = eq0 # if_ l r
+ifEq0 l r = eq0 >>> if_ l r
 
 ifNeq0
   :: (IfCmp0Constraints a Neq)
   => (s :-> s') -> (s :-> s') -> (a & s :-> s')
-ifNeq0 l r = neq0 # if_ l r
+ifNeq0 l r = neq0 >>> if_ l r
 
 ifLt0
   :: (IfCmp0Constraints a Lt)
   => (s :-> s') -> (s :-> s') -> (a & s :-> s')
-ifLt0 l r = lt0 # if_ l r
+ifLt0 l r = lt0 >>> if_ l r
 
 ifGt0
   :: (IfCmp0Constraints a Gt)
   => (s :-> s') -> (s :-> s') -> (a & s :-> s')
-ifGt0 l r = gt0 # if_ l r
+ifGt0 l r = gt0 >>> if_ l r
 
 ifLe0
   :: (IfCmp0Constraints a Le)
   => (s :-> s') -> (s :-> s') -> (a & s :-> s')
-ifLe0 l r = le0 # if_ l r
+ifLe0 l r = le0 >>> if_ l r
 
 ifGe0
   :: (IfCmp0Constraints a Ge)
   => (s :-> s') -> (s :-> s') -> (a & s :-> s')
-ifGe0 l r = ge0 # if_ l r
+ifGe0 l r = ge0 >>> if_ l r
 
 type IfCmpXConstraints a b op =
   (Typeable a, Typeable b, ArithOpHs Compare a b
@@ -151,39 +151,39 @@ type IfCmpXConstraints a b op =
 ifEq
   :: (IfCmpXConstraints a b Eq')
   => (s :-> s') -> (s :-> s') -> (a & b & s :-> s')
-ifEq l r = eq # if_ l r
+ifEq l r = eq >>> if_ l r
 
 ifNeq
   :: (IfCmpXConstraints a b Neq)
   => (s :-> s') -> (s :-> s') -> (a & b & s :-> s')
-ifNeq l r = neq # if_ l r
+ifNeq l r = neq >>> if_ l r
 
 ifLt
   :: (IfCmpXConstraints a b Lt)
   => (s :-> s') -> (s :-> s') -> (a & b & s :-> s')
-ifLt l r = lt # if_ l r
+ifLt l r = lt >>> if_ l r
 
 ifGt
   :: (IfCmpXConstraints a b Gt)
   => (s :-> s') -> (s :-> s') -> (a & b & s :-> s')
-ifGt l r = gt # if_ l r
+ifGt l r = gt >>> if_ l r
 
 ifLe
   :: (IfCmpXConstraints a b Le)
   => (s :-> s') -> (s :-> s') -> (a & b & s :-> s')
-ifLe l r = le # if_ l r
+ifLe l r = le >>> if_ l r
 
 ifGe
   :: (IfCmpXConstraints a b Ge)
   => (s :-> s') -> (s :-> s') -> (a & b & s :-> s')
-ifGe l r = ge # if_ l r
+ifGe l r = ge >>> if_ l r
 
 ----------------------------------------------------------------------------
 -- Fail
 ----------------------------------------------------------------------------
 
 fail_ :: a :-> c
-fail_ = unit # failWith
+fail_ = unit >>> failWith
 
 ----------------------------------------------------------------------------
 -- Assertions
@@ -277,7 +277,7 @@ instance CloneX 'Z a s where
   cloneXImpl = nop
 instance (CloneX n a s) => CloneX ('S n) a s where
   type CloneXT ('S n) a s = a ': CloneXT n a s
-  cloneXImpl = dup # dip (cloneXImpl @n)
+  cloneXImpl = dup >>> dip (cloneXImpl @n)
 
 -- | Duplicate the top of the stack @n@ times.
 --
@@ -302,7 +302,7 @@ instance ( DuupX ('S n) (l ++ '[r0]) r a s
          , (l ++ '[r0] ++ '[a] ++ r ++ (a & s)) ~
            (l ++ (r0 & a & r ++ (a & s)))
          ) => DuupX n l (r0 & r) a s where
-  duupXImpl = duupXImpl @('S n) @(l ++ '[r0]) @r @a @s #
+  duupXImpl = duupXImpl @('S n) @(l ++ '[r0]) @r @a @s >>>
               dipXImpl @n @l @(r0 & a & r ++ (a & s)) @(a & r0 & r ++ (a & s)) swap
 
 -- | @DUU+P@ macro. For example, `duupX @3` is `DUUUP`.
@@ -315,41 +315,41 @@ duupX
 duupX = duupXImpl @'Z @'[] @(Above (ToPeano (n - 1)) inp) @a @s
 
 papair :: a & b & c & s :-> ((a, b), c) & s
-papair = pair # pair
+papair = pair >>> pair
 
 ppaiir :: a & b & c & s :-> (a, (b, c)) & s
-ppaiir = dip pair # pair
+ppaiir = dip pair >>> pair
 
 unpair :: (a, b) & s :-> a & b & s
-unpair = dup # car # dip cdr
+unpair = dup >>> car >>> dip cdr
 
 cdar :: (a1, (a2, b)) & s :-> a2 & s
-cdar = cdr # car
+cdar = cdr >>> car
 
 cddr :: (a1, (a2, b)) & s :-> b & s
-cddr = cdr # cdr
+cddr = cdr >>> cdr
 
 caar :: ((a, b1), b2) & s :-> a & s
-caar = car # car
+caar = car >>> car
 
 cadr :: ((a, b1), b2) & s :-> b1 & s
-cadr = car # cdr
+cadr = car >>> cdr
 
 setCar :: (a, b1) & (b2 & s) :-> (b2, b1) & s
-setCar = cdr # swap # pair
+setCar = cdr >>> swap >>> pair
 
 setCdr :: (a, b1) & (b2 & s) :-> (a, b2) & s
-setCdr = car # pair
+setCdr = car >>> pair
 
 mapCar
   :: a & s :-> a1 & s
   -> (a, b) & s :-> (a1, b) & s
-mapCar op = dup # cdr # dip (car # op) # swap # pair
+mapCar op = dup >>> cdr >>> dip (car >>> op) >>> swap >>> pair
 
 mapCdr
   :: b & (a, b) & s :-> b1 & (a, b) & s
   -> (a, b) & s :-> (a, b1) & s
-mapCdr op = dup # cdr # op # swap # car # pair
+mapCdr op = dup >>> cdr >>> op >>> swap >>> car >>> pair
 
 ifRight :: (b & s :-> s') -> (a & s :-> s') -> (Either a b & s :-> s')
 ifRight l r = ifLeft r l
@@ -371,8 +371,8 @@ view_ ::
   => (forall s0. (a, storage) & s0 :-> r : s0)
   -> View a r & storage & s :-> (List Operation, storage) & s
 view_ code =
-  unpair # dip (duupX @2) # dup # dip (pair # code # some) # pair # dip amount #
-  transferTokens # nil # swap # cons # pair
+  unpair >>> dip (duupX @2) >>> dup >>> dip (pair >>> code >>> some) >>>
+  pair >>> dip amount >>> transferTokens >>> nil >>> swap >>> cons >>> pair
 
 -- | @void@ type synonym as described in A1.
 type family Void_ (a :: Kind.Type) (b :: Kind.Type) :: Kind.Type where
@@ -381,4 +381,4 @@ type family Void_ (a :: Kind.Type) (b :: Kind.Type) :: Kind.Type where
 void_ :: (KnownValue b) =>
   a & s :-> b & s' ->
   Void_ a b & s :-> b & anything
-void_ code = unpair # swap # dip code # swap # exec # failWith
+void_ code = unpair >>> swap >>> dip code >>> swap >>> exec >>> failWith

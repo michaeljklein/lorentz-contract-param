@@ -41,7 +41,7 @@ get_
   :: forall dt name fieldTy st path.
      InstrGetC dt name fieldTy path
   => Label name -> dt & st :-> fieldTy & dt ': st
-get_ l = dup # access_ @dt l
+get_ l = dup >>> access_ @dt l
 
 -- | Set a field of a datatype.
 set_
@@ -59,7 +59,7 @@ modify_
   => Label name
   -> (forall st0. (fieldTy ': st0) :-> (fieldTy ': st0))
   -> dt & st :-> dt & st
-modify_ l i = get_ @dt l # i # set_ @dt l
+modify_ l i = get_ @dt l >>> i >>> set_ @dt l
 
 -- | Wrap entry in constructor. Useful for sum types.
 wrap_

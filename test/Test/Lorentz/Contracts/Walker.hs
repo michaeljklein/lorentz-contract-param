@@ -29,8 +29,9 @@ data Storage = Storage { pos :: Position, power :: Power }
   deriving anyclass IsoValue
 
 walkerContract :: Contract Parameter Storage
-walkerContract =
-  unpair # caseT @Parameter
+walkerContract = do
+  unpair
+  caseT @Parameter
     ( #cGoLeft /-> do
         modify_ #pos $ modify_ #x $ do
           push @Integer 1
@@ -57,4 +58,5 @@ walkerContract =
         add
         set_ #power
     )
-  # nil # pair
+  nil
+  pair

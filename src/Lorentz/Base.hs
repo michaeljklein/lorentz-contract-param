@@ -4,7 +4,7 @@
 module Lorentz.Base
   ( (:->) (..)
   , type (&)
-  , (#)
+  , (>>>)
 
   , compileLorentz
   , compileLorentzContract
@@ -41,8 +41,8 @@ compileLorentzContract = compileLorentz
 type (&) (a :: Kind.Type) (b :: [Kind.Type]) = a ': b
 infixr 2 &
 
-(#) :: (a :-> b) -> (b :-> c) -> a :-> c
-I l # I r = I (l `Seq` r)
+(>>>) :: (a :-> b) -> (b :-> c) -> a :-> c
+I l >>> I r = I (l `Seq` r)
 
 type Contract cp st = '[(cp, st)] :-> '[([Operation], st)]
 

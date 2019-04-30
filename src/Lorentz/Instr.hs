@@ -229,7 +229,7 @@ sub = I SUB
 rsub
   :: ArithOpHs Sub n m
   => m & n & s :-> ArithResHs Sub n m & s
-rsub = swap # sub
+rsub = swap >>> sub
 
 mul
   :: ArithOpHs Mul n m

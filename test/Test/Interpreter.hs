@@ -8,7 +8,7 @@ import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldBe
 import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (Property, label, (.&&.), (===))
 
-import Lorentz (( # ))
+import Lorentz ((>>>))
 import qualified Lorentz as L
 import Michelson.Interpret
   (ContractEnv(..), ContractReturn, MichelsonFailed(..), RemainingSteps, interpret)
@@ -137,8 +137,8 @@ spec = describe "Advanced type interpreter tests" $ do
       contractProp contract (validate param) dummyContractEnv param param
 
   it "mkStackRef does not segfault" $ do
-    let contract = L.drop # L.push () # L.dup # L.printComment (L.stackRef @1)
-                          # L.drop # L.nil @T.Operation # L.pair
+    let contract = L.drop >>> L.push () >>> L.dup >>> L.printComment (L.stackRef @1)
+                          >>> L.drop >>> L.nil @T.Operation >>> L.pair
     contractProp (L.compileLorentzContract @() contract) (isRight . fst) dummyContractEnv () ()
 
 validateSuccess :: ContractPropValidator t Expectation
