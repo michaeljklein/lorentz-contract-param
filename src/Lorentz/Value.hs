@@ -23,6 +23,7 @@ module Lorentz.Value
   , List
   , M.ContractAddr (..)
   , unsafeMkMutez
+  , M.BigMap (..)
   ) where
 
 import Michelson.Typed (IsoValue(..), Value)
