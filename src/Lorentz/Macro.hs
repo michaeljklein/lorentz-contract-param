@@ -66,6 +66,7 @@ module Lorentz.Macro
   , Void_
   , view_
   , void_
+  , apply_
   ) where
 
 import Prelude hiding (compare, some, swap)
@@ -383,3 +384,8 @@ void_ :: (KnownValue b) =>
   a & s :-> b & s' ->
   Void_ a b & s :-> b & anything
 void_ code = unpair # swap # dip code # swap # exec # failWith
+
+apply_
+  :: (KnownValue i, KnownValue o)
+  => Lambda i o -> (i & s :-> o & s)
+apply_ lam = lambda lam # swap # exec

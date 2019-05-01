@@ -8,6 +8,8 @@ module Lorentz.Base
 
   , compileLorentz
   , compileLorentzContract
+  , printLorentzContract
+  , runLambda
 
   , Contract
   , Lambda
@@ -17,9 +19,14 @@ module Lorentz.Base
   ) where
 
 import qualified Data.Kind as Kind
+import Data.Singletons (SingI(..))
+import qualified Data.Text.Lazy as TL
+import Data.Vinyl (Rec(..))
 
 import Lorentz.Constraints
 import Lorentz.Value
+import Michelson.Interpret (EvalOp, runInstr)
+import Michelson.Printer (printTypedContract)
 import Michelson.Typed (Instr(..), T(..), ToT, ToTs, Value'(..))
 
 -- | Alias for instruction which hides inner types representation via 'T'.
@@ -39,6 +46,17 @@ compileLorentzContract
      , NoBigMap cp, CanHaveBigMap st)
   => (inp :-> out) -> Instr (ToTs inp) (ToTs out)
 compileLorentzContract = compileLorentz
+
+printLorentzContract
+    :: forall cp st inp out.
+     (inp ~ '[(cp, st)], out ~ '[([Operation], st)] , SingI (ToT cp), SingI (ToT st))
+  => (inp :-> out) -> TL.Text
+printLorentzContract = printTypedContract . compileLorentzContract
+
+-- TODO: Make this better
+runLambda :: (IsoValue a, ToTs inp ~ '[ToT a]) =>
+  (inp :-> out) -> a -> EvalOp (Rec Value (ToTs out))
+runLambda l i = runInstr (compileLorentz l) ((toVal i) :& RNil)
 
 type (&) (a :: Kind.Type) (b :: [Kind.Type]) = a ': b
 infixr 2 &
