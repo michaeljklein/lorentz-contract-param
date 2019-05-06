@@ -47,3 +47,23 @@ instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g]) where
 instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g, h]) where
   type IsoRecTuple (Rec f '[a, b, c, d, e, g, h]) = (f a, f b, f c, f d, f e, f g, f h)
   recFromTuple (a, b, c, d, e, g, h) = a :& b :& c :& d :& e :& g :& h :& RNil
+
+instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g, h, i]) where
+  type IsoRecTuple (Rec f '[a, b, c, d, e, g, h, i]) = (f a, f b, f c, f d, f e, f g, f h, f i)
+  recFromTuple (a, b, c, d, e, g, h, i) = a :& b :& c :& d :& e :& g :& h :& i :& RNil
+
+instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g, h, i, j]) where
+  type IsoRecTuple (Rec f '[a, b, c, d, e, g, h, i, j]) = (f a, f b, f c, f d, f e, f g, f h, f i, f j)
+  recFromTuple (a, b, c, d, e, g, h, i, j) = a :& b :& c :& d :& e :& g :& h :& i :& j :& RNil
+
+instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g, h, i, j, k]) where
+  type IsoRecTuple (Rec f '[a, b, c, d, e, g, h, i, j, k]) = (f a, f b, f c, f d, f e, f g, f h, f i, f j, f k)
+  recFromTuple (a, b, c, d, e, g, h, i, j, k) = a :& b :& c :& d :& e :& g :& h :& i :& j :& k :& RNil
+
+instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g, h, i, j, k, l]) where
+  type IsoRecTuple (Rec f '[a, b, c, d, e, g, h, i, j, k, l]) = (f a, f b, f c, f d, f e, f g, f h, f i, f j, f k, f l)
+  recFromTuple (a, b, c, d, e, g, h, i, j, k, l) = a :& b :& c :& d :& e :& g :& h :& i :& j :& k :& l :& RNil
+
+instance RecFromTuple (Rec (f :: u -> Kind.Type) '[a, b, c, d, e, g, h, i, j, k, l, m]) where
+  type IsoRecTuple (Rec f '[a, b, c, d, e, g, h, i, j, k, l, m]) = (f a, f b, f c, f d, f e, f g, f h, f i, f j, f k, f l, f m)
+  recFromTuple (a, b, c, d, e, g, h, i, j, k , l, m) = a :& b :& c :& d :& e :& g :& h :& i :& j :& k :& l :& m :& RNil

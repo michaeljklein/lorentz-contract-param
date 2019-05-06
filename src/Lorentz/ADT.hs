@@ -145,3 +145,4 @@ caseT
      )
   => IsoRecTuple clauses -> dt & inp :-> out
 caseT = case_ @dt . recFromTuple
+
