@@ -13,6 +13,7 @@ module Lorentz.Base
 
   , Contract
   , Lambda
+  , Entry
 
   , Coercible_
   , coerce_
@@ -53,9 +54,9 @@ printLorentzContract
   => (inp :-> out) -> TL.Text
 printLorentzContract = printTypedContract . compileLorentzContract
 
--- TODO: Make this better
-runLambda :: (IsoValue a, ToTs inp ~ '[ToT a]) =>
-  (inp :-> out) -> a -> EvalOp (Rec Value (ToTs out))
+-- TODO: Make this better, right now `out` can be any stack
+runLambda :: (IsoValue a, ToTs inp ~ '[ToT a])
+          => (inp :-> out) -> a -> EvalOp (Rec Value (ToTs out))
 runLambda l i = runInstr (compileLorentz l) ((toVal i) :& RNil)
 
 type (&) (a :: Kind.Type) (b :: [Kind.Type]) = a ': b
@@ -67,6 +68,7 @@ I l # I r = I (l `Seq` r)
 type Contract cp st = '[(cp, st)] :-> '[([Operation], st)]
 
 type Lambda i o = '[i] :-> '[o]
+type Entry st a = '[a, st] :-> '[ ([Operation], st) ]
 
 instance IsoValue (Lambda inp out) where
   type ToT (Lambda inp out) = 'TLambda (ToT inp) (ToT out)
