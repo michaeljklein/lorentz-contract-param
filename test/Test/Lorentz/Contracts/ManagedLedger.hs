@@ -48,7 +48,7 @@ managedLedger = do
         creditTo'; nil; pair
     , #cBurn /-> do
         dip (do get_ #manager; source; eq; assert;)
-        debitFrom'; drop; nil; pair
+        debitFrom; drop; nil; pair
     , #cSetApprover /-> do set_ #approver; nil; pair;
     , #cSetManager /-> do set_ #manager; nil; pair;
     , #cGetApprover /-> do view_ (do cdr; access_ #approver)
@@ -58,17 +58,10 @@ managedLedger = do
     )
 
 
-debitFrom :: '[TransferParams, Storage] :-> '[TransferParams, Storage]
+debitFrom
+  :: (HasFieldOfType param "from" Address, HasFieldOfType param "val" Natural)
+  => '[param, Storage] :-> '[param, Storage]
 debitFrom = do
-  get_ #from; swap;
-  dip (do dip (get_ #ledger); get; assertSome); swap
-  dip (get_ #val);
-  pair; apply_ subGt0; swap;
-  get_ #from; swap;
-  dip (do dipX @2 (get_ #ledger); update; set_ #ledger)
-
-debitFrom' :: '[BurnParams, Storage] :-> '[BurnParams, Storage]
-debitFrom' = do
   get_ #from; swap;
   dip (do dip (get_ #ledger); get; assertSome); swap
   dip (get_ #val);
@@ -104,6 +97,3 @@ subGt0 = do
   if Holds
   then drop >> none
   else isNat
-
-
-
