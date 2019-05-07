@@ -41,14 +41,12 @@ managedLedger = do
   unpair
   caseT @Parameter
     ( #cTransfer /-> do
-        dip (do get_ #approver; assertSome; sender; eq; assert;)
+        dip (do get_ #approver; assertSome; sender; eq; assert)
         debitFrom; creditTo; nil; pair
     , #cMint /-> do
-        dip (do get_ #manager; source; eq; assert;)
-        creditTo'; nil; pair
+        dip (do get_ #manager; source; eq; assert); creditTo; nil; pair
     , #cBurn /-> do
-        dip (do get_ #manager; source; eq; assert;)
-        debitFrom; drop; nil; pair
+        dip (do get_ #manager; source; eq; assert); debitFrom; drop; nil; pair
     , #cSetApprover /-> do set_ #approver; nil; pair;
     , #cSetManager /-> do set_ #manager; nil; pair;
     , #cGetApprover /-> do view_ (do cdr; access_ #approver)
@@ -56,7 +54,6 @@ managedLedger = do
     , #cGetTotalSupply /-> do view_ (do cdr; access_ #totalSupply)
     , #cGetBalance /-> do view_ (do unpair; dip ( access_ #ledger ); get)
     )
-
 
 debitFrom
   :: (HasFieldOfType param "from" Address, HasFieldOfType param "val" Natural)
@@ -69,18 +66,10 @@ debitFrom = do
   get_ #from; swap;
   dip (do dipX @2 (get_ #ledger); update; set_ #ledger)
 
-creditTo :: '[TransferParams, Storage] :-> '[Storage]
+creditTo
+  :: (HasFieldOfType param "to" Address, HasFieldOfType param "val" Natural)
+  => '[param, Storage] :-> '[Storage]
 creditTo = do
-  get_ #to; swap
-  dip (do dip (get_ #ledger); get); swap
-  if IsSome then dip (get_ #val) >> add @Natural else get_ #val
-  some >> dip (access_ #to); swap;
-  dipX @2 (get_ #ledger)
-  update;
-  set_ #ledger
-
-creditTo' :: '[MintParams, Storage] :-> '[Storage]
-creditTo' = do
   get_ #to; swap
   dip (do dip (get_ #ledger); get); swap
   if IsSome then dip (get_ #val) >> add @Natural else get_ #val
