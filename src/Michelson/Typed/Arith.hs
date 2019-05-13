@@ -286,6 +286,29 @@ instance UnaryArithOp Ge 'CInt where
   type UnaryArithRes Ge 'CInt = 'CBool
   evalUnaryArithOp _ (CvInt i) = CvBool (i >= 0)
 
+instance UnaryArithOp Eq' 'CNat where
+  type UnaryArithRes Eq' 'CNat = 'CBool
+  evalUnaryArithOp _ (CvNat i) = CvBool (i == 0)
+
+instance UnaryArithOp Neq 'CNat where
+  type UnaryArithRes Neq 'CNat = 'CBool
+  evalUnaryArithOp _ (CvNat i) = CvBool (i /= 0)
+
+instance UnaryArithOp Lt 'CNat where
+  type UnaryArithRes Lt 'CNat = 'CBool
+  evalUnaryArithOp _ (CvNat i) = CvBool (i < 0)
+
+instance UnaryArithOp Gt 'CNat where
+  type UnaryArithRes Gt 'CNat = 'CBool
+  evalUnaryArithOp _ (CvNat i) = CvBool (i > 0)
+
+instance UnaryArithOp Le 'CNat where
+  type UnaryArithRes Le 'CNat = 'CBool
+  evalUnaryArithOp _ (CvNat i) = CvBool (i <= 0)
+
+instance UnaryArithOp Ge 'CNat where
+  type UnaryArithRes Ge 'CNat = 'CBool
+  evalUnaryArithOp _ (CvNat i) = CvBool (i >= 0)
 
 instance Buildable ArithErrorType where
   build AddOverflow = "add overflow"

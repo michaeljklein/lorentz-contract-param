@@ -144,3 +144,21 @@ instance UnaryArithOpHs Le Integer where
 
 instance UnaryArithOpHs Ge Integer where
   type UnaryArithResHs Ge Integer = Bool
+
+instance UnaryArithOpHs Eq' Natural where
+  type UnaryArithResHs Eq' Natural = Bool
+
+instance UnaryArithOpHs Neq Natural where
+  type UnaryArithResHs Neq Natural = Bool
+
+instance UnaryArithOpHs Lt Natural where
+  type UnaryArithResHs Lt Natural = Bool
+
+instance UnaryArithOpHs Gt Natural where
+  type UnaryArithResHs Gt Natural = Bool
+
+instance UnaryArithOpHs Le Natural where
+  type UnaryArithResHs Le Natural = Bool
+
+instance UnaryArithOpHs Ge Natural where
+  type UnaryArithResHs Ge Natural = Bool
