@@ -26,7 +26,6 @@ module Gas.Type
   where
 
 import Data.Default
-import Fmt
 
 import Tezos.Core
 
@@ -39,7 +38,7 @@ data Cost = Cost
   , gcBytesWritten :: Word64
   }
   deriving stock    (Eq, Show, Generic)
-  deriving anyclass (Default, Buildable)
+  deriving anyclass (Default)
 
 instance Semigroup Cost where
   cost1 <> cost2 = Cost
@@ -58,7 +57,6 @@ data RemainingGas
   = Unaccounted
   | Limited Mutez
   deriving stock    (Eq, Show, Generic)
-  deriving anyclass (Buildable)
 
 allocationPrice  :: Mutez
 stepPrice        :: Mutez
@@ -115,8 +113,8 @@ consumeGas
           blockGas `subMutez` weightedCost
 
         return (blockRemaining, Limited remaining')
-
-asEither e = maybe (Left e) Right
+  where
+    asEither e = maybe (Left e) Right
 
 allocCost      :: Word64 -> Cost
 allocBytesCost :: Word64 -> Cost
