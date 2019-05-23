@@ -23,6 +23,14 @@
         # but we have to specify its version explicitly in .cabal file
         # because otherwise Hackage build fails.
         - transformers-compat
+    - message:
+      - name: Unused import
+      - module:
+        # Weeder seem not to respect empty imports in a module X
+        # if instances which these imports provide is not used in this module
+        # directly, but used by modules from another package which import X.
+        - name: Util.Test.Arbitrary
+        - identifier: Michelson.Test
   - section:
     - name: test:morley-test
     - message:
