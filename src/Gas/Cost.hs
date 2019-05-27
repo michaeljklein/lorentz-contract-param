@@ -6,5 +6,5 @@ import qualified Gas.Script as Script
 
 bytes  = allocMBytesCost
 string = allocBytesCost
-zint   = allocBitsCost . fromIntegral . Script.significantBitCount
+zint   = allocBitsCost . Script.significantBitCount
 

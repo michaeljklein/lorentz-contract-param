@@ -14,7 +14,7 @@ unit = free
 bool = free
 
 string = allocBytesCost
-z      = allocBitsCost . fromIntegral . Script.significantBitCount
+z      = allocBitsCost . Script.significantBitCount
 
 tez              = stepCost 1 <> allocCost 1
 string_timestamp = stepCost 3 <> allocCost 3
@@ -35,8 +35,8 @@ contractExists = stepCost 15 <> allocCost 5
 getScript      = stepCost 15 <> allocCost 5
 
 list_element     = allocCost 2 <> stepCost 1
-map_element size = fromIntegral (Script.log2 size) `scale` (allocCost 4 <> stepCost 2)
-set_element size = fromIntegral (Script.log2 size) `scale` (allocCost 3 <> stepCost 2)
+map_element size = Script.log2 size `scale` (allocCost 4 <> stepCost 2)
+set_element size = Script.log2 size `scale` (allocCost 3 <> stepCost 2)
 
 instr = \case
   Seq {} -> allocCost 8

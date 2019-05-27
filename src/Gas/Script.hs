@@ -1,13 +1,14 @@
 
 module Gas.Script where
 
-import Data.Bits (finiteBitSize, countLeadingZeros)
+import Data.Bits (finiteBitSize, countLeadingZeros, Bits)
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as Foldable
 import qualified Data.Text as Text
 
 import Gas.Type
 import qualified Michelson.Untyped as U
+import Tezos.Core
 
 costOfSize :: (Word64, Word64) -> Cost
 costOfSize (blocks, wordz) =
@@ -84,9 +85,17 @@ seqNodeCostNonrec = costOfSize . seqNodeSizeNonrec
 seqNodeCostNonrecOfLength :: Int -> Cost
 seqNodeCostNonrecOfLength = costOfSize . seqNodeSizeNonrecOfLength
 
-significantBitCount :: Int -> Int
-significantBitCount x = finiteBitSize x - countLeadingZeros x
+significantBitCount ::  (Integral i, Bits i) => i -> i
+significantBitCount = go
+  where
+    go 0 = 0
+    go n = 1 + go (n `div` 2)
 
-log2 :: Int -> Int
+numbits :: (Integral i, Bits i) => i -> i
+numbits = significantBitCount
+
+log2 :: (Integral i, Bits i) => i -> i
 log2 = (+ 1) . significantBitCount
 
+timestampToZInt :: Timestamp -> Word64
+timestampToZInt = error "Find what `timestamp` type is"
