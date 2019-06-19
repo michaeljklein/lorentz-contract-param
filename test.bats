@@ -81,7 +81,7 @@ setup () {
 }
 
 @test "lorentz registry finds some contracts" {
-  $bin_dir/lorentz-contracts -- print -n walker
+  $bin_dir/lorentz-contracts -- print -n Walker
 }
 
 @test "invoking ./morley.sh print -o" {
