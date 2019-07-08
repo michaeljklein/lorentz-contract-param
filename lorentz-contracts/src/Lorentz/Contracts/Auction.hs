@@ -16,6 +16,7 @@ type Output storage = ([Operation], storage)
 
 auctionContract :: Contract Parameter Storage
 auctionContract = do
+  aa
   checkIfAuctionHasEnded
   setupReplacementStorage
   checkNewBidIsGreater
@@ -46,3 +47,12 @@ makeRefund = do dip (cdr # implicitAccount); unit; transferTokens
 
 callingConvention :: '[ Operation, Storage ] :-> '[ Output Storage ]
 callingConvention = do nil; swap; cons; pair
+
+aa :: s :-> s
+aa = push bb >> drop
+  where
+    bb :: '[Integer] :-> '[Integer]
+    bb = push cc >> drop
+
+    cc :: '[Integer] :-> '[Integer]
+    cc = unit >> drop
