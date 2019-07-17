@@ -195,7 +195,10 @@ integrationalTestProperty =
 -- address is returned.
 originate :: Contract -> Text -> Value -> Mutez -> IntegrationalScenarioM Address
 originate contract contractName value balance = do
-  address <- mkContractAddress origination <$ putOperation originateOp
+  let address = mkContractAddress origination
+  -- Commenting two lines below makes weird error when
+  -- `stack test lorentz-contracts --coverage` gone
+  putOperation originateOp
   isContractsNames %= (insert address contractName)
   pure address
   where
