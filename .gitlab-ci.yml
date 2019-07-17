@@ -19,6 +19,7 @@ variables:
   STACK_RESOLVER: "lts-13.22"
   STACK_BUILD_OPTIONS:
     --ghc-options -Werror --ghc-options -optl-static --ghc-options -fPIC
+    --ghc-options -fhpc
     --fast --local-bin-path tmp
     --test --no-run-tests
     --bench --no-run-benchmarks
@@ -34,10 +35,10 @@ before_script:
 build-and-test:
   stage: test
   only:
-    refs:
-      - merge_requests
-      - master
-      - production
+    # refs:
+    #   - merge_requests
+    #   - master
+    #   - production
     changes: &changes
       - Dockerfile
       - .dockerignore
@@ -64,7 +65,9 @@ build-and-test:
     - stack build indigo $STACK_BUILD_OPTIONS
     - stack install lorentz-contracts $STACK_BUILD_OPTIONS
     - stack test morley
-        --test-arguments="--xml=report/morley_test_report.xml"
+        --test-arguments="--xml=report/morley_test_report.xml" --coverage
+    - mkdir -p tmp/coverage
+    - mv $(stack path --local-hpc-root) tmp/coverage
     - stack test lorentz-contracts
         --test-arguments="--xml=../report/lorentz_contracts_test_report.xml"
     # Run weeder after our code is built
@@ -78,11 +81,12 @@ build-and-test:
     - sed -i -r
         's:<testcase name="([^<>]*?)" time="([0-9.]*?)" classname="([^<>]*?)">:<testcase name="\3.\1" time="\2" classname="\3">:g'
         report/*.xml
-
+  coverage: '/(\\d+)% top-level declarations used/'
   artifacts:
     paths:
       - tmp/morley
       - tmp/lorentz-contracts
+      - tmp/coverage/*
     reports:
       junit:
         - report/*.xml
@@ -131,7 +135,7 @@ build-docker-production:
     - docker-executor
 
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:production
+    IMAGE_TAG:  $CI_REGISTRY_IMAGE:production
 
   stage: build
   dependencies:
@@ -141,6 +145,21 @@ build-docker-production:
       - production
     changes: *changes
   script: *kaniko_script
+
+pages:
+  stage: build
+  dependencies:
+    - build-and-test
+  script:
+    - mkdir -p /public/coverage
+    - mv tmp/coverage public/coverage
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  # only:
+  #   - master
+  #   - production
 
 verify-doc-links:
   stage: test
