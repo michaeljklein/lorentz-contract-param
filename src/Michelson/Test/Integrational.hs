@@ -198,8 +198,8 @@ originate contract contractName value balance = do
   let address = mkContractAddress origination
   -- Commenting two lines below makes weird error when
   -- `stack test lorentz-contracts --coverage` gone
-  putOperation originateOp
-  isContractsNames %= (insert address contractName)
+  -- putOperation originateOp
+  -- isContractsNames %= (insert address contractName)
   pure address
   where
     origination = (dummyOrigination value contract) {ooBalance = balance}
