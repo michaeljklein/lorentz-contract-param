@@ -72,7 +72,7 @@ readContract
   -> Either ImportContractError (U.Contract, Contract cp st)
 readContract filePath txt = do
   contract <- first ICEParse $ parseExpandContract (Just filePath) txt
-  SomeContract (instr :: Contract cp' st') _ _
+  (SomeContract (instr :: Contract cp' st') _ _, _)
     <- first ICETypeCheck $ typeCheckContract mempty contract
   case (eqT @cp @cp', eqT @st @st') of
     (Just Refl, Just Refl) -> pure (contract, instr)

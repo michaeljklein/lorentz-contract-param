@@ -48,6 +48,7 @@ import qualified Data.Text as T
 import Data.Typeable ((:~:)(..), eqT)
 import Fmt ((+||), (||+))
 
+import qualified Gas.Cost.Typecheck as Gas
 import Michelson.ErrorPos (InstrCallStack)
 import Michelson.TypeCheck.Error (TCError(..), TCTypeError(..))
 import Michelson.TypeCheck.TypeCheck
@@ -267,15 +268,20 @@ typeCheckImpl tcInstr instrs t@(a :: HST a) =
   case instrs of
     Un.WithSrcEx _ (i@(Un.WithSrcEx _ _)) : rs -> typeCheckImpl tcInstr (i : rs) t
     Un.WithSrcEx cs (Un.PrimEx i) : rs -> typeCheckPrim (Just cs) i rs
-    Un.WithSrcEx cs (Un.SeqEx sq) : rs -> typeCheckSeq (Just cs) sq rs
+    Un.WithSrcEx cs (Un.SeqEx sq) : rs ->
+      do consume Gas.seqCost; typeCheckSeq (Just cs) sq rs
     Un.PrimEx i : rs                 -> typeCheckPrim Nothing i rs
     Un.SeqEx sq : rs                 -> typeCheckSeq Nothing sq rs
     []                               -> pure $ a :/ Nop ::: a
   where
     typeCheckPrim (Just cs) i [] = local (const cs) $ tcInstr i t
-    typeCheckPrim (Just cs) i rs = local (const cs) $ typeCheckImplDo (tcInstr i t) id rs
+    typeCheckPrim (Just cs) i rs = do
+      consume $ Gas.instrCost i
+      local (const cs) $ typeCheckImplDo (tcInstr i t) id rs
     typeCheckPrim Nothing i [] = tcInstr i t
-    typeCheckPrim Nothing i rs = typeCheckImplDo (tcInstr i t) id rs
+    typeCheckPrim Nothing i rs = do
+      consume $ Gas.instrCost i
+      typeCheckImplDo (tcInstr i t) id rs
 
     typeCheckSeq (Just cs) sq = local (const cs) . typeCheckImplDo (typeCheckImpl tcInstr sq t) Nested
     typeCheckSeq Nothing sq = typeCheckImplDo (typeCheckImpl tcInstr sq t) Nested
@@ -324,8 +330,8 @@ compareTypes (_, n) tp = withSomeSingT (fromUType tp) $ \(t :: Sing ct) -> do
 -- | Generic implementation for MEMeration
 memImpl
   :: forall (q :: CT) (c :: T) ts inp m .
-    ( MonadReader InstrCallStack m, MonadError TCError m, Typeable ts
-    , Typeable (MemOpKey c), SingI (MemOpKey c), MemOp c
+    ( MonadReader InstrCallStack m, MonadError TCError m, MonadState TypeCheckEnv m
+    , Typeable ts , Typeable (MemOpKey c), SingI (MemOpKey c), MemOp c
     , inp ~ ('Tc q : c : ts)
     )
   => Un.ExpandedInstr
@@ -334,6 +340,7 @@ memImpl
   -> m (SomeInstr inp)
 memImpl instr i@(_ ::& _ ::& rs) vn = do
   pos <- ask
+  consume $ Gas.eqTypeCost $ sing @('Tc q)
   case eqType @('Tc q) @('Tc (MemOpKey c)) of
     Right Refl -> pure $ i :/ MEM ::: ((STc SCBool, NStar, vn) ::& rs)
     Left m     -> throwError $
@@ -347,6 +354,7 @@ getImpl
     , inp ~ (getKey : c : rs)
     , MonadReader InstrCallStack m
     , MonadError TCError m
+    , MonadState TypeCheckEnv m
     )
   => Un.ExpandedInstr
   -> HST (getKey ': c ': rs)
@@ -356,6 +364,7 @@ getImpl
   -> m (SomeInstr inp)
 getImpl instr i@(_ ::& _ ::& rs) rt vns vn = do
   pos <- ask
+  consume $ Gas.eqTypeCost $ sing @getKey
   case eqType @getKey @('Tc (GetOpKey c)) of
     Right Refl -> do
       let rn = mkNotes $ NTOption def def vns
@@ -370,12 +379,15 @@ updImpl
     , inp ~ (updKey : updParams : c : rs)
     , MonadReader InstrCallStack m
     , MonadError TCError m
+    , MonadState TypeCheckEnv m
     )
   => Un.ExpandedInstr
   -> HST (updKey ': updParams ': c ': rs)
   -> m (SomeInstr inp)
 updImpl instr i@(_ ::& _ ::& crs) = do
   pos <- ask
+  consume $ Gas.eqTypeCost $ sing @updKey
+  consume $ Gas.eqTypeCost $ sing @updParams
   case (eqType @updKey @('Tc (UpdOpKey c)), eqType @updParams @(UpdOpParams c)) of
     (Right Refl, Right Refl) -> pure $ i :/ UPDATE ::: crs
     (Left m, _) -> throwError $ TCFailedOnInstr instr (SomeHST i)

@@ -40,6 +40,8 @@ import Data.Generics (everything, mkQ)
 import Data.Singletons (SingI(sing), demote)
 import Data.Typeable ((:~:)(..), gcast)
 
+import Gas.Type (Cost)
+import qualified Gas.Cost.Typecheck as Gas
 import Michelson.ErrorPos
 import Michelson.TypeCheck.Error
 import Michelson.TypeCheck.Ext
@@ -60,17 +62,25 @@ import Michelson.Untyped.Annotation (VarAnn)
 typeCheckContract
   :: TcOriginatedContracts
   -> U.Contract
-  -> Either TCError SomeContract
-typeCheckContract cs c = runTypeCheck (U.para c) cs $ typeCheckContractImpl c
+  -> Either TCError (SomeContract, Cost)
+typeCheckContract cs c =
+  case runTypeCheckReturnState (U.para c) cs $ typeCheckContractImpl c of
+    (Left e, _) ->  Left e
+    (Right contract, finalEnv) -> Right (contract, tcCost finalEnv)
 
 typeCheckContractImpl
   :: U.Contract
   -> TypeCheck SomeContract
 typeCheckContractImpl (U.Contract mParam mStorage pCode) = do
+  consume Gas.contractExists
+  consume Gas.getScript
   code <- maybe (throwError $ TCContractError "no instructions in contract code" Nothing)
                 pure (nonEmpty pCode)
   withSomeSingT (fromUType mParam) $ \(paramS :: Sing param) ->
     withSomeSingT (fromUType mStorage) $ \(storageS :: Sing st) -> do
+      () <- consume $ Gas.eqTypeCost paramS
+      () <- consume $ Gas.eqTypeCost storageS
+      () <- consume $ Gas.eqTypeCost (STPair (STList STOperation) storageS)
       storageNote <-
         liftEither $ extractNotes mStorage storageS `onLeft`
         (TCContractError "failed to extract annotations for storage:" . Just . ExtractionTypeMismatch)
@@ -175,6 +185,7 @@ typeVerifyValue uval =
 -- If there was no match on a given pair of instruction and input stack,
 -- that is interpreted as input of wrong type and type check finishes with
 -- error.
+
 typeCheckInstr :: TcInstrHandler
 typeCheckInstr (U.EXT ext) si =
   typeCheckExt typeCheckList ext si
@@ -191,6 +202,7 @@ typeCheckInstr instr@(U.PUSH vn mt mval) i =
   withSomeSingT (fromUType mt) $ \t' -> do
     nt' <- onTypeCheckInstrTypeErr instr i "wrong push type:" (extractNotes mt t')
     val :::: (t :: Sing t, nt) <- typeCheckValue mval (t', nt')
+    consume $ Gas.parseTypeCost t
     proofOp <-
       maybe (onTypeCheckInstrErr instr (SomeHST i)
              "Operations in constant are not allowed"
@@ -211,6 +223,7 @@ typeCheckInstr (U.SOME tn vn fn) i@((at, an, _) ::& rs) = do
 typeCheckInstr instr@(U.NONE tn vn fn elMt) i =
   withSomeSingT (fromUType elMt) $ \elT -> do
     let t = STOption elT
+    consume $ Gas.parseTypeCost elT
     notes <- onTypeCheckInstrTypeErr instr i "wrong none type:"
                 (extractNotes (U.Type (U.TOption fn elMt) tn) t)
     pure $ i :/ NONE ::: ((t, notes, vn) ::& i)
@@ -258,12 +271,14 @@ typeCheckInstr instr@(U.CDR vn fn)
 
 typeCheckInstr instr@(U.LEFT tn vn pfn qfn bMt) i@((a, an, _) ::& rs) =
   withSomeSingT (fromUType bMt) $ \b -> do
+    consume $ Gas.parseTypeCost b
     bn <- onTypeCheckInstrTypeErr instr i "wrong left type:" (extractNotes bMt b)
     let ns = mkNotes $ NTOr tn pfn qfn an bn
     pure (i :/ LEFT ::: ((STOr a b, ns, vn) ::& rs))
 
 typeCheckInstr instr@(U.RIGHT tn vn pfn qfn aMt) i@((b, bn, _) ::& rs) =
   withSomeSingT (fromUType aMt) $ \a -> do
+    consume $ Gas.parseTypeCost a
     an <- onTypeCheckInstrTypeErr instr i "wrong right type:" (extractNotes aMt a)
     let ns = mkNotes $ NTOr tn pfn qfn an bn
     pure (i :/ RIGHT ::: ((STOr a b, ns, vn) ::& rs))
@@ -276,12 +291,14 @@ typeCheckInstr (U.IF_LEFT mp mq) i@((STOr a b, ons, ovn) ::& rs) = do
 
 typeCheckInstr instr@(U.NIL tn vn elMt) i =
   withSomeSingT (fromUType elMt) $ \elT -> do
+    consume $ Gas.parseTypeCost elT
     let t = STList elT
     notes <- onTypeCheckInstrTypeErr instr i "wrong nil type:" (extractNotes (U.Type (U.TList elMt) tn) t)
     pure $ i :/ NIL ::: ((t, notes, vn) ::& i)
 
 typeCheckInstr instr@(U.CONS vn) i@((((at :: Sing a), an, _)
-                              ::& (STList (_ :: Sing a'), ln, _) ::& rs)) =
+                              ::& (STList (_ :: Sing a'), ln, _) ::& rs)) = do
+  consume $ Gas.eqTypeCost at
   case eqType @a @a' of
     Right Refl -> do
       n <- onTypeCheckInstrAnnErr instr i "wrong cons type:" (converge ln (mkNotes $ NTList def an))
@@ -304,12 +321,14 @@ typeCheckInstr (U.SIZE vn) i@((STc SCString, _, _) ::& _)  = sizeImpl i vn
 typeCheckInstr (U.SIZE vn) i@((STc SCBytes, _, _) ::& _)  = sizeImpl i vn
 
 typeCheckInstr (U.EMPTY_SET tn vn (U.Comparable mk ktn)) i =
-  withSomeSingCT mk $ \k ->
+  withSomeSingCT mk $ \k -> do
+    consume Gas.parseCTypeCost
     pure $ i :/ EMPTY_SET ::: ((STSet k, mkNotes $ NTSet tn ktn, vn) ::& i)
 
 typeCheckInstr instr@(U.EMPTY_MAP tn vn (U.Comparable mk ktn) mv) i =
   withSomeSingT (fromUType mv) $ \v ->
   withSomeSingCT mk $ \k -> do
+    consume $ Gas.parseCTypeCost <> Gas.parseTypeCost v
     vns <- onTypeCheckInstrTypeErr instr i "wrong empty_map type:" (extractNotes mv v)
     let ns = mkNotes $ NTMap tn ktn vns
     pure $ i :/ EMPTY_MAP ::: ((STMap k v, ns, vn) ::& i)
@@ -362,6 +381,7 @@ typeCheckInstr (U.IF mp mq) i@((STc SCBool, _, _) ::& rs)  =
 
 typeCheckInstr instr@(U.LOOP is)
            i@((STc SCBool, _, _) ::& (rs :: HST rs)) = do
+  consume $ Gas.eqStackCost $ hstToTs i
   _ :/ tp <- lift $ typeCheckList is rs
   case tp of
     subI ::: (o :: HST o) -> do
@@ -377,6 +397,7 @@ typeCheckInstr instr@(U.LOOP is)
 typeCheckInstr instr@(U.LOOP_LEFT is)
            i@((STOr (at :: Sing a) (bt :: Sing b), ons, ovn)
                       ::& (rs :: HST rs)) = do
+  consume $ Gas.eqStackCost $ hstToTs i
   let (an, bn, avn, bvn) = deriveNsOr ons ovn
       ait = (at, an, avn) ::& rs
   _ :/ tp <- lift $ typeCheckList is ait
@@ -397,6 +418,8 @@ typeCheckInstr instr@(U.LOOP_LEFT is)
 typeCheckInstr instr@(U.LAMBDA vn imt omt is) i = do
   withSomeSingT (fromUType imt) $ \(it :: Sing it) -> do
     withSomeSingT (fromUType omt) $ \(ot :: Sing ot) -> do
+      consume $ Gas.parseTypeCost $ it
+      consume $ Gas.parseTypeCost $ ot
       ins <- onTypeCheckInstrTypeErr instr i "wrong lambda input type:" (extractNotes imt it)
       ons <- onTypeCheckInstrTypeErr instr i "wrong lambda output type:" (extractNotes omt ot)
       -- further processing is extracted into another function because
@@ -404,12 +427,13 @@ typeCheckInstr instr@(U.LAMBDA vn imt omt is) i = do
       -- located right here
       lamImpl instr is vn it ins ot ons i
 
-typeCheckInstr instr@(U.EXEC vn) i@(((_ :: Sing t1), _, _)
-                              ::& (STLambda (_ :: Sing t1') t2, ln, _)
+typeCheckInstr instr@(U.EXEC vn) i@(((s1 :: Sing t1), _, _)
+                                    ::& (STLambda (_ :: Sing t1') t2, ln, _)
                               ::& rs) = do
   let t2n = notesCase NStar (\(NTLambda _ _ n) -> n) ln
   Refl <- onTypeCheckInstrErr instr (SomeHST i)
                 "lambda is given argument with wrong type:" (eqType @t1 @t1')
+  consume $ Gas.eqTypeCost s1
   pure $ i :/ EXEC ::: ((t2, t2n, vn) ::& rs)
 
 typeCheckInstr instr@(U.DIP is) i@(a ::& (s :: HST s)) = do
@@ -431,6 +455,7 @@ typeCheckInstr U.FAILWITH i@(_ ::& _) =
 typeCheckInstr instr@(U.CAST vn mt)
            i@(((e :: Sing e), (en :: Notes e), evn) ::& rs) =
   withSomeSingT (fromUType mt) $ \(_ :: Sing e') -> do
+    consume $ Gas.eqTypeCost e
     Refl <- errM (eqType @e @e')
     en' <- errM (extractNotes mt e `onLeft` ExtractionTypeMismatch)
     ns <- errM (converge en en' `onLeft` AnnError)
@@ -444,6 +469,7 @@ typeCheckInstr (U.RENAME vn) i@((at, an, _) ::& rs) =
 
 typeCheckInstr instr@(U.UNPACK vn mt) i@((STc SCBytes, _, _) ::& rs) =
   withSomeSingT (fromUType mt) $ \t -> do
+    consume $ Gas.parseTypeCost t
     tns <- onTypeCheckInstrTypeErr instr i "wrong unpack type" (extractNotes mt t)
     let ns = mkNotes $ NTOption def def tns
     proofOp <-
@@ -561,6 +587,7 @@ typeCheckInstr instr@(U.SELF vn) shst@i = do
 typeCheckInstr instr@(U.CONTRACT vn mt)
            i@((STc SCAddress, _, _) ::& rs) =
   withSomeSingT (fromUType mt) $ \t -> do
+    consume $ Gas.parseTypeCost t
     tns <- onTypeCheckInstrTypeErr instr i "wrong contract command type" (extractNotes mt t)
     let ns = mkNotes $ NTOption def def $ mkNotes $ NTContract def tns
     pure $ i :/ CONTRACT tns ::: ((STOption $ STContract t, ns, vn) ::& rs)
@@ -577,6 +604,7 @@ typeCheckInstr instr@(U.TRANSFER_TOKENS vn) i@(((_ :: Sing p'), _, _)
             "contract param type cannot contain big_map"
             $ Left $ UnsupportedTypes [demote @p])
     pure (bigMapAbsense p)
+  consume $ Gas.eqTypeCost p
   case (eqType @p @p', proofOp, proofBigMap) of
     (Right Refl, Dict, Dict) ->
       pure $ i :/ TRANSFER_TOKENS ::: ((STOperation, NStar, vn) ::& rs)
@@ -680,6 +708,7 @@ genericIf
 genericIf cons mCons mbt mbf bti bfi i@(_ ::& _) = do
   _ :/ pinstr <- lift $ typeCheckList mbt bti
   _ :/ qinstr <- lift $ typeCheckList mbf bfi
+  consume $ Gas.eqStackCost $ hstToTs bti
   fmap (i :/) $ case (pinstr, qinstr) of
     (p ::: po, q ::: qo) -> do
       let instr = mCons mbt mbf
@@ -709,6 +738,7 @@ mapImpl
         Sing v' -> Notes v' -> HST rs -> HST (MapOpRes c v' ': rs))
   -> TypeCheckInstr (SomeInstr (c ': rs))
 mapImpl vn instr mp i@(_ ::& rs) mkRes = do
+  consume $ Gas.eqStackCost $ hstToTs i
   _ :/ subp <- lift $ typeCheckList mp ((sing, vn, def) ::& rs)
   case subp of
     sub ::: subo ->
@@ -733,6 +763,7 @@ iterImpl
   -> HST (c ': rs)
   -> TypeCheckInstr (SomeInstr (c ': rs))
 iterImpl en instr mp i@((_, _, lvn) ::& rs) = do
+  consume $ Gas.eqStackCost $ hstToTs i
   let evn = deriveVN "elt" lvn
   _ :/ subp <- lift $ typeCheckNE mp ((sing, en, evn) ::& rs)
   case subp of

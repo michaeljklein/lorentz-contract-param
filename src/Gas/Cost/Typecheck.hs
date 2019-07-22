@@ -1,48 +1,128 @@
+module Gas.Cost.Typecheck
+  ( eqTypeCost
+  , eqStackCost
+  , cycle
+  , instrCost
+  , seqCost
+  , unit, bool
 
-module Gas.Cost.Typecheck where
+  , parseTypeCost, parseCTypeCost
 
-import Prelude hiding (EQ, LT, GT)
+  , string, z
+
+  , tez, stringTimestamp, key
+  , keyHash, signature
+
+  , contract
+
+  , pair, union, lambda
+
+  , some, none
+
+  , contractExists, getScript
+
+  , listElement, mapElement, setElement
+  ) where
+
+import Prelude hiding (EQ, LT, GT, bool, cycle, some)
+
+import Data.Singletons (Sing(..))
 
 import Gas.Type
 import qualified Gas.Script as Script
-import Michelson.Typed
+import Michelson.Typed (fromSingT, T(..))
+import Michelson.Untyped (ExpandedInstr, InstrAbstract (..))
 
+type_ :: Word64 -> Cost
 type_ = allocCost . (+ 1)
+
+cycle :: Cost
 cycle = stepCost 1
 
+unit, bool :: Cost
 unit = free
 bool = free
 
+string, z :: Word64 -> Cost
 string = allocBytesCost
 z      = allocBitsCost . Script.significantBitCount
 
+tez, stringTimestamp, key, keyHash, signature :: Cost
 tez              = stepCost 1 <> allocCost 1
-string_timestamp = stepCost 3 <> allocCost 3
+stringTimestamp = stepCost 3 <> allocCost 3
 key              = stepCost 3 <> allocCost 3
-key_hash         = stepCost 1 <> allocCost 1
+keyHash         = stepCost 1 <> allocCost 1
 signature        = stepCost 1 <> allocCost 1
 
+contract :: Cost
 contract = stepCost 5
 
+pair, union, lambda :: Cost
 pair   = allocCost 2
 union  = allocCost 1
 lambda = allocCost 5 <> stepCost 3
 
+some, none :: Cost
 some = allocCost 1
 none = allocCost 0
 
+contractExists, getScript :: Cost
 contractExists = stepCost 15 <> allocCost 5
 getScript      = stepCost 15 <> allocCost 5
 
-list_element     = allocCost 2 <> stepCost 1
-map_element size = Script.log2 size `scale` (allocCost 4 <> stepCost 2)
-set_element size = Script.log2 size `scale` (allocCost 3 <> stepCost 2)
+listElement :: Cost
+listElement = allocCost 2 <> stepCost 1
 
-instr = \case
-  Seq {} -> allocCost 8
-  Nop {} -> allocCost 0
-  Ext {} -> error "TODO: Find proper gas cost for Ext instr"
-  Nested {} -> allocCost 0
+mapElement, setElement :: Word64 -> Cost
+mapElement size = Script.log2 size `scale` (allocCost 4 <> stepCost 2)
+setElement size = Script.log2 size `scale` (allocCost 3 <> stepCost 2)
+
+eqTypeCost :: Sing (t :: T) -> Cost
+eqTypeCost s = typeEqCostImpl (fromSingT s)
+
+typeEqCostImpl :: T -> Cost
+typeEqCostImpl = \case
+  TOption t -> type_ 2 <> typeEqCostImpl t
+  TList t -> type_ 2 <> typeEqCostImpl t
+  TSet _ -> type_ 2
+  TContract t -> type_ 2 <> typeEqCostImpl t
+  TPair t1 t2 -> type_ 4 <> typeEqCostImpl t1 <> typeEqCostImpl t2
+  TOr t1 t2 -> type_ 4 <> typeEqCostImpl t1 <> typeEqCostImpl t2
+  TLambda t1 t2 -> type_ 4 <> typeEqCostImpl t1 <> typeEqCostImpl t2
+  TMap _ t -> type_ 4 <> typeEqCostImpl t
+  TBigMap _ t -> type_ 4 <> typeEqCostImpl t
+  Tc _ -> type_ 1
+  _ -> type_ 1
+
+eqStackCost :: [T] -> Cost
+eqStackCost s = mconcat $ map typeEqCostImpl s
+
+parseTypeCost :: Sing (t :: T) -> Cost
+parseTypeCost s = parseTypeCostImpl (fromSingT s)
+  where
+    parseTypeCostImpl :: T -> Cost
+    parseTypeCostImpl t = cycle <> case t of
+      Tc _ -> type_ 0
+      TOption t -> parseTypeCostImpl t <> type_ 2
+      TList t -> parseTypeCostImpl t <> type_ 1
+      TSet _ -> parseCTypeCost <> type_ 1
+      TContract t -> parseTypeCostImpl t <> type_ 1
+      TPair t1 t2 -> parseTypeCostImpl t1 <> parseTypeCostImpl t2 <> type_ 2
+      TOr t1 t2 -> parseTypeCostImpl t1 <> parseTypeCostImpl t2 <> type_ 2
+      TLambda t1 t2 -> parseTypeCostImpl t1 <> parseTypeCostImpl t2 <> type_ 2
+      TMap _ t -> parseCTypeCost <> parseTypeCostImpl t <> type_ 2
+      TBigMap _ _ -> type_ 2
+      _ -> type_ 0
+
+parseCTypeCost :: Cost
+parseCTypeCost = cycle <> type_ 0
+
+seqCost :: Cost
+seqCost = allocCost 8
+
+instrCost :: ExpandedInstr -> Cost
+instrCost i = allocCost 1 <> case i of
+  EXT {} -> allocCost 0
   DROP {} -> allocCost 0
   DUP {} -> allocCost 1
   SWAP {} -> allocCost 0
@@ -80,7 +160,6 @@ instr = \case
   PACK {} -> allocCost 2
   UNPACK {} -> allocCost 2
   CONCAT {} -> allocCost 1
-  CONCAT' {} -> error "TODO: Find proper gas cost for RENAME instruction"
   SLICE {} -> allocCost 1
   ISNAT {} -> allocCost 1
   ADD {} -> allocCost 1

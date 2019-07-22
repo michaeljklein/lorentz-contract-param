@@ -7,15 +7,19 @@ import Control.Monad.Except (liftEither, throwError)
 import Data.Default (def)
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Singletons (SingI)
+import Data.Singletons (SingI(..))
 import Data.Typeable ((:~:)(..))
 import Fmt (pretty)
 import Prelude hiding (EQ, GT, LT)
 
+import qualified Gas.Cost.CostOf as Gas (zToInt64)
+import qualified Gas.Cost.Typecheck as Gas
 import Michelson.Text
 import Michelson.TypeCheck.Error (TCError(..), TCTypeError(..))
 import Michelson.TypeCheck.Helpers
-import Michelson.TypeCheck.TypeCheck (TcInstrHandler, TypeCheckEnv(..), TypeCheckInstr)
+import Michelson.TypeCheck.TypeCheck
+  (TcInstrHandler, TypeCheckEnv(..), TypeCheckInstr, TypeCheckCValue,
+   consume, runTypeCheckCValue)
 import Michelson.TypeCheck.Types
 import Michelson.Typed
   (CT(..), CValue(..), Notes(..), Notes'(..), Sing(..), Value'(..), converge, fromSingCT,
@@ -27,40 +31,58 @@ import Tezos.Core (mkMutez, parseTimestamp, timestampFromSeconds)
 import Tezos.Crypto (parseKeyHash, parsePublicKey, parseSignature)
 
 typeCheckCValue
-  :: U.Value' op -> CT -> Either (U.Value' op, TCTypeError) SomeCValue
-typeCheckCValue (U.ValueInt i) CInt = pure $ CvInt i :--: SCInt
+  :: U.Value' op -> CT -> TypeCheckCValue op SomeCValue
+typeCheckCValue (U.ValueInt i) CInt = do
+  consume $ Gas.z (fromIntegral i)
+  pure $ CvInt i :--: SCInt
 typeCheckCValue (U.ValueInt i) CNat
-  | i >= 0 = pure $ CvNat (fromInteger i) :--: SCNat
-typeCheckCValue (U.ValueInt (mkMutez . fromInteger -> Just mtz)) CMutez =
+  | i >= 0 = do
+      consume $ Gas.z (fromIntegral i)
+      pure $ CvNat (fromInteger i) :--: SCNat
+typeCheckCValue (U.ValueInt (mkMutez . fromInteger -> Just mtz)) CMutez = do
+  consume $ Gas.tez
+  consume $ Gas.zToInt64
   pure $ CvMutez mtz :--: SCMutez
-typeCheckCValue (U.ValueString s) CString =
+typeCheckCValue (U.ValueString s) CString = do
+  consume $ Gas.string . fromIntegral . length $ s
   pure $ CvString s :--: SCString
-typeCheckCValue (U.ValueString (parseAddress . unMText -> Right s)) CAddress =
+typeCheckCValue (U.ValueString (parseAddress . unMText -> Right s)) CAddress = do
+  consume $ Gas.contract
   pure $ CvAddress s :--: SCAddress
-typeCheckCValue (U.ValueString (parseKeyHash . unMText -> Right s)) CKeyHash =
+typeCheckCValue (U.ValueString (parseKeyHash . unMText -> Right s)) CKeyHash = do
+  consume $ Gas.keyHash
   pure $ CvKeyHash s :--: SCKeyHash
-typeCheckCValue (U.ValueString (parseTimestamp . unMText -> Just t)) CTimestamp =
+typeCheckCValue (U.ValueString (parseTimestamp . unMText -> Just t)) CTimestamp = do
+  consume $ Gas.keyHash
   pure $ CvTimestamp t :--: SCTimestamp
-typeCheckCValue (U.ValueInt i) CTimestamp =
+typeCheckCValue (U.ValueInt i) CTimestamp = do
+  consume $ Gas.z $ fromIntegral i
   pure $ CvTimestamp (timestampFromSeconds i) :--: SCTimestamp
-typeCheckCValue (U.ValueBytes (U.InternalByteString s)) CBytes =
+typeCheckCValue (U.ValueBytes (U.InternalByteString s)) CBytes = do
+  consume $ Gas.string . fromIntegral . length $ s
   pure $ CvBytes s :--: SCBytes
-typeCheckCValue U.ValueTrue CBool = pure $ CvBool True :--: SCBool
-typeCheckCValue U.ValueFalse CBool = pure $ CvBool False :--: SCBool
+typeCheckCValue U.ValueTrue CBool = do
+  consume $ Gas.bool
+  pure $ CvBool True :--: SCBool
+typeCheckCValue U.ValueFalse CBool = do
+  consume $ Gas.bool
+  pure $ CvBool False :--: SCBool
 typeCheckCValue v t =
-  Left $ (v, UnknownType (T.Tc t))
+  throwError $ (v, UnknownType (T.Tc t))
 
 typeCheckCVals
-  :: forall t op . (Typeable t, SingI t)
+  :: forall t op.
+  (Typeable t, SingI t)
   => [U.Value' op]
   -> CT
-  -> Either (U.Value' op, TCTypeError) [CValue t]
+  -> TypeCheckCValue op [CValue t]
 typeCheckCVals mvs t = traverse check mvs
   where
     check mv = do
       v :--: (_ :: Sing t') <- typeCheckCValue mv t
-      Refl <- eqType @('T.Tc t) @('T.Tc t') `onLeft` (,) mv
-      pure v
+      case eqType @('T.Tc t) @('T.Tc t') of
+        Right Refl -> pure v
+        Left e -> throwError $ (mv, e)
 
 tcFailedOnValue :: U.Value -> T.T -> Text -> Maybe TCTypeError -> TypeCheckInstr a
 tcFailedOnValue v t msg err = do
@@ -86,7 +108,10 @@ typeCheckValImpl
   -> TypeCheckInstr SomeNotedValue
 typeCheckValImpl _ mv (t@(STc ct), ann) = do
   let nt = notesCase U.noAnn (\(NTc x) -> x) ann
-  case typeCheckCValue mv (fromSingCT ct) of
+  env <- get
+  let (res, newEnv) = runTypeCheckCValue env $ typeCheckCValue mv (fromSingCT ct)
+  put newEnv
+  case res of
     Left (uval, err) -> tcFailedOnValue uval (fromSingT $ t) "" (Just err)
     Right (v :--: cst) -> pure $ VC v :::: (STc cst, mkNotes $ NTc nt)
 typeCheckValImpl _ (U.ValueString (parsePublicKey . unMText -> Right s)) t@(STKey, _) =
@@ -112,8 +137,11 @@ typeCheckValImpl _ cv@(U.ValueString (parseAddress . unMText -> Right s))
       pure $ VContract s :::: t
     _ -> throwError $ tcFail $ "Contract literal " <> pretty s <> " doesn't exist"
 
-typeCheckValImpl _ U.ValueUnit t@(STUnit, _) = pure $ VUnit :::: t
+typeCheckValImpl _ U.ValueUnit t@(STUnit, _) = do
+  consume $ Gas.unit
+  pure $ VUnit :::: t
 typeCheckValImpl tcDo (U.ValuePair ml mr) (STPair lt rt, pn) = do
+  () <- consume $ Gas.pair
   let (n1, n2, n3, nl, nr) =
         notesCase (U.noAnn, U.noAnn, U.noAnn, NStar, NStar) (\(NTPair x1 x2 x3 xl xr) -> (x1, x2, x3, xl, xr)) pn
   l :::: (lst, ln) <- typeCheckValImpl tcDo ml (lt, nl)
@@ -121,29 +149,34 @@ typeCheckValImpl tcDo (U.ValuePair ml mr) (STPair lt rt, pn) = do
   let ns = mkNotes $ NTPair n1 n2 n3 ln rn
   pure $ VPair (l, r) :::: (STPair lst rst, ns)
 typeCheckValImpl tcDo (U.ValueLeft ml) (STOr lt rt, ann) = do
+  () <- consume $ Gas.union
   let (n1, n2, n3, nl, nr) =
         notesCase (U.noAnn, U.noAnn, U.noAnn, NStar, NStar) (\(NTOr x1 x2 x3 xl xr) -> (x1, x2, x3, xl, xr)) ann
   l :::: (lst, ln) <- typeCheckValImpl tcDo ml (lt, nl)
   pure $ VOr (Left l) :::: ( STOr lst rt
                             , mkNotes $ NTOr n1 n2 n3 ln nr )
 typeCheckValImpl tcDo (U.ValueRight mr) (STOr lt rt, ann) = do
+  () <- consume $ Gas.union
   let (n1, n2, n3, nl, nr) =
         notesCase (U.noAnn, U.noAnn, U.noAnn, NStar, NStar) (\(NTOr x1 x2 x3 xl xr) -> (x1, x2, x3, xl, xr)) ann
   r :::: (rst, rn) <- typeCheckValImpl tcDo mr (rt, nr)
   pure $ VOr (Right r) :::: ( STOr lt rst
                             , mkNotes $ NTOr n1 n2 n3 nl rn )
 typeCheckValImpl tcDo (U.ValueSome mv) (STOption vt, ann) = do
+  () <- consume Gas.some
   let (n1, n2, nt) = notesCase (U.noAnn, U.noAnn, NStar) (\(NTOption x1 x2 xt) -> (x1, x2, xt)) ann
   v :::: (vst, vns) <- typeCheckValImpl tcDo mv (vt, nt)
   let ns = mkNotes $ NTOption n1 n2 vns
   pure $ VOption (Just v) :::: (STOption vst, ns)
-typeCheckValImpl _ U.ValueNone t@(STOption _, _) =
+typeCheckValImpl _ U.ValueNone t@(STOption _, _) = do
+  () <- consume Gas.none
   pure $ VOption Nothing :::: t
 
-typeCheckValImpl _ U.ValueNil t@(STList _, _) =
+typeCheckValImpl _ U.ValueNil t@(STList _, _) = do
   pure $ T.VList [] :::: t
 
 typeCheckValImpl tcDo (U.ValueSeq (toList -> mels)) t@(STList vt, ann) = do
+  replicateM (length mels) $ consume Gas.listElement
   let nt = notesCase NStar (\(NTList _ x) -> x) ann
   (els, _) <- typeCheckValsImpl tcDo mels (vt, nt)
   pure $ VList els :::: t
@@ -151,8 +184,14 @@ typeCheckValImpl tcDo (U.ValueSeq (toList -> mels)) t@(STList vt, ann) = do
 typeCheckValImpl _ U.ValueNil t@(STSet _, _) = pure $ T.VSet S.empty :::: t
 
 typeCheckValImpl _ sq@(U.ValueSeq (toList -> mels)) t@(STSet vt, _) = do
+  -- TODO proper set typecheck with set_update costs
+  replicateM (length mels) $ do
+    consume $ Gas.setElement . fromIntegral . length $ mels
   instrPos <- ask
-  els <- liftEither $ typeCheckCVals mels (fromSingCT vt)
+  env <- get
+  let (res, newEnv) = runTypeCheckCValue env $ typeCheckCVals mels (fromSingCT vt)
+  put newEnv
+  els <- liftEither $ res
           `onLeft` \(cv, err) -> TCFailedOnValue cv (fromSingT $ STc vt)
                                       "wrong type of set element:" instrPos (Just err)
   elsS <- liftEither $ S.fromDistinctAscList <$> ensureDistinctAsc id els
@@ -162,6 +201,7 @@ typeCheckValImpl _ sq@(U.ValueSeq (toList -> mels)) t@(STSet vt, _) = do
 typeCheckValImpl _ U.ValueNil t@(STMap _ _, _) = pure $ T.VMap M.empty :::: t
 
 typeCheckValImpl tcDo sq@(U.ValueMap (toList -> mels)) t@(STMap kt vt, ann) = do
+  replicateM (length mels) $ consume $ Gas.mapElement . fromIntegral . length $ mels
   let vn = notesCase NStar (\(NTMap _ _ nt) -> nt) ann
   keyOrderedElts <- typeCheckMapVal tcDo mels sq vn kt vt
   pure $ VMap (M.fromDistinctAscList keyOrderedElts) :::: t
@@ -169,11 +209,13 @@ typeCheckValImpl tcDo sq@(U.ValueMap (toList -> mels)) t@(STMap kt vt, ann) = do
 typeCheckValImpl _ U.ValueNil t@(STBigMap _ _ , _) = pure $ T.VBigMap M.empty :::: t
 
 typeCheckValImpl tcDo sq@(U.ValueMap (toList -> mels)) t@(STBigMap kt vt, ann) = do
+  replicateM (length mels) $ consume $ Gas.mapElement . fromIntegral . length $ mels
   let vn = notesCase NStar (\(NTBigMap _ _ nt) -> nt) ann
   keyOrderedElts <- typeCheckMapVal tcDo mels sq vn kt vt
   pure $ VBigMap (M.fromDistinctAscList keyOrderedElts) :::: t
 
 typeCheckValImpl tcDo v (t@(STLambda (it :: Sing it) (ot :: Sing ot)), ann) = do
+  consume Gas.lambda
   mp <- case v of
     U.ValueNil       -> pure []
     U.ValueLambda mp -> pure $ toList mp
@@ -214,7 +256,11 @@ typeCheckMapVal
   -> TypeCheckInstr [(CValue kt, T.Value vt)]
 typeCheckMapVal tcDo mels sq vn kt vt = do
   instrPos <- ask
-  ks <- liftEither $ typeCheckCVals (map (\(U.Elt k _) -> k) mels) (fromSingCT kt)
+  env <- get
+  let (res, newEnv) = runTypeCheckCValue env $
+                      typeCheckCVals (map (\(U.Elt k _) -> k) mels) (fromSingCT kt)
+  put newEnv
+  ks <- liftEither $ res
           `onLeft` \(cv, err) -> TCFailedOnValue cv (fromSingT $ STc kt)
                                       "wrong type of map key:" instrPos (Just err)
   (vals, _) <- typeCheckValsImpl tcDo (map (\(U.Elt _ v) -> v) mels) (vt, vn)
@@ -233,6 +279,8 @@ typeCheckValsImpl tcDo mvs (t, nt) =
   where
     check (res, ns) mv = do
       instrPos <- ask
+      -- mda, GHC yells, if there is no `() <-`
+      () <- consume $ Gas.eqTypeCost t
       v :::: ((_ :: Sing t'), vns) <- typeCheckValImpl tcDo mv (t, nt)
       Refl <- liftEither $ eqType @t @t' `onLeft`
         (TCFailedOnValue mv (fromSingT t) "wrong element type" instrPos . Just)

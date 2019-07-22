@@ -31,7 +31,7 @@ module Michelson.Runtime
        , irUpdates
        ) where
 
-import Control.Lens (at, makeLenses, (%=))
+import Control.Lens (at, makeLenses, (%=), (<>=))
 import Control.Monad.Except (Except, runExcept, throwError)
 import Data.Text.IO (getContents)
 import Fmt (Buildable(build), blockListF, fmt, fmtLn, nameF, pretty, (+|), (|+))
@@ -343,6 +343,7 @@ statefulInterpreter now = do
     processIntRes opsTail ir = do
       -- Not using `<>=` because it requires `Monoid` for no reason.
       id %= (<> ir)
+      irCost <>= ir ^. irCost
       irOperations %= (opsTail <>)
       statefulInterpreter now
 
@@ -355,7 +356,7 @@ interpretOneOp
   -> InterpreterOp
   -> Either InterpreterError InterpreterRes
 interpretOneOp _ remainingSteps _ gs (OriginateOp origination) = do
-  void $ first IEIllTypedContract $
+  (_, typeCheckCost) <- first IEIllTypedContract $
     typeCheckContract (extractAllContracts gs) (ooContract origination)
   let originatorAddress = KeyAddress (ooManager origination)
   originatorBalance <- case gsAddresses gs ^. at (originatorAddress) of
@@ -382,8 +383,7 @@ interpretOneOp _ remainingSteps _ gs (OriginateOp origination) = do
       , _irInterpretResults = []
       , _irSourceAddress = Nothing
       , _irRemainingSteps = remainingSteps
-      -- TODO: typecheck cost should be here
-      , _irCost = free
+      , _irCost = typeCheckCost
       }
   where
     contractState = ContractState
@@ -480,7 +480,7 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
 typeCheckWithDb
   :: FilePath
   -> U.Contract
-  -> IO (Either TCError SomeContract)
+  -> IO (Either TCError (SomeContract, Cost))
 typeCheckWithDb dbPath morleyContract = do
   gState <- readGState dbPath
   pure . typeCheckContract (extractAllContracts gState) $ morleyContract

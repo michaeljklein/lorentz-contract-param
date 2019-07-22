@@ -411,7 +411,7 @@ main = displayUncaughtException $ withEncoding stdin utf8 $ do
         write $ printUntypedContract forceSingleLine contract
       Optimize OptimizeOptions{..} -> do
         untypedContract <- prepareContract optoContractFile
-        checkedContract <- either throwM pure =<<
+        (checkedContract, _) <- either throwM pure =<<
           typeCheckWithDb optoDBPath untypedContract
         let optimizedContract = mapSomeContract optimize checkedContract
         let write = maybe putStrLn writeFileUtf8 optoOutput

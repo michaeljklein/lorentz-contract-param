@@ -160,7 +160,7 @@ interpretUntyped
   -> ContractEnv
   -> Either InterpretUntypedError InterpretUntypedResult
 interpretUntyped U.Contract{..} paramU initStU env = do
-  (SomeContract (instr :: Contract cp st) _ _)
+  (SomeContract (instr :: Contract cp st) _ _, _)
       <- first IllTypedContract $ typeCheckContract (ceContracts env)
             (U.Contract para stor code)
   withSomeSingT (fromUType para) $ \sgp ->
