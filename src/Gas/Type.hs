@@ -21,6 +21,7 @@ module Gas.Type
 
     -- * Gas
   , RemainingGas (..)
+  , calcGas
   , consumeGas
   )
   where
@@ -115,6 +116,18 @@ consumeGas
         return (blockRemaining, Limited remaining')
   where
     asEither e = maybe (Left e) Right
+
+calcGas :: Cost -> Maybe Mutez
+calcGas cost = do
+  weightedCost <- do
+    allocs     <- mulMutez allocationPrice  (gcAllocations  cost)
+    steps      <- mulMutez stepPrice        (gcSteps        cost)
+    readBase   <- mulMutez readBasePrice    (gcReads        cost)
+    writeBase  <- mulMutez writeBasePrice   (gcWrites       cost)
+    readBytes  <- mulMutez byteReadPrice    (gcBytesRead    cost)
+    writeBytes <- mulMutez byteWrittenPrice (gcBytesWritten cost)
+    foldM addMutez zero [allocs, steps, readBase, writeBase, readBytes, writeBytes]
+  return weightedCost
 
 allocCost      :: Word64 -> Cost
 allocBytesCost :: Word64 -> Cost

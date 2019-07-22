@@ -38,6 +38,7 @@ import Fmt (Buildable(build), blockListF, fmt, fmtLn, nameF, pretty, (+|), (|+))
 import Named ((:!), (:?), arg, argDef, defaults, (!))
 import Text.Megaparsec (parse)
 
+import Gas.Type (Cost, calcGas, free)
 import Michelson.Interpret
   (ContractEnv(..), InterpretUntypedError(..), InterpretUntypedResult(..), InterpreterState(..),
   MorleyLogs(..), RemainingSteps(..), interpretUntyped)
@@ -93,6 +94,8 @@ data InterpreterRes = InterpreterRes
   -- set to its input.
   , _irRemainingSteps :: !RemainingSteps
   -- ^ Now much gas all remaining executions can consume.
+  , _irCost :: !Cost
+  -- ^ Gas cost of execution.
   } deriving (Show)
 
 makeLenses ''InterpreterRes
@@ -268,9 +271,11 @@ interpreter maybeNow maxSteps dbPath operations
         interpreterPure now (RemainingSteps maxSteps) gState operations
   InterpreterRes {..} <- either throwM pure eitherRes
   mapM_ printInterpretResult _irInterpretResults
+  putTextLn $
+    "Gas cost: " <> maybe ("mutez overflow") pretty (calcGas _irCost)
   when (verbose && not (null _irUpdates)) $ do
     fmtLn $ nameF "Updates:" (blockListF _irUpdates)
-    putTextLn $ "Remaining gas: " <> pretty _irRemainingSteps
+    putTextLn $ "Remaining steps: " <> pretty _irRemainingSteps
   unless dryRun $
     writeGState dbPath _irGState
   where
@@ -311,6 +316,7 @@ interpreterPure now maxSteps gState =
       , _irInterpretResults = []
       , _irSourceAddress = Nothing
       , _irRemainingSteps = maxSteps
+      , _irCost = free
       }
 
     step :: InterpreterRes -> InterpreterOp -> Either InterpreterError InterpreterRes
@@ -376,6 +382,8 @@ interpretOneOp _ remainingSteps _ gs (OriginateOp origination) = do
       , _irInterpretResults = []
       , _irSourceAddress = Nothing
       , _irRemainingSteps = remainingSteps
+      -- TODO: typecheck cost should be here
+      , _irCost = free
       }
   where
     contractState = ContractState
@@ -396,8 +404,8 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
           -- Subtraction is safe because we have checked its
           -- precondition in guard.
           Right (GSSetBalance senderAddr (balance `unsafeSubMutez` tdAmount txData))
-    let onlyUpdates updates = Right (updates, [], Nothing, remainingSteps)
-    (otherUpdates, sideEffects, maybeInterpretRes, newRemSteps)
+    let onlyUpdates updates = Right (updates, [], Nothing, remainingSteps, free)
+    (otherUpdates, sideEffects, maybeInterpretRes, newRemSteps, cost)
         <- case (addresses ^. at addr, addr) of
       (Nothing, ContractAddress _) ->
         Left (IEUnknownContract addr)
@@ -430,7 +438,7 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
         iur@InterpretUntypedResult
           { iurOps = sideEffects
           , iurNewStorage = newValue
-          , iurNewState = InterpreterState _ newRemainingSteps
+          , iurNewState = InterpreterState _ newRemainingSteps cost
           }
           <- first (IEInterpreterFailed addr) $
                 interpretUntyped contract (tdParameter txData)
@@ -446,7 +454,7 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
             [ updBalance
             , updStorage
             ]
-        Right (updates, sideEffects, Just iur, newRemainingSteps)
+        Right (updates, sideEffects, Just iur, newRemainingSteps, cost)
 
     let
       updates = decreaseSenderBalance:otherUpdates
@@ -460,6 +468,7 @@ interpretOneOp now remainingSteps mSourceAddr gs (TransferOp addr txData) = do
       , _irInterpretResults = maybe mempty (one . (addr,)) maybeInterpretRes
       , _irSourceAddress = Just sourceAddr
       , _irRemainingSteps = newRemSteps
+      , _irCost = cost
       }
   where
     addresses :: Map Address AddressState

@@ -38,7 +38,7 @@ spec_Ext_Intepreter = describe "PRINT/TEST_ASSERT tests" $ do
       let x' = T.VC $ T.CvInt x :: T.Value ('T.Tc 'T.CInt)
       let y' = T.VC $ T.CvInt y :: T.Value ('T.Tc 'T.CInt)
       let area' = T.VC $ CvInt $ x * y :: T.Value ('T.Tc 'T.CInt)
-      let check (a, InterpreterState s _) =
+      let check (a, InterpreterState s _ _) =
             if corr then isRight a && s == MorleyLogs ["Area is " <> show area']
             else isLeft a && s == MorleyLogs ["Sides are " <> show x' <> " x " <> show y']
       interpret contract (T.VPair (x', y')) T.VUnit dummyContractEnv `shouldSatisfy` check

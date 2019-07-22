@@ -17,6 +17,8 @@ import qualified Data.ByteString as B
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+import qualified Gas.Cost.CostOf as Gas
+import Gas.Type (Cost, free)
 import Michelson.Text
 import Michelson.Typed.CValue (CValue(..))
 import Michelson.Typed.T (CT(..), T(..))
@@ -27,32 +29,40 @@ import Tezos.Core (divModMutez, divModMutezInt)
 class MemOp (c :: T) where
   type MemOpKey c :: CT
   evalMem :: CValue (MemOpKey c) -> Value' cp c -> Bool
+  costMem :: Value' cp c -> Cost
 instance MemOp ('TSet e) where
   type MemOpKey ('TSet e) = e
   evalMem e (VSet s) = e `S.member` s
+  costMem (VSet s) = Gas.setMem s
 instance MemOp ('TMap k v) where
   type MemOpKey ('TMap k v) = k
   evalMem k (VMap m) = k `M.member` m
+  costMem (VMap m) = Gas.mapMem m
 instance MemOp ('TBigMap k v) where
   type MemOpKey ('TBigMap k v) = k
   evalMem k (VBigMap m) = k `M.member` m
+  costMem (VBigMap m) = Gas.bigMapMem m
 
 class MapOp (c :: T) where
   type MapOpInp c :: T
   type MapOpRes c :: T -> T
   mapOpToList :: Value' instr c -> [Value' instr (MapOpInp c)]
   mapOpFromList :: Value' instr c -> [Value' instr b] -> Value' instr (MapOpRes c b)
+  costMapOp :: (Value' instr c) -> Cost
 instance MapOp ('TMap k v) where
   type MapOpInp ('TMap k v) = 'TPair ('Tc k) v
   type MapOpRes ('TMap k v) = 'TMap k
   mapOpToList (VMap m) = map (\(k, v) -> VPair (VC k, v)) $ M.toAscList m
   mapOpFromList (VMap m) l =
     VMap $ M.fromList $ zip (map fst $ M.toAscList m) l
+  costMapOp (VMap m) = Gas.mapToList m <>
+    (foldr (<>) free $ replicate (M.size m) Gas.loopCycle)
 instance MapOp ('TList e) where
   type MapOpInp ('TList e) = e
   type MapOpRes ('TList e) = 'TList
   mapOpToList (VList l) = l
   mapOpFromList (VList _) l' = VList l'
+  costMapOp (VList l) = foldr (<>) free $ replicate (length l) Gas.loopCycle
 -- If you find it difficult to implement 'MapOp' for your datatype
 -- because of order of type arguments in it, consider wrapping it
 -- into a newtype.
@@ -61,32 +71,44 @@ class IterOp (c :: T) where
   type IterOpEl c :: T
   iterOpDetachOne ::
     Value' instr c -> (Maybe (Value' instr (IterOpEl c)), Value' instr c)
+  costIterOp :: Value' instr c -> Cost
 instance IterOp ('TMap k v) where
   type IterOpEl ('TMap k v) = 'TPair ('Tc k) v
   iterOpDetachOne (VMap m) =
     ((VPair . (\(k, v) -> (VC k, v))) <$> M.lookupMin m, VMap $ M.deleteMin m)
+  costIterOp (VMap m) = Gas.mapToList m <>
+    (foldr (<>) free $ replicate (M.size m) Gas.loopCycle)
 instance IterOp ('TList e) where
   type IterOpEl ('TList e) = e
   iterOpDetachOne (VList l) =
     case l of
       x : xs -> (Just x, VList xs)
       [] -> (Nothing, VList [])
+  costIterOp (VList l) = foldr (<>) free $ replicate (length l) Gas.loopCycle
 instance IterOp ('TSet e) where
   type IterOpEl ('TSet e) = 'Tc e
   iterOpDetachOne (VSet s) = (VC <$> S.lookupMin s, VSet $ S.deleteMin s)
+  costIterOp (VSet s) = Gas.setToList s <>
+    (foldr (<>) free $ replicate (S.size s) Gas.loopCycle)
 
 class SizeOp (c :: T) where
   evalSize :: Value' cp c -> Int
+  costSize :: Value' cp c -> Cost
 instance SizeOp ('Tc 'CString) where
   evalSize (VC (CvString s)) = length s
+  costSize _ = Gas.push
 instance SizeOp ('Tc 'CBytes) where
   evalSize (VC (CvBytes b)) = length b
+  costSize _ = Gas.push
 instance SizeOp ('TSet a) where
   evalSize (VSet s) = S.size s
+  costSize _ = Gas.setSize
 instance SizeOp ('TList a) where
   evalSize (VList l) = length l
+  costSize _ = Gas.listSize
 instance SizeOp ('TMap k v) where
   evalSize (VMap m) = M.size m
+  costSize _ = Gas.mapSize
 
 class UpdOp (c :: T) where
   type UpdOpKey c :: CT
@@ -94,6 +116,7 @@ class UpdOp (c :: T) where
   evalUpd
     :: CValue (UpdOpKey c)
     -> Value' cp (UpdOpParams c) -> Value' cp c -> Value' cp c
+  costUpd :: (Value' cp c) -> Cost
 instance UpdOp ('TMap k v) where
   type UpdOpKey ('TMap k v) = k
   type UpdOpParams ('TMap k v) = 'TOption v
@@ -101,6 +124,7 @@ instance UpdOp ('TMap k v) where
     case o of
       Just newV -> VMap $ M.insert k newV m
       Nothing -> VMap $ M.delete k m
+  costUpd (VMap m) = Gas.mapUpdate m
 instance UpdOp ('TBigMap k v) where
   type UpdOpKey ('TBigMap k v) = k
   type UpdOpParams ('TBigMap k v) = 'TOption v
@@ -108,6 +132,7 @@ instance UpdOp ('TBigMap k v) where
     case o of
       Just newV -> VBigMap $ M.insert k newV m
       Nothing -> VBigMap $ M.delete k m
+  costUpd (VBigMap m) = Gas.bigMapUpdate m
 instance UpdOp ('TSet a) where
   type UpdOpKey ('TSet a) = a
   type UpdOpParams ('TSet a) = 'Tc 'CBool
@@ -115,40 +140,59 @@ instance UpdOp ('TSet a) where
     case b of
       True -> VSet $ S.insert k s
       False -> VSet $ S.delete k s
+  costUpd (VSet s) = Gas.setUpdate s
 
 class GetOp (c :: T) where
   type GetOpKey c :: CT
   type GetOpVal c :: T
   evalGet :: CValue (GetOpKey c) -> Value' cp c -> Maybe (Value' cp (GetOpVal c))
+  costGet :: Value' cp c -> Cost
 instance GetOp ('TBigMap k v) where
   type GetOpKey ('TBigMap k v) = k
   type GetOpVal ('TBigMap k v) = v
   evalGet k (VBigMap m) = k `M.lookup` m
+  costGet (VBigMap m) = Gas.bigMapGet m
 instance GetOp ('TMap k v) where
   type GetOpKey ('TMap k v) = k
   type GetOpVal ('TMap k v) = v
   evalGet k (VMap m) = k `M.lookup` m
+  costGet (VMap m) = Gas.mapGet m
 
 class ConcatOp (c :: T) where
   evalConcat :: Value' cp c -> Value' cp c -> Value' cp c
   evalConcat' :: [Value' cp c] -> Value' cp c
+  costConcat :: Value' cp c -> Value' cp c -> Cost
+  costConcat' :: [Value' cp c] -> Cost
 instance ConcatOp ('Tc 'CString) where
   evalConcat (VC (CvString s1)) (VC (CvString s2)) = (VC . CvString) (s1 <> s2)
   evalConcat' l =
     (VC . CvString) $ mconcat $ map (\(VC (CvString s)) -> s) l
+  costConcat (VC (CvString s1)) (VC (CvString s2)) =
+    Gas.concatString $ map unMText [s1, s2]
+  costConcat' l = Gas.concatString $ map (unMText . (\(VC (CvString s)) -> s)) l
 instance ConcatOp ('Tc 'CBytes) where
   evalConcat (VC (CvBytes b1)) (VC (CvBytes b2)) = (VC . CvBytes) (b1 <> b2)
   evalConcat' l =
     (VC . CvBytes) $ foldr ((<>) . (\(VC (CvBytes b)) -> b)) mempty l
+  costConcat (VC (CvBytes b1)) (VC (CvBytes b2)) =
+    Gas.concatBytes [b1, b2]
+  costConcat' l = Gas.concatBytes $ map (\(VC (CvBytes s)) -> s) l
 
 class SliceOp (c :: T) where
   evalSlice :: Natural -> Natural -> Value' cp c -> Maybe (Value' cp c)
+  costSlice :: Natural -> Natural -> Value' cp c -> Cost
 instance SliceOp ('Tc 'CString) where
   evalSlice o l (VC (CvString s)) =
     VC . CvString <$> sliceImpl dropMText takeMText o l s
+  costSlice o l (VC (CvString s)) = case sliceImpl dropMText takeMText o l s of
+    Just _ -> Gas.sliceString (fromIntegral . toInteger $ l)
+    Nothing -> Gas.sliceString 0
 instance SliceOp ('Tc 'CBytes) where
   evalSlice o l (VC (CvBytes b)) =
     VC . CvBytes <$> sliceImpl B.drop B.take o l b
+  costSlice o l (VC (CvBytes b)) = case sliceImpl B.drop B.take o l b of
+    Just _ -> Gas.sliceString (fromIntegral . toInteger $ l)
+    Nothing -> Gas.sliceString 0
 
 sliceImpl ::
   Container str
