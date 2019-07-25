@@ -58,7 +58,7 @@ module Gas.Cost.CostOf
   , implicitAccount
   , setDelegate, balance, now
   , checkSignature
-  , source, self, amount, hashKey
+  , source, sender, self, amount, hashKey
   , stepsToQuota
   ) where
 
@@ -289,8 +289,9 @@ balance = stepCost 1 <> readBytesCost 8
 now = stepCost 5
 checkSignature = stepCost 1000
 
-source, self, amount, hashKey, stepsToQuota :: Cost
+source, sender, self, amount, hashKey, stepsToQuota :: Cost
 source = stepCost 1
+sender = stepCost 1
 self = stepCost 1
 amount = stepCost 1
 hashKey = stepCost 3 <> bytes 20

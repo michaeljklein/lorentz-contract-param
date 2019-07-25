@@ -527,7 +527,7 @@ runInstrImpl _ SOURCE r = do
   ContractEnv{..} <- ask
   pure $ VC (CvAddress ceSource) :& r
 runInstrImpl _ SENDER r = do
-  consume Gas.source
+  consume Gas.sender
   ContractEnv{..} <- ask
   pure $ VC (CvAddress ceSender) :& r
 runInstrImpl _ ADDRESS (VContract a :& r) =
