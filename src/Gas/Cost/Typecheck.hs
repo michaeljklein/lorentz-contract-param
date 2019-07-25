@@ -1,3 +1,7 @@
+-- | Module which contains costs for different instructions and
+-- values typechecking.
+-- Basically it is port from Michelson gas costs OCaml implementation which is
+-- located here: https://github.com/BrianGuo/MichelsonExecutionEngine/blob/master/util/gas_costs.ml#L52
 module Gas.Cost.Typecheck
   ( eqTypeCost
   , eqStackCost
