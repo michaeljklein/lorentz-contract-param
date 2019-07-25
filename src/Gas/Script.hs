@@ -1,4 +1,7 @@
-
+-- | Module which contains functions for calculating gas costs that are
+-- produced during instructions and value deserialization and unparsing.
+-- Ported from OCaml implementation which is located here:
+-- https://github.com/BrianGuo/MichelsonExecutionEngine/blob/3fc772f915a0fcfa0bb14e33c749e7b3d7ff4eca/util/script.ml
 module Gas.Script where
 
 import Data.Bits (finiteBitSize, countLeadingZeros, Bits)
