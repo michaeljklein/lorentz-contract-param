@@ -30,10 +30,10 @@ data MyTemplate f = MyTemplate
   , bool :: f -/ UStoreField Bool
   } deriving stock (Generic)
 
-deriving stock instance Eq (MyTemplate Identity)
-deriving stock instance Show (MyTemplate Identity)
+deriving stock instance Eq (MyTemplate UStoreValue)
+deriving stock instance Show (MyTemplate UStoreValue)
 
-instance Arbitrary (MyTemplate Identity) where
+instance Arbitrary (MyTemplate UStoreValue) where
   arbitrary = MyTemplate <$> arbitrary <*> arbitrary
 
 data MyTemplateBig f = MyTemplateBig
@@ -42,10 +42,10 @@ data MyTemplateBig f = MyTemplateBig
   , total :: f -/ UStoreField Integer
   } deriving stock (Generic)
 
-deriving stock instance Eq (MyTemplateBig Identity)
-deriving stock instance Show (MyTemplateBig Identity)
+deriving stock instance Eq (MyTemplateBig UStoreValue)
+deriving stock instance Show (MyTemplateBig UStoreValue)
 
-instance Arbitrary (MyTemplateBig Identity) where
+instance Arbitrary (MyTemplateBig UStoreValue) where
   arbitrary = MyTemplateBig <$> arbitrary <*> arbitrary <*> arbitrary
 
 test_Roundtrip :: [TestTree]
@@ -60,47 +60,47 @@ test_Conversions =
     [ testCase "No action" $
         ustoreChangeTest
           ( nop
-          , MyTemplate (UStoreSubMap def) (UStoreField False)
-          , MyTemplate (UStoreSubMap def) (UStoreField False)
+          , MyTemplate def False
+          , MyTemplate def False
           )
     , testCase "Insert into submap" $
         ustoreChangeTest
           ( unit # push 5 # ustoreInsert #ints
-          , MyTemplate (UStoreSubMap def) (UStoreField False)
-          , MyTemplate (UStoreSubMap $ one (5, ())) (UStoreField False)
+          , MyTemplate def False
+          , MyTemplate (one (5, ())) False
           )
     , testCase "Delete from submap" $
         ustoreChangeTest
           ( push 3 # ustoreDelete #ints
-          , MyTemplate (UStoreSubMap $ one (3, ())) (UStoreField False)
-          , MyTemplate (UStoreSubMap mempty) (UStoreField False)
+          , MyTemplate (one (3, ())) False
+          , MyTemplate mempty False
           )
     , testCase "Get from submap" $
         ustoreChangeTest
           ( dup # push 0 # ustoreGet #ints #
             ifNone (push 10) (L.drop # push 11) # dip unit # ustoreInsert #ints
-          , MyTemplate (UStoreSubMap $ one (0, ())) (UStoreField False)
-          , MyTemplate (UStoreSubMap $ M.fromList [(0, ()), (11, ())]) (UStoreField False)
+          , MyTemplate (one (0, ())) False
+          , MyTemplate (M.fromList [(0, ()), (11, ())]) False
           )
     , testCase "Set field" $
         ustoreChangeTest
           ( push True # ustoreSetField #bool
-          , MyTemplate (UStoreSubMap mempty) (UStoreField False)
-          , MyTemplate (UStoreSubMap mempty) (UStoreField True)
+          , MyTemplate mempty False
+          , MyTemplate mempty True
           )
     , testCase "Get field" $
         ustoreChangeTest
           ( ustoreGetField #bool #
             if_ (push 5) (push 0) # dip unit # ustoreInsert #ints
-          , MyTemplate (UStoreSubMap mempty) (UStoreField False)
-          , MyTemplate (UStoreSubMap $ one (0, ())) (UStoreField False)
+          , MyTemplate mempty False
+          , MyTemplate (one (0, ())) False
           )
     , testCase "Leave some entries untouched" $
         ustoreChangeTest
           ( push 0 # ustoreDelete #ints #
             unit # push 2 # ustoreInsert #ints
-          , MyTemplate (UStoreSubMap $ M.fromList [(0, ()), (1, ())]) (UStoreField False)
-          , MyTemplate (UStoreSubMap $ M.fromList [(1, ()), (2, ())]) (UStoreField False)
+          , MyTemplate (M.fromList [(0, ()), (1, ())]) False
+          , MyTemplate (M.fromList [(1, ()), (2, ())]) False
           )
     ]
 
@@ -113,14 +113,14 @@ test_Conversions =
             unit # push 0 # ustoreInsert #ints #
             push True # ustoreSetField #bool
           , MyTemplateBig
-            { small = MyTemplate (UStoreSubMap def) (UStoreField False)
-            , bytes = UStoreSubMap $ one ("a", 1)
-            , total = UStoreField 10
+            { small = MyTemplate def False
+            , bytes = one ("a", 1)
+            , total = 10
             }
           , MyTemplateBig
-            { small = MyTemplate (UStoreSubMap $ one (0, ())) (UStoreField True)
-            , bytes = UStoreSubMap $ one ("b", 2)
-            , total = UStoreField 11
+            { small = MyTemplate (one (0, ())) True
+            , bytes = one ("b", 2)
+            , total = 11
             }
           )
     ]
@@ -128,10 +128,14 @@ test_Conversions =
   where
     -- We accept a tuple as argument to avoid many parentheses
     ustoreChangeTest
-      :: (Each [Eq, Show, Generic, UStoreConversible] '[template Identity], HasCallStack)
+      :: ( Each [Eq, Show, Generic] '[template UStoreValue]
+         , Generic (template UStoreTypesOnly)
+         , UStoreConversible template
+         , HasCallStack
+         )
       => ( '[UStore template] :-> '[UStore template]
-         , template Identity
-         , template Identity
+         , template UStoreValue
+         , template UStoreValue
          )
       -> Assertion
     ustoreChangeTest (instr, initStoreHs, expectedNewStore) =

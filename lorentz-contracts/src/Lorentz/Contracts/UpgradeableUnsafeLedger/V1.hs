@@ -33,7 +33,7 @@ data UStoreTemplate f = UStoreTemplate
   , totalSupply :: f -/ UStoreField Natural
   } deriving stock (Generic)
 
-deriving stock instance Eq (UStoreTemplate Identity)
+deriving stock instance Eq (UStoreTemplate UStoreValue)
 
 type UStoreV1 = UStore UStoreTemplate
 

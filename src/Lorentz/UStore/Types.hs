@@ -4,8 +4,11 @@
 module Lorentz.UStore.Types
   ( -- * UStore and related type definitions
     UStore (..)
-  , type (|~>)(..)
-  , UStoreField (..)
+  , type (|~>)
+  , UStoreField
+
+  , UStoreValue
+  , UStoreTypesOnly
 
     -- ** Type-lookup-by-name
   , GetUStoreKey
@@ -29,8 +32,8 @@ import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 
 import Lorentz.Polymorphic
 import Michelson.Typed.Haskell.Value
-import Util.Type
 import Util.Columnar
+import Util.Type
 
 -- | Gathers multple fields and 'BigMap's under one object.
 --
@@ -48,13 +51,22 @@ newtype UStore (template :: ColumnarSelectorKind -> Kind.Type) =
   deriving newtype (Default, Semigroup, Monoid, IsoValue,
                     MemOpHs, GetOpHs, UpdOpHs)
 
--- | Describes one virtual big map in the storage.
-newtype k |~> v = UStoreSubMap { unUStoreSubMap :: Map k v }
-  deriving stock (Show, Eq)
-  deriving newtype (Default)
+-- | Describes one virtual big map in a storage.
+data k |~> v
 
-newtype UStoreField v = UStoreField { unUStoreField :: v }
-  deriving stock (Show, Eq)
+-- | Describes on field in a storage.
+data UStoreField v
+
+-- | Pass this in template when you want to make up a value corresponding
+-- to 'UStore' with given template.
+data UStoreValue :: ColumnarSelectorKind
+type instance Columnar UStoreValue (k |~> v) = Map k v
+type instance Columnar UStoreValue (UStoreField v) = v
+
+-- | Turn template into type convenient for type-level analyzing.
+-- This type will be uninhabited, because '(|~>)' and 'UStoreField' are.
+data UStoreTypesOnly :: ColumnarSelectorKind
+type instance Columnar UStoreTypesOnly a = a
 
 -- Type-safe lookup magic
 ----------------------------------------------------------------------------

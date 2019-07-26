@@ -34,9 +34,13 @@ type UStoreContent = [(ByteString, ByteString)]
 
 -- | Make 'UStore' from separate @big_map@s and fields.
 mkUStore
-  :: (Generic (template Identity), UStoreConversible (template Identity))
-  => template Identity -> UStore template
-mkUStore = UStore . BigMap . mkUStoreRec
+  :: forall template.
+     ( Generic (template UStoreTypesOnly)
+     , Generic (template UStoreValue)
+     , UStoreConversible template
+     )
+  => template UStoreValue -> UStore template
+mkUStore = UStore . BigMap . mkUStoreRec @(template UStoreTypesOnly)
 
 -- | Decompose 'UStore' into separate @big_map@s and fields.
 --
@@ -49,16 +53,24 @@ mkUStore = UStore . BigMap . mkUStoreRec
 -- were violated.
 ustoreDecompose
   :: forall template.
-     (Generic (template Identity), UStoreConversible (template Identity))
-  => UnpackEnv -> UStore template -> Either Text (UStoreContent, template Identity)
-ustoreDecompose ue = storeDecomposeRec ue . Map.toList . unBigMap . unUStore
+     ( Generic (template UStoreTypesOnly)
+     , Generic (template UStoreValue)
+     , UStoreConversible template
+     )
+  => UnpackEnv -> UStore template -> Either Text (UStoreContent, template UStoreValue)
+ustoreDecompose ue =
+  storeDecomposeRec @(template UStoreTypesOnly) ue .
+  Map.toList . unBigMap . unUStore
 
 -- | Like 'ustoreDecompose', but requires all entries from @UStore@ to be
 -- recognized.
 ustoreDecomposeFull
   :: forall template.
-     (Generic (template Identity), UStoreConversible (template Identity))
-  => UnpackEnv -> UStore template -> Either Text (template Identity)
+     ( Generic (template UStoreTypesOnly)
+     , Generic (template UStoreValue)
+     , UStoreConversible template
+     )
+  => UnpackEnv -> UStore template -> Either Text (template UStoreValue)
 ustoreDecomposeFull ue ustore = do
   (remained, res) <- ustoreDecompose ue ustore
   unless (null remained) $
@@ -67,77 +79,99 @@ ustoreDecomposeFull ue ustore = do
 
 -- | Recursive template traversal for 'mkUStore'.
 mkUStoreRec
-  :: (Generic template, UStoreConversible template)
-  => template -> Map ByteString ByteString
-mkUStoreRec = gUstoreToVal . G.from
+  :: forall templateTypes templateValue.
+     ( Generic templateTypes, Generic templateValue
+     , UStoreConversibleRec templateTypes templateValue
+     )
+  => templateValue -> Map ByteString ByteString
+mkUStoreRec = gUstoreToVal @(G.Rep templateTypes) . G.from
 
 -- | Recursive template traversal for 'ustoreDecompose'.
 storeDecomposeRec
-  :: forall template.
-     (Generic template, UStoreConversible template)
-  => UnpackEnv -> UStoreContent -> Either Text (UStoreContent, template)
-storeDecomposeRec = fmap (second G.to) ... gUstoreFromVal
+  :: forall templateTypes templateValue.
+     ( Generic templateTypes, Generic templateValue
+     , UStoreConversibleRec templateTypes templateValue
+     )
+  => UnpackEnv -> UStoreContent -> Either Text (UStoreContent, templateValue)
+storeDecomposeRec = fmap (second G.to) ... gUstoreFromVal @(G.Rep templateTypes)
 
 -- | Given template can be converted to 'UStore' value.
-class GUStoreConversible (G.Rep template) => UStoreConversible template
-instance GUStoreConversible (G.Rep template) => UStoreConversible template
+class UStoreConversibleRec (template UStoreTypesOnly)
+                           (template UStoreValue) =>
+      UStoreConversible template
+instance UStoreConversibleRec (template UStoreTypesOnly)
+                              (template UStoreValue) =>
+      UStoreConversible template
+
+type UStoreConversibleRec templateTypes templateValue =
+  GUStoreConversible (G.Rep templateTypes) (G.Rep templateValue)
 
 -- | Generic traversal for 'mkUStore' and 'ustoreDecompose'.
-class GUStoreConversible (template :: Kind.Type -> Kind.Type) where
+--
+-- It is parametrized by UStore template with columnar selector set to
+-- 1. 'UStoreTypesOnly' for unambiguous type-level analysis;
+-- 2. 'UStoreValue' which is type of the converted value itself.
+class GUStoreConversible (templateTyped :: Kind.Type -> Kind.Type)
+                         (templateValue :: Kind.Type -> Kind.Type) where
   -- | Convert generic value to internal 'UStore' representation.
-  gUstoreToVal :: template p -> Map ByteString ByteString
+  gUstoreToVal :: templateValue p -> Map ByteString ByteString
 
   -- | Parse internal 'UStore' representation into generic Haskell value of
   -- 'UStore', also returning unparsed entries.
   gUstoreFromVal
     :: UnpackEnv
     -> UStoreContent
-    -> Either Text (UStoreContent, template p)
+    -> Either Text (UStoreContent, templateValue p)
 
-instance GUStoreConversible x => GUStoreConversible (G.D1 i x) where
-  gUstoreToVal = gUstoreToVal . G.unM1
-  gUstoreFromVal = fmap (second G.M1) ... gUstoreFromVal
+instance GUStoreConversible xt xi => GUStoreConversible (G.D1 i xt) (G.D1 i xi) where
+  gUstoreToVal = gUstoreToVal @xt . G.unM1
+  gUstoreFromVal = fmap (second G.M1) ... gUstoreFromVal @xt
 
-instance GUStoreConversible x => GUStoreConversible (G.C1 i x) where
-  gUstoreToVal = gUstoreToVal . G.unM1
-  gUstoreFromVal = fmap (second G.M1) ... gUstoreFromVal
+instance GUStoreConversible xt xi => GUStoreConversible (G.C1 i xt) (G.C1 i xi) where
+  gUstoreToVal = gUstoreToVal @xt . G.unM1
+  gUstoreFromVal = fmap (second G.M1) ... gUstoreFromVal @xt
 
 instance TypeError ('Text "Unexpected sum type in UStore template") =>
-         GUStoreConversible (x :+: y) where
+         GUStoreConversible (x :+: y) xi where
   gUstoreToVal = error "impossible"
   gUstoreFromVal = error "impossible"
 
 instance TypeError ('Text "UStore template should have one constructor") =>
-         GUStoreConversible G.V1 where
+         GUStoreConversible G.V1 xi where
   gUstoreToVal = error "impossible"
   gUstoreFromVal = error "impossible"
 
-instance (GUStoreConversible x, GUStoreConversible y) =>
-         GUStoreConversible (x :*: y) where
-  gUstoreToVal (x :*: y) = gUstoreToVal x <> gUstoreToVal y
+instance (GUStoreConversible xt xi, GUStoreConversible yt yi) =>
+         GUStoreConversible (xt :*: yt) (xi :*: yi) where
+  gUstoreToVal (x :*: y) = gUstoreToVal @xt x <> gUstoreToVal @yt y
   gUstoreFromVal unpackEnv entries = do
-    (entries', res1) <- gUstoreFromVal unpackEnv entries
-    (entries'', res2) <- gUstoreFromVal unpackEnv entries'
+    (entries', res1) <- gUstoreFromVal @xt unpackEnv entries
+    (entries'', res2) <- gUstoreFromVal @yt unpackEnv entries'
     return (entries'', res1 :*: res2)
 
-instance GUStoreConversible G.U1 where
+instance GUStoreConversible G.U1 G.U1 where
   gUstoreToVal G.U1 = mempty
   gUstoreFromVal _ entries = pure (entries, G.U1)
 
 -- | Case of nested template.
 instance {-# OVERLAPPABLE #-}
-         (Generic template, UStoreConversible template) =>
-         GUStoreConversible (G.S1 i (G.Rec0 template)) where
-  gUstoreToVal = mkUStoreRec . G.unK1 . G.unM1
-  gUstoreFromVal = fmap (second $ G.M1 . G.K1) ... storeDecomposeRec
+         ( Generic at, Generic ai, UStoreConversibleRec at ai
+         , xi ~ (G.S1 i (G.Rec0 ai))
+         ) =>
+         GUStoreConversible (G.S1 i (G.Rec0 at)) xi where
+  gUstoreToVal = mkUStoreRec @at . G.unK1 . G.unM1
+  gUstoreFromVal = fmap (second $ G.M1 . G.K1) ... storeDecomposeRec @at
 
 -- | Case of '|~>'.
 instance ( Each [IsoValue, KnownValue, NoOperation, NoBigMap] [k, v]
          , KnownSymbol fieldName, Ord k
+         , xi ~ G.S1 ('G.MetaSel ('Just fieldName) _1 _2 _3)
+                     (G.Rec0 (Map k v))
          ) =>
          GUStoreConversible (G.S1 ('G.MetaSel ('Just fieldName) _1 _2 _3)
-                                  (G.Rec0 (k |~> v))) where
-  gUstoreToVal (G.M1 (G.K1 (UStoreSubMap m))) =
+                                  (G.Rec0 (k |~> v)))
+                            xi where
+  gUstoreToVal (G.M1 (G.K1 m)) =
     forbiddenOp @(ToT k) $ forbiddenBigMap @(ToT k) $
     forbiddenOp @(ToT v) $ forbiddenBigMap @(ToT v) $
       mconcat
@@ -149,7 +183,7 @@ instance ( Each [IsoValue, KnownValue, NoOperation, NoBigMap] [k, v]
 
   gUstoreFromVal unpackEnv allEntries = do
     (unrecognized, res) <- foldM parseEntry (mempty, mempty) allEntries
-    return (unrecognized, G.M1 . G.K1 $ UStoreSubMap res)
+    return (unrecognized, G.M1 $ G.K1 res)
     where
     parseEntry
       :: (UStoreContent, Map k v)
@@ -176,10 +210,12 @@ instance ( Each [IsoValue, KnownValue, NoOperation, NoBigMap] [k, v]
 -- | Case of 'UStoreField'.
 instance ( Each [IsoValue, KnownValue, NoOperation, NoBigMap] '[v]
          , KnownSymbol fieldName
+         , xi ~ G.S1 ('G.MetaSel ('Just fieldName) _1 _2 _3) (G.Rec0 v)
          ) =>
          GUStoreConversible (G.S1 ('G.MetaSel ('Just fieldName) _1 _2 _3)
-                                  (G.Rec0 (UStoreField v))) where
-  gUstoreToVal (G.M1 (G.K1 (UStoreField val))) =
+                                  (G.Rec0 (UStoreField v)))
+                            xi where
+  gUstoreToVal (G.M1 (G.K1 val)) =
     forbiddenOp @(ToT v) $ forbiddenBigMap @(ToT v) $
       one ( packValue' $ toVal (fieldNameToMText @fieldName)
           , packValue' $ toVal val
@@ -198,7 +234,7 @@ instance ( Each [IsoValue, KnownValue, NoOperation, NoBigMap] '[v]
                 Left $ "Failed to parse UStore value for field " +|
                       demote @(ToT v) |+ ": " +| err |+ ""
               Right (fromVal -> valValue) ->
-                Right (otherEntries, G.M1 . G.K1 $ UStoreField valValue)
+                Right (otherEntries, G.M1 $ G.K1 valValue)
           (_ : _ : _, _) ->
             error "UStore content contained multiple entries with the same key"
 
@@ -221,15 +257,15 @@ data MyStoreTemplateBig f = MyStoreTemplateBig
 _storeSample :: UStore MyStoreTemplate
 _storeSample = mkUStore
   MyStoreTemplate
-  { ints = UStoreSubMap $ one (1, ())
-  , flag = UStoreField False
+  { ints = one (1, ())
+  , flag = False
   }
 
 _storeSampleBig :: UStore MyStoreTemplateBig
 _storeSampleBig = mkUStore $
   MyStoreTemplateBig
     MyStoreTemplate
-      { ints = UStoreSubMap $ one (1, ())
-      , flag = UStoreField False
+      { ints = one (1, ())
+      , flag = False
       }
-    (UStoreSubMap $ one ("a", "b"))
+    (one ("a", "b"))

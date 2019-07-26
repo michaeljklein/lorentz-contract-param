@@ -23,7 +23,7 @@ data UStoreTemplate f = UStoreTemplate
   , fallback :: f -/ UStoreField $ EpwFallback UStoreTemplate
   } deriving stock (Generic)
 
-deriving stock instance Eq (UStoreTemplate Identity)
+deriving stock instance Eq (UStoreTemplate UStoreValue)
 
 type UStoreV2 = UStore UStoreTemplate
 

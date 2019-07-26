@@ -25,8 +25,10 @@ We represent 'UStore' as @big_map bytes bytes@.
 module Lorentz.UStore
   ( -- * UStore and related type definitions
     UStore
-  , type (|~>)(..)
-  , UStoreField (..)
+  , type (|~>)
+  , UStoreField
+  , UStoreTypesOnly
+  , UStoreValue
 
     -- ** Type-lookup-by-name
   , GetUStoreKey
@@ -60,7 +62,7 @@ module Lorentz.UStore
   , type (-/)
   ) where
 
-import Lorentz.UStore.Types
-import Lorentz.UStore.Instr
 import Lorentz.UStore.Haskell
+import Lorentz.UStore.Instr
+import Lorentz.UStore.Types
 import Util.Columnar
