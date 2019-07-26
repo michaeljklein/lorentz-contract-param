@@ -9,6 +9,7 @@ module Lorentz.Prelude
   , Monoid (..)
   , Generic
   , Text
+  , Identity
   , fromString
   , undefined
   ) where

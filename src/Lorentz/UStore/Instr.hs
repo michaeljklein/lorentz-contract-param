@@ -37,6 +37,7 @@ import Lorentz.UStore.Common
 import Michelson.Text
 import Michelson.Typed.Haskell.Value
 import Michelson.Typed.Scope
+import Util.Columnar
 
 -- Helpers
 ----------------------------------------------------------------------------
@@ -237,9 +238,10 @@ type HasUField name ty store =
 -- This store should have '|~>' and 'UStoreField' fields in its immediate fields,
 -- no deep inspection is performed.
 type HasUStoreForAllIn store constrained =
-  (Generic store, GHasStoreForAllIn constrained (G.Rep store))
+  (Generic (store Identity), GHasStoreForAllIn constrained (G.Rep (store Identity)))
 
-type family GHasStoreForAllIn (store :: Kind.Type) (x :: Kind.Type -> Kind.Type)
+type family GHasStoreForAllIn (store :: ColumnarSelectorKind -> Kind.Type)
+                              (x :: Kind.Type -> Kind.Type)
             :: Constraint where
   GHasStoreForAllIn store (G.D1 _ x) = GHasStoreForAllIn store x
   GHasStoreForAllIn store (x :+: y) =
@@ -260,10 +262,10 @@ type family GHasStoreForAllIn (store :: Kind.Type) (x :: Kind.Type -> Kind.Type)
 -- Examples
 ----------------------------------------------------------------------------
 
-data MyStoreTemplate = MyStoreTemplate
-  { ints :: Integer |~> ()
-  , bytes :: ByteString |~> ByteString
-  , flag :: UStoreField Bool
+data MyStoreTemplate f = MyStoreTemplate
+  { ints :: f -/ Integer |~> ()
+  , bytes :: f -/ ByteString |~> ByteString
+  , flag :: f -/ UStoreField Bool
   }
   deriving stock (Generic)
 
@@ -278,23 +280,25 @@ _sample2 = ustoreInsert @MyStoreTemplate #bytes
 _sample3 :: MyStore : s :-> Bool : s
 _sample3 = ustoreToField @MyStoreTemplate #flag
 
-data MyStoreTemplate2 = MyStoreTemplate2
-  { bools :: Bool |~> Bool
-  , ints2 :: Integer |~> Integer
-  , ints3 :: Integer |~> Bool
+data MyStoreTemplate2 f = MyStoreTemplate2
+  { bools :: f -/ Bool |~> Bool
+  , ints2 :: f -/ Integer |~> Integer
+  , ints3 :: f -/ Integer |~> Bool
   }
   deriving stock (Generic)
 
 newtype MyNatural = MyNatural Natural
   deriving newtype (IsoCValue, IsoValue)
 
-data MyStoreTemplate3 = MyStoreTemplate3 { store3 :: Natural |~> MyNatural }
+data MyStoreTemplate3 f = MyStoreTemplate3
+  { store3 :: f -/ Natural |~> MyNatural
+  }
   deriving stock Generic
 
-data MyStoreTemplateBig = MyStoreTemplateBig
-  MyStoreTemplate
-  MyStoreTemplate2
-  MyStoreTemplate3
+data MyStoreTemplateBig f = MyStoreTemplateBig
+  (MyStoreTemplate f)
+  (MyStoreTemplate2 f)
+  (MyStoreTemplate3 f)
   deriving stock Generic
 
 _MyStoreTemplateBigTextsStore ::

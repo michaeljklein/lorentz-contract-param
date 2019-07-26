@@ -30,18 +30,20 @@ import GHC.TypeLits (ErrorMessage(..), Symbol, TypeError)
 import Lorentz.Polymorphic
 import Michelson.Typed.Haskell.Value
 import Util.Type
+import Util.Columnar
 
 -- | Gathers multple fields and 'BigMap's under one object.
 --
 -- Type argument of this datatype stands for a "store template" -
 -- a datatype with one constructor and multiple fields, each containing
--- an object of type 'UStoreField' or '|~>' and corresponding to single
--- virtual field or 'BigMap' respectively.
+-- an object of type 'UStoreField' or '|~>' wrapped into 'Columnar' and
+-- corresponding to single virtual field or 'BigMap' respectively.
 -- It's also possible to parameterize it with a larger type which is
 -- a product of types satisfying the above property.
 --
 -- Inside it keeps only one 'BigMap' thus not violating Michelson limitations.
-newtype UStore a = UStore { unUStore :: BigMap ByteString ByteString }
+newtype UStore (template :: ColumnarSelectorKind -> Kind.Type) =
+  UStore { unUStore :: BigMap ByteString ByteString }
   deriving stock (Eq, Show)
   deriving newtype (Default, Semigroup, Monoid, IsoValue,
                     MemOpHs, GetOpHs, UpdOpHs)
@@ -95,11 +97,12 @@ type family FSValue ms where
     TypeError ('Text "Expected UStore field, but submap was referred")
 
 -- | Get map signature from the constructor with a given name.
-type GetUStore name a = MERequireFound name a (GLookupStore name (G.Rep a))
+type GetUStore name template =
+  MERequireFound name template (GLookupStore name (G.Rep (template Identity)))
 
 type family MERequireFound
   (name :: Symbol)
-  (a :: Kind.Type)
+  (template :: ColumnarSelectorKind -> Kind.Type)
   (mlr :: Maybe ElemSignature)
     :: ElemSignature where
   MERequireFound _ _ ('Just ms) = ms

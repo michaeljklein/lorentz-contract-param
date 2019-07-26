@@ -17,11 +17,13 @@ import Lorentz.Contracts.UpgradeableCounter.V1 (UStoreV1)
 version :: Natural
 version = 2
 
-data UStoreTemplate = UStoreTemplate
-  { newCounterValue :: UStoreField Integer
-  , code :: MText |~> EntryPointImpl UStoreTemplate
-  , fallback :: UStoreField $ EpwFallback UStoreTemplate
-  } deriving stock (Eq, Generic)
+data UStoreTemplate f = UStoreTemplate
+  { newCounterValue :: f -/ UStoreField Integer
+  , code :: f -/ MText |~> EntryPointImpl UStoreTemplate
+  , fallback :: f -/ UStoreField $ EpwFallback UStoreTemplate
+  } deriving stock (Generic)
+
+deriving stock instance Eq (UStoreTemplate Identity)
 
 type UStoreV2 = UStore UStoreTemplate
 

@@ -27,14 +27,15 @@ import Michelson.Interpret.Unpack
 import Michelson.Text
 import Michelson.Typed.Haskell.Value
 import Michelson.Typed.Scope
+import Util.Columnar
 
 -- | 'UStore' content represented as key-value pairs.
 type UStoreContent = [(ByteString, ByteString)]
 
 -- | Make 'UStore' from separate @big_map@s and fields.
 mkUStore
-  :: (Generic template, UStoreConversible template)
-  => template -> UStore template
+  :: (Generic (template Identity), UStoreConversible (template Identity))
+  => template Identity -> UStore template
 mkUStore = UStore . BigMap . mkUStoreRec
 
 -- | Decompose 'UStore' into separate @big_map@s and fields.
@@ -48,16 +49,16 @@ mkUStore = UStore . BigMap . mkUStoreRec
 -- were violated.
 ustoreDecompose
   :: forall template.
-     (Generic template, UStoreConversible template)
-  => UnpackEnv -> UStore template -> Either Text (UStoreContent, template)
+     (Generic (template Identity), UStoreConversible (template Identity))
+  => UnpackEnv -> UStore template -> Either Text (UStoreContent, template Identity)
 ustoreDecompose ue = storeDecomposeRec ue . Map.toList . unBigMap . unUStore
 
 -- | Like 'ustoreDecompose', but requires all entries from @UStore@ to be
 -- recognized.
 ustoreDecomposeFull
   :: forall template.
-     (Generic template, UStoreConversible template)
-  => UnpackEnv -> UStore template -> Either Text template
+     (Generic (template Identity), UStoreConversible (template Identity))
+  => UnpackEnv -> UStore template -> Either Text (template Identity)
 ustoreDecomposeFull ue ustore = do
   (remained, res) <- ustoreDecompose ue ustore
   unless (null remained) $
@@ -205,15 +206,15 @@ instance ( Each [IsoValue, KnownValue, NoOperation, NoBigMap] '[v]
 -- Examples
 ----------------------------------------------------------------------------
 
-data MyStoreTemplate = MyStoreTemplate
-  { ints :: Integer |~> ()
-  , flag :: UStoreField Bool
+data MyStoreTemplate f = MyStoreTemplate
+  { ints :: f -/ Integer |~> ()
+  , flag :: f -/ UStoreField Bool
   }
   deriving stock (Generic)
 
-data MyStoreTemplateBig = MyStoreTemplateBig
-  { templ :: MyStoreTemplate
-  , bytes :: ByteString |~> ByteString
+data MyStoreTemplateBig f = MyStoreTemplateBig
+  { templ :: MyStoreTemplate f
+  , bytes :: f -/ ByteString |~> ByteString
   }
   deriving stock (Generic)
 

@@ -25,21 +25,27 @@ import Util.Test.Arbitrary ()
 import Test.Util.QuickCheck (roundtripTest)
 
 
-data MyTemplate = MyTemplate
-  { ints :: Integer |~> ()
-  , bool :: UStoreField Bool
-  } deriving stock (Eq, Show, Generic)
+data MyTemplate f = MyTemplate
+  { ints :: f -/ Integer |~> ()
+  , bool :: f -/ UStoreField Bool
+  } deriving stock (Generic)
 
-instance Arbitrary MyTemplate where
+deriving stock instance Eq (MyTemplate Identity)
+deriving stock instance Show (MyTemplate Identity)
+
+instance Arbitrary (MyTemplate Identity) where
   arbitrary = MyTemplate <$> arbitrary <*> arbitrary
 
-data MyTemplateBig = MyTemplateBig
-  { small :: MyTemplate
-  , bytes :: ByteString |~> Natural
-  , total :: UStoreField Integer
-  } deriving stock (Eq, Show, Generic)
+data MyTemplateBig f = MyTemplateBig
+  { small :: MyTemplate f
+  , bytes :: f -/ ByteString |~> Natural
+  , total :: f -/ UStoreField Integer
+  } deriving stock (Generic)
 
-instance Arbitrary MyTemplateBig where
+deriving stock instance Eq (MyTemplateBig Identity)
+deriving stock instance Show (MyTemplateBig Identity)
+
+instance Arbitrary (MyTemplateBig Identity) where
   arbitrary = MyTemplateBig <$> arbitrary <*> arbitrary <*> arbitrary
 
 test_Roundtrip :: [TestTree]
@@ -104,10 +110,8 @@ test_Conversions =
           ( push "a" # ustoreDelete #bytes #
             push 2 # push "b" # ustoreInsert #bytes #
             ustoreGetField #total # push @Integer 1 # add # ustoreSetField #total #
-            unliftUStore #small #
             unit # push 0 # ustoreInsert #ints #
-            push True # ustoreSetField #bool #
-            liftUStore #small
+            push True # ustoreSetField #bool
           , MyTemplateBig
             { small = MyTemplate (UStoreSubMap def) (UStoreField False)
             , bytes = UStoreSubMap $ one ("a", 1)
@@ -124,10 +128,10 @@ test_Conversions =
   where
     -- We accept a tuple as argument to avoid many parentheses
     ustoreChangeTest
-      :: (Each [Eq, Show, Generic, UStoreConversible] '[template], HasCallStack)
+      :: (Each [Eq, Show, Generic, UStoreConversible] '[template Identity], HasCallStack)
       => ( '[UStore template] :-> '[UStore template]
-         , template
-         , template
+         , template Identity
+         , template Identity
          )
       -> Assertion
     ustoreChangeTest (instr, initStoreHs, expectedNewStore) =

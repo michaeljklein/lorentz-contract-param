@@ -10,19 +10,21 @@ module Lorentz.Contracts.UpgradeableCounter.V1
 import Lorentz
 import Prelude (foldl')
 
-import Lorentz.Contracts.Upgradeable.EntryPointWise
 import Lorentz.Contracts.Upgradeable.Common
+import Lorentz.Contracts.Upgradeable.EntryPointWise
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: Text) #-}
 
 version :: Natural
 version = 1
 
-data UStoreTemplate = UStoreTemplate
-  { counterValue :: UStoreField Natural
-  , code :: MText |~> EntryPointImpl UStoreTemplate
-  , fallback :: UStoreField $ EpwFallback UStoreTemplate
-  } deriving stock (Eq, Generic)
+data UStoreTemplate f = UStoreTemplate
+  { counterValue :: f -/ UStoreField Natural
+  , code :: f -/ MText |~> EntryPointImpl UStoreTemplate
+  , fallback :: f -/ UStoreField $ EpwFallback UStoreTemplate
+  } deriving stock Generic
+
+deriving stock instance Eq (UStoreTemplate Identity)
 
 type UStoreV1 = UStore UStoreTemplate
 

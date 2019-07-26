@@ -28,12 +28,14 @@ type Interface =
 
 type TransferParams = (Address, Natural)
 
-data UStoreTempate = UStoreTempate
-  { ledger      :: Address |~> Natural
-  , totalSupply :: UStoreField Natural
-  } deriving stock (Eq, Generic)
+data UStoreTemplate f = UStoreTemplate
+  { ledger      :: f -/ Address |~> Natural
+  , totalSupply :: f -/ UStoreField Natural
+  } deriving stock (Generic)
 
-type UStoreV1 = UStore UStoreTempate
+deriving stock instance Eq (UStoreTemplate Identity)
+
+type UStoreV1 = UStore UStoreTemplate
 
 -- | Like in UpgradeableCounter, this function  populates the empty UStore_
 --   with entries and initial values for each field. The result is expected

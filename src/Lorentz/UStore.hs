@@ -50,18 +50,17 @@ module Lorentz.UStore
   , HasUField
   , HasUStoreForAllIn
 
-    -- * UStore composability
-  , liftUStore
-  , unliftUStore
-
     -- * UStore management from Haskell
   , UStoreConversible
   , mkUStore
   , ustoreDecompose
   , ustoreDecomposeFull
+
+    -- * Re-exports
+  , type (-/)
   ) where
 
 import Lorentz.UStore.Types
 import Lorentz.UStore.Instr
 import Lorentz.UStore.Haskell
-import Lorentz.UStore.Lift
+import Util.Columnar
