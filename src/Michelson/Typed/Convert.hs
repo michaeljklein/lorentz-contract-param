@@ -2,6 +2,7 @@
 
 module Michelson.Typed.Convert
   ( convertContract
+  , convertContractWithNotes
   , instrToOps
   , untypeValue
   ) where
@@ -19,6 +20,7 @@ import Michelson.Typed.Scope
 import Michelson.Typed.Sing (Sing(..), fromSingCT, fromSingT)
 import Michelson.Typed.T (CT(..), T(..))
 import Michelson.Typed.Value
+import Michelson.Typed.Annotation (notesCase, Notes'(..), Notes(..))
 import qualified Michelson.Untyped as U
 import Tezos.Address (mformatAddress)
 import Tezos.Core (unMutez)
@@ -34,6 +36,29 @@ convertContract contract =
     , stor = toUType $ fromSingT (sing @store)
     , code = instrToOps contract
     }
+
+addNote :: U.Type -> Notes a -> U.Type
+addNote (U.Type r n) notes = U.Type (notesCase r (fillNote' r) notes) n
+  where
+  fillNote' :: U.T -> Notes' a -> U.T
+  fillNote' (U.TPair _ _ t1 t2) (NTPair _ f1 f2 n1 n2) =
+    U.TPair f1 f2 (addNote t1 n1) (addNote t2 n2)
+  fillNote' (U.TOr _ _ t1 t2) (NTOr _ f1 f2 n1 n2) =
+    U.TOr f1 f2 (addNote t1 n1) (addNote t2 n2)
+  fillNote' (U.TOption _ t1) (NTOption _ f1 n1) =
+    U.TOption f1 (addNote t1 n1)
+  fillNote' t _ = t
+addNote t _ = t
+
+convertContractWithNotes
+  :: forall param store . (SingI param, SingI store)
+  => (Contract param store, Notes (ContractInp1 param store)) -> U.Contract
+convertContractWithNotes (contract, notes)
+ | N (NTPair _ _ _ n1 n2) <- notes =
+    let c = convertContract contract
+    in c { U.para = addNote (U.para c) n1
+         , U.stor = addNote (U.stor c) n2 }
+ | otherwise = error "Unexpected annotation"
 
 -- | Convert a typed 'Val' to an untyped 'Value'.
 --

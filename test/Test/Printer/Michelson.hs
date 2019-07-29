@@ -2,15 +2,19 @@ module Test.Printer.Michelson
   ( unit_Roundtrip
   , unit_let_macro
   , unit_PrettyPrint
+  , unit_PrintTypedNotes
   ) where
 
 import Data.Text.Lazy (strip)
+import qualified Data.Map.Lazy as Map
 import Fmt (pretty)
 import Generics.SYB (everywhere, mkT)
 import Test.HUnit (Assertion, assertEqual, assertFailure, (@?=))
 
-import Michelson.Printer (printUntypedContract)
+import Michelson.Printer (printUntypedContract, printSomeContract)
 import Michelson.Runtime (parseExpandContract)
+import Michelson.TypeCheck.Instr (typeCheckContract)
+
 import Michelson.Test (importUntypedContract)
 import qualified Michelson.Untyped as U
 import Michelson.Untyped.Instr (ExpandedOp(..))
@@ -18,9 +22,26 @@ import Util.IO (readFileUtf8)
 
 import Test.Util.Contracts
 
+unit_PrintTypedNotes :: Assertion
+unit_PrintTypedNotes = do
+  contracts <- getContractsWithReferences ".tz" "contracts/notes-in-typed-contracts" "ref"
+  mapM_ noteTest contracts
+  where
+    noteTest :: (FilePath, FilePath) -> Assertion
+    noteTest (srcPath, dstPath) = do
+      contract <- importUntypedContract srcPath
+      case typeCheckContract Map.empty contract of
+        Left err -> assertFailure ("Failed to typecheck contract " <> srcPath <> ": " <> pretty err)
+        Right checkedContract -> do
+          targetSrc <- strip . fromStrict <$> readFileUtf8 dstPath
+          assertEqual
+            ("Prettifying " <> srcPath <> " does not match the expected format")
+            (printSomeContract False checkedContract)
+            targetSrc
+
 unit_PrettyPrint :: Assertion
 unit_PrettyPrint = do
-  contracts <- getPrettyPrintContracts
+  contracts <- getContractsWithReferences ".tz" "contracts/pretty" "pretty"
   mapM_ prettyTest contracts
   where
     prettyTest :: (FilePath, FilePath) -> Assertion
