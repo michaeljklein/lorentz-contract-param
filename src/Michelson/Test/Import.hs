@@ -23,7 +23,7 @@ module Michelson.Test.Import
 
 import Control.Exception (IOException)
 import Data.Singletons (SingI, demote)
-import Data.Typeable ((:~:)(..), eqT)
+import Data.Typeable ((:~:)(..))
 import Fmt (Buildable(build), pretty, (+|), (|+))
 import Test.Hspec (Spec, describe, expectationFailure, it, runIO)
 import Test.Tasty (TestTree)
@@ -32,8 +32,8 @@ import Test.Tasty.HUnit (assertFailure, testCase)
 import qualified Lorentz as L
 import Michelson.Parser.Error (ParserException(..))
 import Michelson.Runtime (parseExpandContract, prepareContract)
-import Michelson.TypeCheck (SomeContract(..), TCError, typeCheckContract)
-import Michelson.Typed (Contract, ToT, toUType)
+import Michelson.TypeCheck (eqType, SomeContract(..), TCError, typeCheckContract)
+import Michelson.Typed (T, Contract, ToT, toUType)
 import qualified Michelson.Untyped as U
 import Util.IO
 
@@ -139,7 +139,7 @@ saferImport doImport file =
 ----------------------------------------------------------------------------
 
 readContract
-  :: forall cp st .
+  :: forall (cp :: T) (st :: T) .
     Each [Typeable, SingI] [cp, st]
   => FilePath
   -> Text
@@ -148,11 +148,11 @@ readContract filePath txt = do
   contract <- first ICEParse $ parseExpandContract (Just filePath) txt
   SomeContract (instr :: Contract cp' st') _ _
     <- first ICETypeCheck $ typeCheckContract mempty contract
-  case (eqT @cp @cp', eqT @st @st') of
-    (Just Refl, Just Refl) -> pure (contract, instr)
-    (Nothing, _) -> Left $
-      ICEUnexpectedParamType (U.para contract) (toUType $ demote @cp)
-    _ -> Left (ICEUnexpectedStorageType (U.stor contract) (toUType $ demote @st))
+  case (eqType @cp @cp') of
+    Right Refl -> case (eqType @st @st') of
+      Right Refl -> pure (contract, instr)
+      Left _ -> Left (ICEUnexpectedStorageType (U.stor contract) (toUType $ demote @st))
+    Left _ -> Left (ICEUnexpectedParamType (U.para contract) (toUType $ demote @cp))
 
 -- | Import contract from a given file path.
 --

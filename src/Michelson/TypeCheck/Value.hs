@@ -195,6 +195,7 @@ typeCheckValImpl tcDo v (t@(STLambda (it :: Sing it) (ot :: Sing ot)), ann) = do
                   "wrong output type of lambda's value:" (Just m)
     AnyOutInstr lam ->
       pure $ VLam lam :::: (lamS, lamN NStar)
+typeCheckValImpl tcDo v (STAnnotated it _, N (NTAnnotated n)) = typeCheckValImpl tcDo v (it, n)  
 
 typeCheckValImpl _ v (t, _) = tcFailedOnValue v (fromSingT t) "unknown value" Nothing
 

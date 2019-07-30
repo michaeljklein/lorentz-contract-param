@@ -19,13 +19,16 @@ import Fmt (Buildable(..), (+|), (|+))
 
 import Michelson.Typed.Annotation (Notes(..), Notes'(..), mkNotes)
 import Michelson.Typed.Sing (Sing(..), fromSingCT, fromSingT)
-import Michelson.Typed.T (T(..))
+import Michelson.Typed.T (TFieldAnn(..), T(..))
 import qualified Michelson.Untyped as Un
 
 -- | Extracts 'T' type from 'Michelson.Untyped.Type'.
 fromUType :: HasCallStack => Un.Type -> T
 fromUType (Un.Type wholeT _) = conv wholeT
   where
+    mkNoted :: Un.Annotation a -> Un.Type -> T
+    mkNoted (Un.Annotation n) t =
+      if n == "" then fromUType t else TFAnnotated (TFieldAnn n) (fromUType t)
     conv (Un.Tc ct) = Tc ct
     conv Un.TKey = TKey
     conv Un.TUnit = TUnit
@@ -36,7 +39,7 @@ fromUType (Un.Type wholeT _) = conv wholeT
     conv Un.TOperation = TOperation
     conv (Un.TContract t) = TContract (fromUType t)
     conv (Un.TPair _ _ lT rT) = TPair (fromUType lT) (fromUType rT)
-    conv (Un.TOr _ _ lT rT) = TOr (fromUType lT) (fromUType rT)
+    conv (Un.TOr n1 n2 lT rT) = TOr (mkNoted n1 lT) (mkNoted n2 rT)
     conv (Un.TLambda lT rT) = TLambda (fromUType lT) (fromUType rT)
     conv (Un.TMap (Un.Comparable key _) val) = TMap key (fromUType val)
     conv (Un.TBigMap (Un.Comparable key _) val) = TBigMap key (fromUType val)
@@ -86,6 +89,10 @@ mkUType sing notes = case (sing, notes) of
     mt (Un.TBigMap (mkComp k nk) (mkUType v nv)) tn
   (STBigMap k v, NStar) ->
     mt (Un.TBigMap (mkComp k na) (mkUType v NStar)) na
+  (STAnnotated k _, N (NTAnnotated tn)) ->
+    mkUType k tn
+  (STAnnotated k _, NStar) ->
+    mkUType k NStar
  where
   mkComp t a = Un.Comparable (fromSingCT t) a
   mt = Un.Type
@@ -114,6 +121,7 @@ extractNotes Un.TypeStorage _ = Left TStorageConvergeError
 extractNotes (Un.Type wholeT tn) s = conv wholeT s
   where
     conv :: Un.T -> Sing t -> Either TypeConvergeError (Notes t)
+    conv t (STAnnotated s' _) = (mkNotes . NTAnnotated) <$> conv t s'
     conv (Un.Tc ct) (STc cst)
       | fromSingCT cst == ct = pure $ mkNotes $ NTc tn
     conv Un.TKey STKey = pure $ mkNotes $ NTKey tn
@@ -152,23 +160,35 @@ extractNotes (Un.Type wholeT tn) s = conv wholeT s
 toUType :: T -> Un.Type
 toUType t = Un.Type (convert t) Un.noAnn
   where
+    fromAnnotated :: T -> (Un.FieldAnn, Un.Type)
+    fromAnnotated (TFAnnotated (TFieldAnn n) t') = (Un.ann n, toUType t')
+    fromAnnotated t' = (Un.noAnn, toUType t')
     convert :: T -> Un.T
     convert (Tc a) = Un.Tc a
     convert (TKey) = Un.TKey
     convert (TUnit) = Un.TUnit
     convert (TSignature) = Un.TSignature
-    convert (TOption a) = Un.TOption Un.noAnn (toUType a)
+    convert (TOption a) = let
+      (n1, t1) = fromAnnotated a
+      in Un.TOption n1 t1
     convert (TList a) = Un.TList (toUType a)
     convert (TSet a) = Un.TSet $ Un.Comparable a Un.noAnn
     convert (TOperation) = Un.TOperation
     convert (TContract a) = Un.TContract (toUType a)
     convert (TPair a b) =
-      Un.TPair Un.noAnn Un.noAnn (toUType a) (toUType b)
-    convert (TOr a b) =
-      Un.TOr Un.noAnn Un.noAnn (toUType a) (toUType b)
+      let
+        (n1, t1) = fromAnnotated a
+        (n2, t2) = fromAnnotated b
+      in Un.TPair n1 n2 t1 t2
+    convert (TOr a b) = 
+      let
+        (n1, t1) = fromAnnotated a
+        (n2, t2) = fromAnnotated b
+      in Un.TOr n1 n2 t1 t2
     convert (TLambda a b) =
       Un.TLambda (toUType a) (toUType b)
     convert (TMap a b) =
       Un.TMap (Un.Comparable a Un.noAnn) (toUType b)
     convert (TBigMap a b) =
       Un.TBigMap (Un.Comparable a Un.noAnn) (toUType b)
+    convert (TFAnnotated _ t') = convert t'

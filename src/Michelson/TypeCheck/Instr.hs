@@ -41,6 +41,7 @@ import Data.Default (def)
 import Data.Generics (everything, mkQ)
 import Data.Singletons (SingI(sing), demote)
 import Data.Typeable ((:~:)(..), gcast)
+import GHC.TypeLits
 
 import Michelson.ErrorPos
 import Michelson.TypeCheck.Error
@@ -51,7 +52,7 @@ import Michelson.TypeCheck.Types
 import Michelson.TypeCheck.Value
 
 import Michelson.Typed
-  (Abs, And, CT(..), Contract, ContractOut1, Eq', Ge, Gt, Instr(..), IterOp(..), Le, Lsl, Lsr, Lt,
+  (TFieldAnn(..), Abs, And, CT(..), Contract, ContractOut1, Eq', Ge, Gt, Instr(..), IterOp(..), Le, Lsl, Lsr, Lt,
   MapOp(..), Neg, Neq, Not, Notes(..), Notes'(..), Or, Sing(..), SomeValue, SomeValue'(..), T(..),
   Value, Value'(..), Xor, bigMapAbsense, bigMapConstrained, converge, convergeAnns, extractNotes,
   fromUType, mkNotes, notesCase, opAbsense, orAnn, withSomeSingCT, withSomeSingT)
@@ -672,7 +673,28 @@ typeCheckInstr (U.SENDER vn) i =
 typeCheckInstr (U.ADDRESS vn) i@((STContract _, _, _) ::& rs) =
   pure $ i :/ ADDRESS ::: ((STc SCAddress, NStar, vn) ::& rs)
 
+typeCheckInstr u ((STAnnotated a1 p, (N (NTAnnotated a2)), a3) ::& rs) = do
+  r <- typeCheckInstr u ((a1, a2, a3) ::& rs)
+  case r of
+    ((h ::& hs) :/ (i ::: ho) ) -> pure $ ((wrapInNote h p) ::& hs) :/ ((AnnInstr i p) ::: ho)
+    ((h ::& hs) :/ (AnyOutInstr i) ) -> pure $ ((wrapInNote h p) ::& hs) :/ (AnyOutInstr (AnnInstr i p))
+
+typeCheckInstr u (h ::& (STAnnotated a1 p, (N (NTAnnotated a2)), a3) ::& rs) = do
+  r <- typeCheckInstr u (h ::& (a1, a2, a3) ::& rs)
+  case r of
+    ((h1 ::& h2 ::& hs) :/ (Seq i1 i2 ::: ho) ) -> pure $ (h1 ::& (wrapInNote h2 p) ::& hs) :/ ((Seq (AnnInstr2 i1 p) i2) ::: ho)
+    ((h1 ::& h2 ::& hs) :/ (i1 ::: ho) ) -> pure $ (h1 ::& (wrapInNote h2 p) ::& hs) :/ (((AnnInstr2 i1 p) ) ::: ho)
+    ((h1 ::& h2 ::& hs) :/ (AnyOutInstr i) ) -> pure $ (h1 ::& (wrapInNote h2 p) ::& hs) :/ (AnyOutInstr (AnnInstr2 i p))
+
 typeCheckInstr instr sit = typeCheckInstrErr instr (SomeHST sit) "unknown expression"
+
+wrapInNote :: (SingI a, Typeable a, KnownSymbol b)
+   => (Sing a, Notes a, VarAnn)
+   -> Proxy b
+   -> ( Sing ('TFAnnotated ('TFieldAnnS b) a)
+      , Notes ('TFAnnotated ('TFieldAnnS n) a), VarAnn) 
+wrapInNote (s, n, vn) p = (STAnnotated s p, N (NTAnnotated n), vn)
+
 
 -- | Helper function for two-branch if where each branch is given a single
 -- value.

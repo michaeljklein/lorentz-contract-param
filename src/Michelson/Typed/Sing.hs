@@ -14,12 +14,16 @@ module Michelson.Typed.Sing
   , withSomeSingCT
   , fromSingT
   , fromSingCT
+  , GetDict(..)
   ) where
 
 import Data.Kind (Type)
 import Data.Singletons (Sing(..), SingI(..), SingKind(..), SomeSing(..))
+import Data.Constraint
+import GHC.TypeLits
+import Util.TypeLits
 
-import Michelson.Typed.T (CT(..), T(..))
+import Michelson.Typed.T (EraseNotes, TFieldAnn(..), CT(..), T(..))
 
 -- | Instance of data family 'Sing' for 'CT'.
 data instance Sing :: CT -> Type where
@@ -57,6 +61,42 @@ data instance Sing :: T -> Type where
                 => Sing a -> Sing b -> Sing ('TMap a b)
   STBigMap    :: (SingI a, SingI b, Typeable a, Typeable b)
                 => Sing a -> Sing b -> Sing ('TBigMap a b)
+  STAnnotated :: (SingI a, Typeable a, KnownSymbol n)
+                => Sing a -> Proxy n -> Sing ('TFAnnotated ('TFieldAnnS n) a)
+
+-- | This classes fetchs the typeclass dictionary
+-- for `Typeable (En a)`.
+class GetDict (a :: T) where
+  getDict :: Proxy a -> Dict (Typeable (EraseNotes a))
+
+instance (SingI a, Typeable a) => GetDict (a :: T) where
+  getDict _ = case sing @a of
+    STAnnotated (_ :: Sing p) _ -> getDict (Proxy @p)
+    STc _ -> Dict
+    STKey -> Dict
+    STUnit -> Dict
+    STSignature -> Dict
+    STOption (_ :: Sing p) -> case getDict (Proxy @p) of
+      Dict -> Dict
+    STList (_ :: Sing p) -> case getDict (Proxy @p) of
+      Dict -> Dict
+    STSet _ -> Dict
+    STOperation -> Dict
+    STContract (_ :: Sing p) -> case getDict (Proxy @p) of
+      Dict -> Dict
+    STPair (_ :: Sing p) (_ :: Sing q) -> case getDict (Proxy @p) of
+      Dict -> case getDict (Proxy @q) of
+        Dict -> Dict
+    STOr (_ :: Sing p) (_ :: Sing q) -> case getDict (Proxy @p) of
+      Dict -> case getDict (Proxy @q) of
+        Dict -> Dict
+    STLambda (_ :: Sing p) (_ :: Sing q) -> case getDict (Proxy @p) of
+      Dict -> case getDict (Proxy @q) of
+        Dict -> Dict
+    STMap _ (_ :: Sing p) -> case getDict (Proxy @p) of
+      Dict -> Dict
+    STBigMap _ (_ :: Sing p) -> case getDict (Proxy @p) of
+      Dict -> Dict
 
 ---------------------------------------------
 -- Singleton-related instances for CT
@@ -162,6 +202,7 @@ fromSingT (STOr a b) = TOr (fromSingT a) (fromSingT b)
 fromSingT (STLambda a b) = TLambda (fromSingT a) (fromSingT b)
 fromSingT (STMap a b) = TMap (fromSingCT a) (fromSingT b)
 fromSingT (STBigMap a b) = TBigMap (fromSingCT a) (fromSingT b)
+fromSingT (STAnnotated b p) = TFAnnotated (TFieldAnn $ symbolValT p) (fromSingT b)
 
 -- | Version of 'toSing' which creates 'SomeSingT'.
 toSingT :: T -> SomeSingT
@@ -195,6 +236,12 @@ toSingT (TBigMap l r) =
   withSomeSingCT l $ \lSing ->
   withSomeSingT r $ \rSing ->
     SomeSingT $ STBigMap lSing rSing
+toSingT (TFAnnotated (TFieldAnn n) t) =
+  withSomeSingT t $ \tSing ->
+    case someSymbolVal (toString n) of
+      SomeSymbol p ->
+        SomeSingT $ STAnnotated tSing p
+toSingT (TFAnnotated (TFieldAnnS _) _) = error "Impossible!"
 
 instance SingKind T where
   type Demote T = T
@@ -235,3 +282,6 @@ instance (SingI a, Typeable a, Typeable b, SingI b) =>
 instance (SingI a, Typeable a, Typeable b, SingI b) =>
           SingI ( 'TBigMap a b) where
   sing = STBigMap sing sing
+instance (SingI a, Typeable a, KnownSymbol n) =>
+          SingI ( 'TFAnnotated ('TFieldAnnS n) (a :: T)) where
+  sing = STAnnotated sing (Proxy :: Proxy n)

@@ -153,6 +153,7 @@ data Value' instr t where
     => instr (inp ': '[]) (out ': '[]) -> Value' instr ('TLambda inp out)
   VMap :: forall k v instr. Map (CValue k) (Value' instr v) -> Value' instr ('TMap k v)
   VBigMap :: forall k v instr. Map (CValue k) (Value' instr v) -> Value' instr ('TBigMap k v)
+  VAnnotated :: forall instr t x . (SingI t) => Value' instr t -> Value' instr ('TFAnnotated x t)
 
 deriving instance Show (Value' instr t)
 deriving instance Eq (Value' instr t)

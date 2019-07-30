@@ -247,6 +247,7 @@ decodeValue env = Get.label "Value" $
       T.VLam <$> decodeTypeCheckLam env uinstr
     STMap _ _ -> do
       T.VMap <$> decodeMap env
+    STAnnotated _ _ -> decodeValue env
 
 decodeCValue :: forall ct. SingI ct => Get (T.CValue ct)
 decodeCValue = case sing @ct of

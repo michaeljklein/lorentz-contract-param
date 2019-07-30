@@ -45,6 +45,8 @@ untypeValue ::
   => Value' Instr t
   -> U.Value
 untypeValue val = case (val, sing @t) of
+  (VAnnotated v, _) ->
+    untypeValue v
   (VC cVal, _) ->
     untypeCValue cVal
   (VKey b, _) ->
@@ -230,6 +232,8 @@ instrToOps instr = case instr of
     handleInstr SOURCE = [U.SOURCE U.noAnn]
     handleInstr SENDER = [U.SENDER U.noAnn]
     handleInstr ADDRESS = [U.ADDRESS U.noAnn]
+    handleInstr (AnnInstr x _) = handleInstr x
+    handleInstr (AnnInstr2 x _) = handleInstr x
 
 untypeStackRef :: StackRef s -> U.StackRef
 untypeStackRef (StackRef n) = U.StackRef (peanoVal n)

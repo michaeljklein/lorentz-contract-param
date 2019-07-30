@@ -49,6 +49,7 @@ type family ContainsOp (t :: T) :: Bool where
   ContainsOp ('TLambda _ _) = 'False
   ContainsOp ('TMap _ v) = ContainsOp v
   ContainsOp ('TBigMap _ v) = ContainsOp v
+  ContainsOp ('TFAnnotated _ v) = ContainsOp v
 
 -- | Whether this type contains 'TBigMap' type.
 --
@@ -70,6 +71,7 @@ type family ContainsBigMap (t :: T) :: Bool where
   ContainsBigMap ('TLambda _ _) = 'False
   ContainsBigMap ('TMap _ v) = ContainsBigMap v
   ContainsBigMap ('TBigMap _ _) = 'True
+  ContainsBigMap ('TFAnnotated _ t) = ContainsBigMap t
 
 -- | Constraint which ensures that operation type does not appear in a given type.
 --
@@ -204,6 +206,9 @@ checkOpPresence = \case
   STBigMap _ v -> case checkOpPresence v of
     OpPresent -> OpPresent
     OpAbsent -> OpAbsent
+  STAnnotated v _ -> case checkOpPresence v of
+    OpPresent -> OpPresent
+    OpAbsent -> OpAbsent
 
 -- | Check at runtime whether the given type contains 'TBigMap'.
 checkBigMapPresence :: Sing (ty :: T) -> BigMapPresence ty
@@ -238,6 +243,9 @@ checkBigMapPresence = \case
     BigMapAbsent -> BigMapAbsent
   STBigMap _ _ ->
     BigMapPresent
+  STAnnotated v _ -> case checkBigMapPresence v of
+    BigMapPresent -> BigMapPresent
+    BigMapAbsent -> BigMapAbsent
 
 -- | Check at runtime that the given type does not contain 'TOperation'.
 opAbsense :: Sing (t :: T) -> Maybe (Dict $ HasNoOp t)
@@ -296,6 +304,10 @@ bigMapConstrained = \case
     case (bigMapAbsense a, bigMapAbsense b, bigMapAbsense c) of
       (Just Dict, Just Dict, Just Dict) -> Just Dict
       _ -> Nothing
+  STPair (STAnnotated a _) c ->
+    case (bigMapAbsense a, bigMapAbsense c) of
+      (Just Dict, Just Dict) -> Just Dict
+      _ -> Nothing
   STPair (STOr a b) c ->
     case (bigMapAbsense a, bigMapAbsense b, bigMapAbsense c) of
       (Just Dict, Just Dict, Just Dict) -> Just Dict
@@ -330,3 +342,6 @@ bigMapConstrained = \case
     Just Dict -> Just Dict
     Nothing -> Nothing
   STBigMap _ _ -> Nothing
+  STAnnotated t _ -> case bigMapAbsense t of
+    Just Dict -> Just Dict
+    Nothing -> Nothing

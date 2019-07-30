@@ -501,6 +501,8 @@ runInstrImpl _ SENDER r = do
   ContractEnv{..} <- ask
   pure $ VC (CvAddress ceSender) :& r
 runInstrImpl _ ADDRESS (VContract a :& r) = pure $ VC (CvAddress a) :& r
+runInstrImpl runner (AnnInstr i _) ((VAnnotated r) :& p :& q) = runInstrImpl runner i (r :& p :& q)
+runInstrImpl runner (AnnInstr2 i _) (r :& (VAnnotated p) :& q) = runInstrImpl runner i (r :& p :& q)
 
 -- | Evaluates an arithmetic operation and either fails or proceeds.
 runArithOp

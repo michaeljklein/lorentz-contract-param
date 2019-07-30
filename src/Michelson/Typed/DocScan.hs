@@ -140,6 +140,8 @@ buildInstrDoc = \case
   SOURCE -> mempty
   SENDER -> mempty
   ADDRESS -> mempty
+  AnnInstr a _ -> buildInstrDoc a
+  AnnInstr2 a _ -> buildInstrDoc a
 
 -- | Modify all documentation items recursively.
 modifyInstrAllDoc
@@ -240,6 +242,8 @@ modifyInstrAllDoc mapper = go
     i@SOURCE -> i
     i@SENDER -> i
     i@ADDRESS -> i
+    i@(AnnInstr _ _) -> i
+    i@(AnnInstr2 _ _) -> i
 
 -- | Recursevly traverse an instruction and modify documentation items
 -- matching given type.

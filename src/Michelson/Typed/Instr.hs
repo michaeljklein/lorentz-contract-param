@@ -21,7 +21,7 @@ import Michelson.Typed.Arith
 import Michelson.Typed.Doc
 import Michelson.Typed.Polymorphic
 import Michelson.Typed.Scope
-import Michelson.Typed.T (CT(..), T(..))
+import Michelson.Typed.T (TFieldAnn(..), CT(..), T(..))
 import Michelson.Typed.Value (ContractInp, ContractOut, Value'(..))
 import Util.Peano
 
@@ -42,6 +42,8 @@ import Util.Peano
 -- Type parameter @out@ states for output stack type or type
 -- of stack that will be left after instruction's execution.
 data Instr (inp :: [T]) (out :: [T]) where
+  AnnInstr :: Instr (a ': xs) b -> Proxy c -> Instr (('TFAnnotated ('TFieldAnnS c) a):xs) b
+  AnnInstr2 :: Instr (x ': a ': xs) b -> Proxy c -> Instr (x:('TFAnnotated ('TFieldAnnS c) a):xs) b
   Seq :: Instr a b -> Instr b c -> Instr a c
   -- | Nop operation. Missing in Michelson spec, added to parse construction
   -- like  `IF {} { SWAP; DROP; }`.

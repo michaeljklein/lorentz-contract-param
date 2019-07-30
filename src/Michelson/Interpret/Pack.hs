@@ -32,6 +32,7 @@ packValue' = LBS.toStrict . packValue
 
 encodeValue :: forall t. (SingI t, HasNoOp t, HasNoBigMap t) => Value t -> LByteString
 encodeValue val = case (val, sing @t) of
+  (VAnnotated cval, _) -> encodeValue cval
   (VC cval, _) -> encodeCValue cval
   (VKey s, _) ->
     encodeBytes "\x00" "" $
@@ -316,6 +317,8 @@ encodeInstr = \case
    "\x03\x48"
   ADDRESS ->
    "\x03\x54"
+  AnnInstr x _ -> encodeInstrs x
+  AnnInstr2 x _ -> encodeInstrs x
 
 encodeT :: T -> LByteString
 encodeT = \case
@@ -333,6 +336,7 @@ encodeT = \case
   TLambda a r -> "\x07\x5e" <> encodeT a <> encodeT r
   TMap k v -> "\x07\x60" <> encodeCT k <> encodeT v
   TBigMap k v -> "\x07\x61" <> encodeCT k <> encodeT v
+  TFAnnotated _ t -> encodeT t
 
 encodeT' :: forall (t :: T). SingI t => LByteString
 encodeT' = encodeT (fromSingT $ sing @t)

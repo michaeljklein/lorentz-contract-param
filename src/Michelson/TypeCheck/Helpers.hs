@@ -45,16 +45,19 @@ import Control.Monad.Except (MonadError, liftEither, throwError)
 import Data.Default (def)
 import Data.Singletons (SingI(sing), demote)
 import qualified Data.Text as T
-import Data.Typeable ((:~:)(..), eqT)
+import Data.Typeable ((:~:)(..), typeOf, eqT)
 import Fmt ((+||), (||+))
+import Unsafe.Coerce (unsafeCoerce)
+import Data.Constraint
 
 import Michelson.ErrorPos (InstrCallStack)
 import Michelson.TypeCheck.Error (TCError(..), TCTypeError(..))
 import Michelson.TypeCheck.TypeCheck
 import Michelson.TypeCheck.Types
 import Michelson.Typed
-  (CT(..), Instr(..), Notes(..), Notes'(..), Sing(..), T(..), converge, extractNotes, fromSingT,
-  fromUType, mkNotes, notesCase, orAnn, withSomeSingT)
+  ( EraseNotes, GetDict(..), CT(..), Instr(..), Notes(..), Notes'(..)
+  , Sing(..), T(..), converge, extractNotes, fromSingT, fromUType
+  , mkNotes, notesCase, orAnn, withSomeSingT)
 import Michelson.Typed.Annotation (AnnConvergeError)
 import Michelson.Typed.Arith (Add, ArithOp(..), Compare, Mul, Sub, UnaryArithOp(..))
 import Michelson.Typed.Extract (TypeConvergeError)
@@ -209,12 +212,42 @@ checkEqT instr i m = do
   liftEither $ eqType @a @b `onLeft` (TCFailedOnInstr instr (SomeHST i) (m <> ": ") pos . Just)
 
 -- | Function @eqType@ is a simple wrapper around @Data.Typeable.eqT@ suited
--- for use within @Either TCTypeError a@ applicative.
+-- for use within @Either TCTypeError a@ applicative. This erases the annotation
+-- from the typed types, before comparing and thus does not take
+-- field annotations into account. 
 eqType
   :: forall (a :: T) (b :: T).
       (Each [Typeable, SingI] [a, b])
   => Either TCTypeError (a :~: b)
-eqType = maybe (Left $ TypeEqError (demote @a) (demote @b)) pure eqT
+eqType = 
+  -- The `GetDict` typeclass is a used to save from adding
+  -- (Typeable (En a), Typeable (En b)) constraint to, basically everywhere.
+  case getDict (Proxy @a) of
+    Dict -> case getDict (Proxy @b) of
+      Dict -> 
+        --  The `eqT` function call below returns a type eqivalence for
+        -- `En a` and `En b`, that is, after erasing the annotation
+        -- information. We use `unsafecoerce` here to convert that as an
+        -- equivalnce of the the original types with annotations,
+        -- `a` and `b` and pass it on to the calling code.
+        --
+        -- This makes annotations invisible to type checker logic that
+        -- uses `eqTypes` to do the type comparison.
+        --
+        -- Regarding the use of `unsafeCoerce`, since this function can only be
+        -- called on types of kind `T`, and for the purpose of comparing types,
+        -- we want to disregard annotations completely, and the the way in
+        -- which the `En` type function is defined, this use of unsafeCoerce is
+        -- considered to be as safe. done as part ot TM-64, @sras
+
+        maybe (Left $ TypeEqError (demote @a) (demote @b)) pure (unsafeCoerce (eqT @(EraseNotes a) @(EraseNotes b)))
+        --let
+        --  x = traceShow ("Called on", typeOf (Proxy @a), typeOf (Proxy @b), typeOf (Proxy @(EraseNotes a)), typeOf (Proxy @(EraseNotes b))) $
+        --        maybe (Left $ TypeEqError (demote @a) (demote @b)) pure (unsafeCoerce (eqT @(EraseNotes a) @(EraseNotes b)))
+        --in case x of
+        --    Right _ -> traceShow "SAME!" x
+        --    Left _ -> traceShow "DIFFERENT!" x
+
 
 checkEqHST
   :: forall (a :: [T]) (b :: [T]) ts m .

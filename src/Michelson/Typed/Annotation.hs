@@ -31,7 +31,7 @@ import qualified Data.Kind as Kind
 import Fmt (Buildable(..), (+|), (|+))
 
 import Michelson.EqParam
-import Michelson.Typed.T (T(..))
+import Michelson.Typed.T (TFieldAnn(..), T(..))
 import Michelson.Untyped.Annotation (Annotation, FieldAnn, TypeAnn, unifyAnn)
 
 -- | Data type, holding annotation data for a given Michelson type @t@
@@ -90,6 +90,7 @@ data Notes' t where
   NTLambda    :: TypeAnn -> Notes p -> Notes q -> Notes' ('TLambda p q)
   NTMap       :: TypeAnn -> TypeAnn -> Notes v -> Notes' ('TMap k v)
   NTBigMap   :: TypeAnn -> TypeAnn -> Notes v -> Notes' ('TBigMap k v)
+  NTAnnotated :: Notes a -> Notes' ('TFAnnotated ('TFieldAnnS s) a)
 
 deriving instance Show (Notes' t)
 deriving instance Eq (Notes' t)
@@ -161,6 +162,8 @@ converge' (NTMap a kN vN) (NTMap b kM vM) =
   NTMap <$> convergeAnns a b <*> convergeAnns kN kM <*> converge vN vM
 converge' (NTBigMap a kN vN) (NTBigMap b kM vM) =
   NTBigMap <$> convergeAnns a b <*> convergeAnns kN kM <*> converge vN vM
+converge' (NTAnnotated a ) (NTAnnotated b) =
+  NTAnnotated <$> (converge a b)
 
 -- | Same as 'converge'' but works with 'Notes' data type.
 converge :: Notes t -> Notes t -> Either AnnConvergeError (Notes t)
