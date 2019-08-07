@@ -286,15 +286,15 @@ typeCheckImpl tcInstr instrs t@(a :: HST a) =
       -> [Un.ExpandedOp]
       -> TypeCheckInstr (SomeInstr inp)
     typeCheckImplDo f wrap rs = do
-      hi :/ pi' <- f
+      _ :/ pi' <- f
       case pi' of
         p ::: b -> do
           _ :/ qi <- typeCheckImpl tcInstr rs b
           case qi of
             q ::: c ->
-              pure $ a :/ SeqWithNotes (getNotes hi) (wrap p) q ::: c
+              pure $ a :/ Seq (InstrWithNotes (getNotes b) (wrap p)) q ::: c
             AnyOutInstr q ->
-              pure $ a :/ AnyOutInstr (SeqWithNotes (getNotes hi) (wrap p) q)
+              pure $ a :/ AnyOutInstr (Seq (InstrWithNotes (getNotes b) (wrap p)) q)
 
         AnyOutInstr instr ->
           case rs of
@@ -303,7 +303,7 @@ typeCheckImpl tcInstr instrs t@(a :: HST a) =
             r : rr ->
               throwError $ TCUnreachableCode (extractInstrPos r) (r :| rr)
 
-    getNotes :: HST a -> PackedNotes (StackHead a)
+    getNotes :: HST c -> PackedNotes (StackHead c)
     getNotes SNil = PackedNotes { pnNotes = NStar, pnSing = Nothing }
     getNotes ((s, n, _) ::& _) = PackedNotes { pnNotes = n, pnSing = Just s }
 

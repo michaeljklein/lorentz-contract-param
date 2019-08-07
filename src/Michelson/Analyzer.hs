@@ -94,7 +94,7 @@ dfsInstr ::
 dfsInstr goToValues step i = step i <>
   case i of
     Seq i1 i2 -> recursion2 i1 i2
-    SeqWithNotes _ i1 i2 -> recursion2 i1 i2
+    InstrWithNotes _ i1 -> recursion1 i1
     Nested i1 -> recursion1 i1
     PUSH (VLam i1) | goToValues -> recursion1 i1
     LAMBDA (VLam i1) | goToValues -> recursion1 i1

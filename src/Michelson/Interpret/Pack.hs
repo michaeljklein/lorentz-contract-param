@@ -139,7 +139,7 @@ encodeInstrs = encodeList id . one . encodeInstr
 -- | Encode an instruction.
 encodeInstr :: forall inp out. Instr inp out -> LByteString
 encodeInstr = \case
-  SeqWithNotes _ a b -> encodeInstr a <> encodeInstr b
+  InstrWithNotes _ a -> encodeInstr a
   Seq a b ->
     encodeInstr a <> encodeInstr b
   Nop ->

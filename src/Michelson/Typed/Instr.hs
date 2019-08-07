@@ -61,7 +61,9 @@ instance Show (PackedNotes a) where
 -- of stack that will be left after instruction's execution.
 
 data Instr (inp :: [T]) (out :: [T]) where
-  SeqWithNotes :: PackedNotes (StackHead a) -> Instr a b -> Instr b c -> Instr a c
+  -- | A wrapper for instruction that also contain annotations for the
+  -- top type on the result stack.
+  InstrWithNotes :: PackedNotes (StackHead b) -> Instr a b -> Instr a b
   Seq :: Instr a b -> Instr b c -> Instr a c
   -- | Nop operation. Missing in Michelson spec, added to parse construction
   -- like  `IF {} { SWAP; DROP; }`.
