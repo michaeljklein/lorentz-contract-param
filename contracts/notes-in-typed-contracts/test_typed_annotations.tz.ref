@@ -1,0 +1,22 @@
+parameter (or (or (nat %add)
+                  (nat %sub))
+              (unit %default));
+storage int;
+code { AMOUNT;
+       PUSH mutez 0;
+       { { COMPARE;
+           EQ;
+           IF {  }
+              { UNIT;
+                FAILWITH } } };
+       { DUP;
+         CAR;
+         DIP { CDR } };
+       IF_LEFT { IF_LEFT { ADD }
+                         { SWAP;
+                           SUB } }
+               { DROP;
+                 DROP;
+                 PUSH int 0 };
+       NIL operation;
+       PAIR };

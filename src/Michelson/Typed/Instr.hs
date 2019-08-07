@@ -10,6 +10,8 @@ module Michelson.Typed.Instr
   , PrintComment (..)
   , TestAssert (..)
   , Contract
+  , StackHead
+  , PackedNotes(..)
   ) where
 
 import Data.Singletons (SingI(..))
@@ -24,6 +26,22 @@ import Michelson.Typed.Scope
 import Michelson.Typed.T (CT(..), T(..))
 import Michelson.Typed.Value (ContractInp, ContractOut, Value'(..))
 import Util.Peano
+
+-- | A type level function to obtain the type from the top of the stack.
+type family StackHead a where
+  StackHead (a:_) = a
+
+-- | A simple wrapper so as to pack the associated singleton.
+-- The show instance is just so that we can make it part of the `Instr`
+-- type.
+data PackedNotes a =
+  PackedNotes
+    { pnNotes :: Notes a
+    , pnSing :: Maybe (Sing a)
+    }
+
+instance Show (PackedNotes a) where
+  show (PackedNotes n _) = show n
 
 -- | Representation of Michelson instruction or sequence
 -- of instructions.
@@ -41,7 +59,9 @@ import Util.Peano
 --
 -- Type parameter @out@ states for output stack type or type
 -- of stack that will be left after instruction's execution.
+
 data Instr (inp :: [T]) (out :: [T]) where
+  SeqWithNotes :: PackedNotes (StackHead a) -> Instr a b -> Instr b c -> Instr a c
   Seq :: Instr a b -> Instr b c -> Instr a c
   -- | Nop operation. Missing in Michelson spec, added to parse construction
   -- like  `IF {} { SWAP; DROP; }`.

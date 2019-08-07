@@ -13,12 +13,13 @@ import Fmt (pretty)
 import Michelson.EqParam (eqParam1, eqParam2)
 import Michelson.Text
 import Michelson.Typed.CValue
-import Michelson.Typed.Extract (mkUType, toUType)
+import Michelson.Typed.Extract (mkUType, fromUType, toUType)
 import Michelson.Typed.Instr as Instr
 import Michelson.Typed.Scope
 import Michelson.Typed.Sing (Sing(..), fromSingCT, fromSingT)
 import Michelson.Typed.T (CT(..), T(..))
 import Michelson.Typed.Value
+import Michelson.Typed.Annotation (notesCase, Notes(..), Notes'(..))
 import qualified Michelson.Untyped as U
 import Tezos.Address (mformatAddress)
 import Tezos.Core (unMutez)
@@ -28,7 +29,7 @@ import Util.Peano
 convertContract
   :: forall param store . (SingI param, SingI store)
   => Contract param store -> U.Contract
-convertContract contract =
+convertContract contract = fillContractNotes contract $
   U.Contract
     { para = toUType $ fromSingT (sing @param)
     , stor = toUType $ fromSingT (sing @store)
@@ -105,9 +106,72 @@ untypeCValue cVal = case cVal of
   CvTimestamp t -> U.ValueString $ mkMTextUnsafe $ pretty t
   CvAddress a -> U.ValueString $ mformatAddress a
 
+-- | This function implements the logic that infers the annotations for
+-- an instruction, from annotations in the type at the top of the stack
+-- after it is executed. This has to be expanded with the instructions
+-- that accept annotations.
+copyInstrNotes :: [U.ExpandedOp] -> PackedNotes a -> [U.ExpandedOp]
+copyInstrNotes x _ = x
+
+-- | Given a typed annotation, and an untyped type, copy the annotations
+-- from the former to the latter.
+fillNotes :: forall a. Sing a -> Notes a -> U.Type -> U.Type
+fillNotes s n ut 
+  | (fromUType ut) == fromSingT s = notesCase ut (fillNotes' ut) n
+  | otherwise = error "Type mismatch"
+  where
+    fillNotes' :: U.Type -> Notes' a -> U.Type
+    fillNotes' ut'@(U.Type t _) nt = case (s, nt, t) of
+      (STc _, NTc ta, _) -> U.Type t ta
+      (STKey, NTKey ta, _) -> U.Type t ta
+      (STUnit, NTUnit ta, _) -> U.Type t ta
+      (STSignature, NTSignature ta, _) -> U.Type t ta
+      (STOption ws, NTOption ta f1 wn, U.TOption _ wt) ->
+        U.Type (U.TOption f1 (fillNotes ws wn wt)) ta
+      (STList ws, NTList ta wn, U.TList wt) ->
+        U.Type (U.TList (fillNotes ws wn wt)) ta
+      (STSet _, NTSet ta1 ta2, U.TSet ct) ->
+        U.Type (U.TSet (fillCtNotes ta2 ct)) ta1
+      (_, _, U.TOperation) -> ut'
+      (STContract ws, NTContract ta n', U.TContract t') ->
+        U.Type (U.TContract (fillNotes ws n' t')) ta
+      (STPair ws1 ws2, NTPair ta f1 f2 wn1 wn2, U.TPair _ _ t1 t2) ->
+        U.Type (U.TPair f1 f2 (fillNotes ws1 wn1 t1) (fillNotes ws2 wn2 t2)) ta
+      (STOr ws1 ws2, NTOr ta f1 f2 wn1 wn2, U.TOr _ _ t1 t2) ->
+        U.Type (U.TOr f1 f2 (fillNotes ws1 wn1 t1) (fillNotes ws2 wn2 t2)) ta
+      (STLambda ws1 ws2, NTLambda ta wn1 wn2, U.TLambda t1 t2) ->
+        U.Type (U.TLambda (fillNotes ws1 wn1 t1) (fillNotes ws2 wn2 t2)) ta
+      (STMap _ ws2, NTMap ta1 ta2 wn1, U.TMap ct t') ->
+        U.Type (U.TMap (fillCtNotes ta2 ct) (fillNotes ws2 wn1 t')) ta1
+      (STBigMap _ ws2, NTBigMap ta1 ta2 wn1, U.TBigMap ct t') ->
+        U.Type (U.TBigMap (fillCtNotes ta2 ct) (fillNotes ws2 wn1 t')) ta1
+      _ -> error "Type mismatch"
+    fillNotes' t _ = t
+    fillCtNotes :: U.TypeAnn -> U.Comparable -> U.Comparable
+    fillCtNotes ta (U.Comparable ct _) = U.Comparable ct ta
+
+-- Given a typed contract and an untyped contract
+fillContractNotes :: Contract param store -> U.Contract -> U.Contract
+fillContractNotes instr uc = case getTopNote instr of
+  Just (s, n) -> let
+    utin =
+      U.Type (U.TPair U.noAnn U.noAnn (U.para uc) (U.stor uc)) U.noAnn
+    in case fillNotes s n utin of
+      U.Type (U.TPair _ _ pt st) _ -> uc { U.para = pt, U.stor = st }
+      _ -> error "Unexpected result when adding annotations"
+  Nothing -> uc
+  where
+    getTopNote :: Instr inp out -> Maybe (Sing (StackHead inp), Notes (StackHead inp))
+    getTopNote (SeqWithNotes (PackedNotes n (Just s) ) _ _) = Just (s, n)
+    getTopNote _ = Nothing
+
 instrToOps :: Instr inp out -> [U.ExpandedOp]
 instrToOps instr = case instr of
   Seq i1 i2 -> instrToOps i1 <> instrToOps i2
+  SeqWithNotes _ i1 i2@(SeqWithNotes n _ _) -> let
+    u1 = instrToOps i1
+    in (copyInstrNotes u1 n) <> instrToOps i2
+  SeqWithNotes _ i1 i2 -> instrToOps i1 <> instrToOps i2
   Nested sq -> one $ U.SeqEx $ instrToOps sq
   DocGroup _ sq -> instrToOps sq
   i -> U.PrimEx <$> handleInstr i
@@ -115,6 +179,7 @@ instrToOps instr = case instr of
   -- to make it possible to report a precise location of a runtime error
   where
     handleInstr :: Instr inp out -> [U.ExpandedInstr]
+    handleInstr (SeqWithNotes {}) = error "impossible"
     handleInstr (Seq _ _) = error "impossible"
     handleInstr Nop = []
     handleInstr (Ext (nop :: ExtInstr inp)) = U.EXT <$> extInstrToOps nop

@@ -315,6 +315,7 @@ runInstr
   -> Rec (T.Value) inp
   -> EvalOp (Rec (T.Value) out)
 runInstr i@(Seq _i1 _i2) r = runInstrImpl runInstr i r
+runInstr i@(SeqWithNotes _ _i1 _i2) r = runInstrImpl runInstr i r
 runInstr i@Nop r = runInstrImpl runInstr i r
 runInstr i@(Nested _) r = runInstrImpl runInstr i r
 runInstr i r = do
@@ -342,6 +343,7 @@ runInstrImpl
         -> EvalOp (Rec T.Value out)
       )
 runInstrImpl runner (Seq i1 i2) r = runner i1 r >>= \r' -> runner i2 r'
+runInstrImpl runner (SeqWithNotes _ i1 i2) r = runner i1 r >>= \r' -> runner i2 r'
 runInstrImpl _ Nop r = pure $ r
 runInstrImpl _ (Ext nop) r = r <$ interpretExt (SomeItStack nop r)
 runInstrImpl runner (Nested sq) r = runInstrImpl runner sq r

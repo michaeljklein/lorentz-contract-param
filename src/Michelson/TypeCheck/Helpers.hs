@@ -53,7 +53,7 @@ import Michelson.TypeCheck.Error (TCError(..), TCTypeError(..))
 import Michelson.TypeCheck.TypeCheck
 import Michelson.TypeCheck.Types
 import Michelson.Typed
-  (CT(..), Instr(..), Notes(..), Notes'(..), Sing(..), T(..), converge, extractNotes, fromSingT,
+  (StackHead, PackedNotes(..), CT(..), Instr(..), Notes(..), Notes'(..), Sing(..), T(..), converge, extractNotes, fromSingT,
   fromUType, mkNotes, notesCase, orAnn, withSomeSingT)
 import Michelson.Typed.Annotation (AnnConvergeError)
 import Michelson.Typed.Arith (Add, ArithOp(..), Compare, Mul, Sub, UnaryArithOp(..))
@@ -286,15 +286,15 @@ typeCheckImpl tcInstr instrs t@(a :: HST a) =
       -> [Un.ExpandedOp]
       -> TypeCheckInstr (SomeInstr inp)
     typeCheckImplDo f wrap rs = do
-      _ :/ pi' <- f
+      hi :/ pi' <- f
       case pi' of
         p ::: b -> do
           _ :/ qi <- typeCheckImpl tcInstr rs b
           case qi of
             q ::: c ->
-              pure $ a :/ Seq (wrap p) q ::: c
+              pure $ a :/ SeqWithNotes (getNotes hi) (wrap p) q ::: c
             AnyOutInstr q ->
-              pure $ a :/ AnyOutInstr (Seq (wrap p) q)
+              pure $ a :/ AnyOutInstr (SeqWithNotes (getNotes hi) (wrap p) q)
 
         AnyOutInstr instr ->
           case rs of
@@ -302,6 +302,10 @@ typeCheckImpl tcInstr instrs t@(a :: HST a) =
               pure $ a :/ AnyOutInstr instr
             r : rr ->
               throwError $ TCUnreachableCode (extractInstrPos r) (r :| rr)
+
+    getNotes :: HST a -> PackedNotes (StackHead a)
+    getNotes SNil = PackedNotes { pnNotes = NStar, pnSing = Nothing }
+    getNotes ((s, n, _) ::& _) = PackedNotes { pnNotes = n, pnSing = Just s }
 
     extractInstrPos :: Un.ExpandedOp -> InstrCallStack
     extractInstrPos (Un.WithSrcEx cs _) = cs

@@ -43,6 +43,8 @@ someDocItemToContractDoc sdi@(SomeDocItem di) = do
 -- | Assemble contract documentation.
 buildInstrDoc :: Instr inp out -> ContractDoc
 buildInstrDoc = \case
+  SeqWithNotes _ i1 i2 ->
+    buildInstrDoc i1 <> buildInstrDoc i2
   Seq i1 i2 ->
     buildInstrDoc i1 <> buildInstrDoc i2
   Nop ->
@@ -150,6 +152,7 @@ modifyInstrAllDoc mapper = go
   where
   go :: Instr i o -> Instr i o
   go = \case
+    SeqWithNotes _ i1 i2 -> go i1 `Seq` go i2
     Seq i1 i2 -> go i1 `Seq` go i2
     i@Nop -> i
     Ext ext -> Ext $
